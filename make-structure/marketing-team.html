@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>هيكل فريق التسويق</title>
+<style>
+  :root { --primary:#0f3d3e; --accent:#d4a017; --ink:#1d2433; --muted:#6b7385; --line:#9fb3b4; --soft:#f5f7fa; --make:#6d00cc; --err:#c0392b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Tajawal","Noto Sans Arabic","Segoe UI",Tahoma,sans-serif; background:#eef1f5; color:var(--ink); width:1800px; padding:40px; }
+  .sheet { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(15,61,62,.10); }
+  .title { background:var(--primary); color:#fff; padding:26px 40px 24px; position:relative; display:flex; justify-content:space-between; align-items:center; }
+  .title::after { content:""; position:absolute; inset:auto 0 0 0; height:6px; background:repeating-linear-gradient(90deg,var(--accent) 0 40px,#f0c75a 40px 80px); }
+  .title h1 { font-size:34px; font-weight:800; }
+  .title p { font-size:16px; opacity:.8; margin-top:2px; }
+  .stats { display:flex; gap:12px; }
+  .stat { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:8px 18px; text-align:center; min-width:110px; }
+  .stat b { display:block; font-size:28px; color:var(--accent); line-height:1.2; }
+  .stat span { font-size:13px; opacity:.85; }
+  .stat.bad b { color:#ff8a7a; }
+  .chart { padding:34px 36px 30px; display:flex; flex-direction:column; align-items:center; }
+
+  .vline { width:2px; height:30px; background:var(--line); }
+  .agent { background:#fff; border:1px solid #dfe4ec; border-radius:12px; padding:12px 14px; position:relative; text-align:right; }
+  .agent .nm { font-size:20px; font-weight:800; color:var(--primary); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .agent .rl { font-size:14.5px; margin:3px 0 8px; line-height:1.5; }
+  .agent ul { font-size:13px; color:var(--muted); padding-right:16px; margin:-2px 0 8px; line-height:1.55; }
+  .tags { display:flex; flex-wrap:wrap; gap:5px; }
+  .chip { font-size:12px; font-weight:700; color:var(--make); background:#f2e8fc; border-radius:20px; padding:1px 10px; }
+  .app { font-size:12px; color:#334; background:var(--soft); border:1px solid #e3e7ee; border-radius:20px; padding:0 9px; }
+  .err { font-size:12.5px; font-weight:700; color:var(--err); background:#fdecea; border-radius:20px; padding:0 9px; white-space:nowrap; }
+  .mgr { border:2px solid var(--accent); background:#fffdf5; }
+  .head { min-width:340px; background:var(--primary); border:0; }
+  .head .nm { color:#fff; font-size:24px; } .head .rl { color:#c9d6d6; }
+  .head .chip { background:rgba(255,255,255,.15); color:#f0c75a; }
+  .head .app { background:rgba(255,255,255,.08); color:#dfe8e8; border-color:rgba(255,255,255,.18); }
+
+  .groups { display:grid; grid-template-columns:1fr 2.2fr 1.25fr; gap:22px; width:100%; position:relative; padding-top:30px; align-items:start; }
+  .groups::before { content:""; position:absolute; top:0; right:calc(100%/8.9); left:calc(100%/7.6); border-top:2px solid var(--line); }
+  .group { position:relative; border:1px solid #dfe4ec; border-radius:14px; background:var(--soft); }
+  .group::before { content:""; position:absolute; top:-30px; left:50%; height:30px; border-left:2px solid var(--line); }
+  .gh { background:var(--primary); color:#fff; text-align:center; padding:11px 8px; border-radius:13px 13px 0 0; font-size:18px; font-weight:800; }
+  .gh small { display:block; font-size:13px; font-weight:500; color:#f0c75a; }
+  .gb { padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .studio-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+
+  .flow { width:100%; margin-top:30px; border-top:2px dashed #dfe4ec; padding-top:20px; }
+  .flow h3 { font-size:18px; color:var(--primary); margin-bottom:14px; }
+  .steps { display:flex; align-items:stretch; gap:0; }
+  .step { flex:1; background:var(--soft); border:1px solid #dfe4ec; border-radius:12px; padding:10px 12px; text-align:center; font-size:14px; }
+  .step b { display:block; font-size:15px; color:var(--primary); margin-bottom:2px; }
+  .step.ok { background:#fff7e0; border-color:var(--accent); }
+  .step.pub { background:var(--primary); color:#dfe8e8; border:0; } .step.pub b { color:#f0c75a; }
+  .arrow { align-self:center; font-size:22px; color:var(--line); padding:0 8px; }
+  .note { margin-top:14px; font-size:13.5px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="title">
+    <div>
+      <h1>هيكل فريق التسويق والمحتوى</h1>
+      <p>Platinum Gate على Make · تحديث 30/09/2026</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>8</b><span>أعضاء</span></div>
+      <div class="stat"><b>11</b><span>سيناريو نشط</span></div>
+      <div class="stat"><b>6</b><span>منصات نشر</span></div>
+      <div class="stat bad"><b>12</b><span>خطأ مسجّل</span></div>
+    </div>
+  </div>
+
+  <div class="chart">
+    <div class="agent head">
+      <div class="nm">ياقوت</div>
+      <div class="rl">مدير التسويق</div>
+      <div class="tags"><span class="chip">كل 6 ساعات</span><span class="app">Sheets</span><span class="app">AI</span><span class="app">Gmail</span></div>
+    </div>
+    <div class="vline"></div>
+
+    <div class="groups">
+      <div class="group">
+        <div class="gh">الكتابة والموافقة<small>منشورات السوشيال</small></div>
+        <div class="gb">
+          <div class="agent">
+            <div class="nm">فضة</div>
+            <div class="rl">كاتبة المحتوى</div>
+            <ul><li>تكتب المنشور وتطلب الموافقة</li><li>تسلّم الموافَق عليه لبرونز</li></ul>
+            <div class="tags"><span class="chip">كل ساعة</span><span class="app">سيناريوهان</span><span class="app">Sheets</span><span class="app">AI</span><span class="app">Gmail</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="gh">استوديو المحتوى<small>صور · نصوص · فيديو</small></div>
+        <div class="gb">
+          <div class="agent mgr">
+            <div class="nm">جوهر <span class="err">⚠ 2</span></div>
+            <div class="rl">مدير الاستوديو</div>
+            <ul><li>يوزّع المهام على الفريق</li><li>يراجع ويجمّع الحزمة ويرسلها لحسين للموافقة</li><li>يسلّم الموافَق عليه لبرونز</li></ul>
+            <div class="tags"><span class="chip">كل ساعة</span><span class="app">3 سيناريوهات</span><span class="app">Sheets</span><span class="app">AI</span><span class="app">Gmail</span><span class="app">Slack</span></div>
+          </div>
+          <div class="studio-row">
+            <div class="agent">
+              <div class="nm">عقيق <span class="err">⚠ 1</span></div>
+              <div class="rl">كاتب المحتوى</div>
+              <div class="tags"><span class="chip">كل ساعة</span><span class="app">Sheets</span><span class="app">AI</span></div>
+            </div>
+            <div class="agent">
+              <div class="nm">فيروز <span class="err">⚠ 5</span></div>
+              <div class="rl">مصممة الصور</div>
+              <div class="tags"><span class="chip">كل ساعة</span><span class="app">Claude</span><span class="app">Gemini</span><span class="app">Drive</span></div>
+            </div>
+            <div class="agent">
+              <div class="nm">مرجان <span class="err">⚠ 1</span></div>
+              <div class="rl">سكربتات الفيديو</div>
+              <div class="tags"><span class="chip">كل ساعة</span><span class="app">Sheets</span><span class="app">AI</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="gh">النشر<small>المسؤولون عن النشر</small></div>
+        <div class="gb">
+          <div class="agent">
+            <div class="nm">برونز <span class="err">⚠ 1</span></div>
+            <div class="rl">النشر على فيسبوك وإنستغرام</div>
+            <ul><li>يكتشف الفيديو وينشره Reel</li></ul>
+            <div class="tags"><span class="chip">كل 6 ساعات</span><span class="app">Facebook</span><span class="app">Instagram</span></div>
+          </div>
+          <div class="agent">
+            <div class="nm">ماس <span class="err">⚠ 2</span></div>
+            <div class="rl">النشر الشامل</div>
+            <ul><li>تيك توك · يوتيوب · Substack</li></ul>
+            <div class="tags"><span class="chip">كل ساعة</span><span class="app">Buffer</span><span class="app">YouTube</span><span class="app">Gmail</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <h3>مسار المنشور من الفكرة إلى النشر</h3>
+      <div class="steps">
+        <div class="step"><b>1. الفكرة</b>جدول الاستوديو في Sheets</div>
+        <div class="arrow">←</div>
+        <div class="step"><b>2. التوزيع</b>جوهر يوزّع المهام</div>
+        <div class="arrow">←</div>
+        <div class="step"><b>3. الإنتاج</b>عقيق يكتب · فيروز تصمم · مرجان للفيديو</div>
+        <div class="arrow">←</div>
+        <div class="step"><b>4. المراجعة</b>جوهر يجمّع الحزمة</div>
+        <div class="arrow">←</div>
+        <div class="step ok"><b>5. الموافقة</b>حسين</div>
+        <div class="arrow">←</div>
+        <div class="step pub"><b>6. النشر</b>برونز وماس</div>
+      </div>
+      <div class="note">مسار موازٍ: فضة تكتب منشورات السوشيال وتطلب الموافقة، ثم تسلّمها لبرونز مباشرة.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
