@@ -52,6 +52,32 @@ npm start
 COMPANY_NAME="اسم شركتك" SESSION_SECRET="نص-طويل-عشوائي" npm start
 ```
 
+## النشر على الإنترنت
+
+### Render (الأسهل)
+
+المستودع يحتوي على ملف `render.yaml` يجهّز كل شيء تلقائياً:
+
+1. ادخل إلى https://dashboard.render.com وسجّل بحساب GitHub.
+2. اختر **New → Blueprint** ثم اختر مستودع `platinumgatec-22/company` والفرع الذي فيه الموقع.
+3. اكتب اسم الشركة في خانة `COMPANY_NAME` ثم اضغط **Apply**.
+4. بعد انتهاء البناء يعطيك Render رابطاً مثل `https://company-portal.onrender.com`.
+5. ادخل بحساب `admin` / `admin123`، وغيّر كلمة المرور فوراً.
+
+الخطة المستخدمة `starter` مدفوعة (حوالي 7$ شهرياً + القرص)، لأن قاعدة البيانات تحتاج قرصاً دائماً (`/var/data`). الخطة المجانية تحذف البيانات عند كل إعادة تشغيل.
+
+`SESSION_SECRET` يُنشأ تلقائياً. ويمكن ربط نطاق خاص من إعدادات الخدمة في Render (Custom Domains).
+
+### Docker (أي خادم)
+
+```bash
+docker build -t company-portal .
+docker run -d -p 3000:3000 -v company-data:/data \
+  -e SESSION_SECRET="نص-طويل-عشوائي" -e COMPANY_NAME="اسم شركتك" company-portal
+```
+
+> يجب أن يكون الموقع خلف HTTPS في الإنتاج، لأن `NODE_ENV=production` يجعل كوكيز الدخول آمنة (Secure).
+
 ## هيكل المشروع
 
 ```

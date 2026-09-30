@@ -1,0 +1,25 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: company-portal
+    runtime: node
+    # A paid plan is needed for the persistent disk that keeps the SQLite database.
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /var/data/company.db
+      - key: COMPANY_NAME
+        sync: false
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
