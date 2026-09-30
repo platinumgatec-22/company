@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>هيكل الشركة على Make</title>
+<style>
+  :root { --primary:#0f3d3e; --accent:#d4a017; --ink:#1d2433; --muted:#6b7385; --line:#9fb3b4; --soft:#f5f7fa; --make:#6d00cc; --err:#c0392b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Tajawal","Noto Sans Arabic","Segoe UI",Tahoma,sans-serif; background:#eef1f5; color:var(--ink); width:2200px; padding:40px; }
+  .sheet { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(15,61,62,.10); }
+  .title { background:var(--primary); color:#fff; padding:26px 40px 24px; position:relative; display:flex; justify-content:space-between; align-items:center; }
+  .title::after { content:""; position:absolute; inset:auto 0 0 0; height:6px; background:repeating-linear-gradient(90deg,var(--accent) 0 40px,#f0c75a 40px 80px); }
+  .title h1 { font-size:34px; font-weight:800; }
+  .title p { font-size:16px; opacity:.8; margin-top:2px; }
+  .stats { display:flex; gap:12px; }
+  .stat { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:12px; padding:8px 18px; text-align:center; min-width:120px; }
+  .stat b { display:block; font-size:28px; color:var(--accent); line-height:1.2; }
+  .stat span { font-size:13px; opacity:.85; }
+  .stat.bad b { color:#ff8a7a; }
+  .chart { padding:36px 36px 30px; display:flex; flex-direction:column; align-items:center; }
+
+  .owner { background:var(--accent); color:var(--primary); border-radius:14px; padding:14px 40px; text-align:center; }
+  .owner b { font-size:24px; font-weight:800; display:block; }
+  .owner span { font-size:14px; }
+  .vline { width:2px; height:30px; background:var(--line); }
+
+  .exec { border:2px dashed var(--accent); background:#fffaf0; border-radius:16px; padding:12px 18px 16px; text-align:center; }
+  .exec .eh { font-size:17px; font-weight:800; color:var(--primary); margin-bottom:10px; }
+  .exec .row { display:flex; gap:12px; }
+
+  .depts { display:grid; grid-template-columns:1fr 1fr 1.55fr 1fr 1fr 1fr; gap:18px; width:100%; position:relative; padding-top:30px; align-items:start; }
+  .depts::before { content:""; position:absolute; top:0; right:calc(100%/13.1); left:calc(100%/13.1); border-top:2px solid var(--line); }
+  .dept { position:relative; border:1px solid #dfe4ec; border-radius:14px; background:var(--soft); }
+  .dept::before { content:""; position:absolute; top:-30px; left:50%; height:30px; border-left:2px solid var(--line); }
+  .dh { background:var(--primary); color:#fff; font-size:18px; font-weight:800; text-align:center; padding:12px 8px; border-radius:13px 13px 0 0; }
+  .db { padding:12px; display:flex; flex-direction:column; gap:9px; }
+
+  .agent { background:#fff; border:1px solid #dfe4ec; border-radius:10px; padding:9px 12px; position:relative; }
+  .agent .nm { font-size:17px; font-weight:800; color:var(--primary); display:flex; justify-content:space-between; align-items:center; }
+  .agent .rl { font-size:13.5px; color:var(--ink); margin:2px 0 6px; line-height:1.45; }
+  .chip { display:inline-block; font-size:11.5px; font-weight:700; color:var(--make); background:#f2e8fc; border-radius:20px; padding:1px 10px; }
+  .err { font-size:12px; font-weight:700; color:var(--err); background:#fdecea; border-radius:20px; padding:0 8px; }
+  .agent.mgr { border:2px solid var(--accent); background:#fffdf5; }
+  .agent.exec { min-width:230px; text-align:right; }
+  .sub { border:2px dashed #b8c4d6; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px; margin-top:4px; background:#fbfcfe; }
+  .sub .sh { font-size:15px; font-weight:800; color:var(--make); text-align:center; }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+  .split .col { display:flex; flex-direction:column; gap:9px; }
+  .split .sub { margin-top:0; }
+
+  .infra { width:100%; margin-top:30px; border-top:2px dashed #dfe4ec; padding-top:20px; }
+  .infra h3 { font-size:17px; color:var(--primary); margin-bottom:12px; }
+  .infs { display:flex; flex-wrap:wrap; gap:10px; }
+  .inf { background:var(--soft); border:1px solid #dfe4ec; border-radius:10px; padding:7px 14px; font-size:14px; }
+  .inf b { color:var(--ink); } .inf span { color:var(--muted); margin-inline-start:8px; font-size:13px; }
+  .foot { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:18px; font-size:14px; color:var(--muted); gap:20px; }
+  .legend { display:flex; gap:22px; }
+  .legend span { display:inline-flex; align-items:center; gap:7px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="title">
+    <div>
+      <h1>هيكل الشركة على Make</h1>
+      <p>Platinum Gate — تنظيم الفعاليات الرياضية · فريق My Team · تحديث 30/09/2026</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>{{AGENTS}}</b><span>موظف آلي</span></div>
+      <div class="stat"><b>30</b><span>سيناريو نشط</span></div>
+      <div class="stat"><b>6</b><span>إدارات + مكتب تنفيذي</span></div>
+      <div class="stat bad"><b>9</b><span>سيناريو فيه أخطاء</span></div>
+    </div>
+  </div>
+
+  <div class="chart">
+    <div class="owner"><b>حسين</b><span>المراجعة والموافقة النهائية</span></div>
+    <div class="vline"></div>
+    <div class="exec">
+      <div class="eh">المكتب التنفيذي</div>
+      <div class="row">{{EXEC}}</div>
+    </div>
+    <div class="vline"></div>
+    <div class="depts">{{DEPTS}}</div>
+
+    <div class="infra">
+      <h3>الأدوات والاتصالات المشتركة (عدد السيناريوهات المستخدمة لكل منها)</h3>
+      <div class="infs">{{INFRA}}</div>
+    </div>
+    <div class="foot">
+      <div>غير نشط: 15 سيناريو — 5 إعداد جداول (setup) · 7 أدوات مؤقتة · 3 قوالب غير مستخدمة</div>
+      <div class="legend">
+        <span><span class="chip">كل ساعة</span> وتيرة التشغيل</span>
+        <span><span class="err">⚠ 2</span> أخطاء مسجّلة</span>
+        <span style="border:2px solid var(--accent);border-radius:6px;padding:0 8px;background:#fffdf5">مدير الإدارة</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
