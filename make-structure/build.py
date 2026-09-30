@@ -67,7 +67,7 @@ def dept(d):
     return h + "</div></div>"
 
 
-agents = len(EXEC) - 1 + sum((1 if d[1] else 0) + len(d[2]) + (1 + len(d[3][2]) if d[3] else 0) for d in DEPTS)
+agents = 1 + len(EXEC) - 1 + sum((1 if d[1] else 0) + len(d[2]) + (1 + len(d[3][2]) if d[3] else 0) for d in DEPTS)
 html = open(__file__.replace("build.py", "template.html"), encoding="utf-8").read()
 html = (html.replace("{{EXEC}}", "".join(card(a, "agent exec") for a in EXEC))
             .replace("{{DEPTS}}", "".join(dept(d) for d in DEPTS))
