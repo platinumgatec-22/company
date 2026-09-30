@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container narrow-lg">
+    <h1 class="h2">حسابي</h1>
+    <div class="grid grid-2">
+      <div class="card form-card">
+        <h3>بياناتي</h3>
+        <p class="muted small"><%= user.job_title %> — <%= user.department_name || 'بدون قسم' %></p>
+        <form method="post" action="/profile" class="form">
+          <label>الاسم<input value="<%= user.full_name %>" disabled></label>
+          <label>البريد الإلكتروني<input name="email" type="email" value="<%= user.email %>" dir="ltr"></label>
+          <label>الهاتف<input name="phone" value="<%= user.phone %>" dir="ltr"></label>
+          <label>نبذة عني<textarea name="bio" rows="3" maxlength="500"><%= user.bio %></textarea></label>
+          <button class="btn btn-primary">حفظ</button>
+        </form>
+      </div>
+      <div class="card form-card <%= user.must_change_password ? 'highlight' : '' %>">
+        <h3>تغيير كلمة المرور</h3>
+        <% if (user.must_change_password) { %>
+          <p class="alert alert-warning small">أنت تستخدم كلمة مرور مبدئية. غيّرها للمتابعة.</p>
+        <% } %>
+        <form method="post" action="/profile/password" class="form">
+          <label>كلمة المرور الحالية<input name="current_password" type="password" required autocomplete="current-password" dir="ltr"></label>
+          <label>كلمة المرور الجديدة<input name="new_password" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+          <label>تأكيد كلمة المرور<input name="confirm_password" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+          <button class="btn btn-primary">تغيير كلمة المرور</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

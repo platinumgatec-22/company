@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="page-head">
+      <div>
+        <h1 class="h2">إدارة الموظفين</h1>
+        <p class="muted"><%= employees.length %> حساب</p>
+      </div>
+      <div class="actions">
+        <form class="search">
+          <input name="q" value="<%= search %>" placeholder="بحث…">
+          <select name="department">
+            <option value="">كل الأقسام</option>
+            <% departments.forEach(d => { %>
+              <option value="<%= d.id %>" <%= d.id === deptId ? 'selected' : '' %>><%= d.name %></option>
+            <% }) %>
+          </select>
+          <button class="btn btn-ghost">تصفية</button>
+        </form>
+        <a class="btn btn-primary" href="/admin/employees/new">+ موظف جديد</a>
+      </div>
+    </div>
+    <div class="table-wrap card">
+      <table class="table">
+        <thead>
+          <tr><th>الموظف</th><th>اسم المستخدم</th><th>القسم</th><th>الصلاحية</th><th>الحالة</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% employees.forEach(e => { %>
+            <tr class="<%= e.is_active ? '' : 'row-muted' %>">
+              <td>
+                <a href="/employees/<%= e.id %>" class="cell-user">
+                  <span class="avatar avatar-xs" style="background:<%= avatarColor(e.id) %>"><%= initials(e.full_name) %></span>
+                  <span><strong><%= e.full_name %></strong><br><span class="muted small"><%= e.job_title %></span></span>
+                </a>
+              </td>
+              <td dir="ltr" class="ltr-cell"><%= e.username %></td>
+              <td><%= e.department_name || '—' %><% if (e.is_manager) { %> <span class="badge badge-gold">رئيس</span><% } %></td>
+              <td><%= e.role === 'admin' ? 'مدير النظام' : 'موظف' %></td>
+              <td>
+                <% if (!e.is_active) { %><span class="badge badge-red">معطّل</span>
+                <% } else if (e.must_change_password) { %><span class="badge">كلمة مرور مبدئية</span>
+                <% } else { %><span class="badge badge-green">نشط</span><% } %>
+              </td>
+              <td class="row-actions">
+                <a class="btn btn-ghost btn-sm" href="/admin/employees/<%= e.id %>/edit">تعديل</a>
+                <% if (e.id !== user.id) { %>
+                  <form method="post" action="/admin/employees/<%= e.id %>/delete" class="inline"
+                        data-confirm="حذف حساب <%= e.full_name %> نهائياً؟" onsubmit="return confirm(this.dataset.confirm)">
+                    <button class="btn btn-danger btn-sm">حذف</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

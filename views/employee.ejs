@@ -1,0 +1,34 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container narrow-lg">
+    <% if (employee.department_id) { %>
+      <a href="/departments/<%= employee.department_id %>" class="back">→ <%= employee.department_name %></a>
+    <% } %>
+    <div class="card profile-card">
+      <div class="profile-head">
+        <span class="avatar avatar-lg" style="background:<%= avatarColor(employee.id) %>"><%= initials(employee.full_name) %></span>
+        <div>
+          <h1 class="h2"><%= employee.full_name %></h1>
+          <p class="muted"><%= employee.job_title || '—' %></p>
+          <div class="chips">
+            <% if (employee.department_name) { %><span class="chip"><%= employee.department_icon %> <%= employee.department_name %></span><% } %>
+            <% if (employee.is_manager) { %><span class="badge badge-gold">رئيس القسم</span><% } %>
+            <% if (employee.role === 'admin') { %><span class="badge">مدير النظام</span><% } %>
+            <% if (!employee.is_active) { %><span class="badge badge-red">غير نشط</span><% } %>
+          </div>
+        </div>
+      </div>
+      <dl class="details">
+        <div><dt>البريد الإلكتروني</dt><dd><% if (employee.email) { %><a href="mailto:<%= employee.email %>" dir="ltr"><%= employee.email %></a><% } else { %>—<% } %></dd></div>
+        <div><dt>الهاتف</dt><dd><% if (employee.phone) { %><a href="tel:<%= employee.phone.replace(/\s/g, '') %>" dir="ltr"><%= employee.phone %></a><% } else { %>—<% } %></dd></div>
+        <div><dt>اسم المستخدم</dt><dd dir="ltr"><%= employee.username %></dd></div>
+        <div><dt>تاريخ التعيين</dt><dd><%= employee.hire_date || '—' %></dd></div>
+      </dl>
+      <% if (employee.bio) { %><div class="bio"><h3>نبذة</h3><p><%= employee.bio %></p></div><% } %>
+      <% if (user.role === 'admin') { %>
+        <div class="card-actions"><a class="btn btn-ghost" href="/admin/employees/<%= employee.id %>/edit">تعديل</a></div>
+      <% } %>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

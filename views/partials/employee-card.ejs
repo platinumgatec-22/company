@@ -1,0 +1,11 @@
+<a class="card emp-card" href="/employees/<%= e.id %>">
+  <span class="avatar" style="background:<%= avatarColor(e.id) %>"><%= initials(e.full_name) %></span>
+  <div class="emp-info">
+    <strong><%= e.full_name %></strong>
+    <span class="muted"><%= e.job_title || '—' %></span>
+    <% if (typeof showDept !== 'undefined' && showDept && e.department_name) { %>
+      <span class="chip"><%= e.department_icon %> <%= e.department_name %></span>
+    <% } %>
+  </div>
+  <% if (e.is_manager) { %><span class="badge badge-gold">رئيس القسم</span><% } %>
+</a>

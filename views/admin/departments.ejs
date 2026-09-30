@@ -1,0 +1,33 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="page-head">
+      <h1 class="h2">إدارة الأقسام</h1>
+      <a class="btn btn-primary" href="/admin/departments/new">+ قسم جديد</a>
+    </div>
+    <div class="table-wrap card">
+      <table class="table">
+        <thead><tr><th>القسم</th><th>الوصف</th><th>الموظفون</th><th>الرئيس</th><th></th></tr></thead>
+        <tbody>
+          <% departments.forEach(d => { %>
+            <tr>
+              <td><a href="/departments/<%= d.id %>"><strong><%= d.icon %> <%= d.name %></strong></a></td>
+              <td class="muted"><%= d.description %></td>
+              <td><%= d.employee_count %></td>
+              <td><%= d.manager_name || '—' %></td>
+              <td class="row-actions">
+                <a class="btn btn-ghost btn-sm" href="/admin/departments/<%= d.id %>/edit">تعديل</a>
+                <form method="post" action="/admin/departments/<%= d.id %>/delete" class="inline"
+                      data-confirm="حذف قسم <%= d.name %>؟" onsubmit="return confirm(this.dataset.confirm)">
+                  <button class="btn btn-danger btn-sm">حذف</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

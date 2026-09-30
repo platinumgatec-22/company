@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1 class="h2">أقسام الشركة</h1>
+        <p class="muted">اختر قسماً لعرض موظفيه.</p>
+      </div>
+      <form action="/employees" class="search">
+        <input name="q" placeholder="ابحث عن موظف في جميع الأقسام…">
+        <button class="btn btn-primary">بحث</button>
+      </form>
+    </div>
+    <div class="grid grid-3">
+      <% departments.forEach(d => { %>
+        <a class="card dept-card" href="/departments/<%= d.id %>">
+          <span class="dept-icon"><%= d.icon %></span>
+          <h3><%= d.name %></h3>
+          <p class="muted"><%= d.description %></p>
+          <div class="dept-meta">
+            <span class="chip"><%= d.employee_count %> موظف</span>
+            <% if (d.manager_name) { %><span class="muted small">الرئيس: <%= d.manager_name %></span><% } %>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>
