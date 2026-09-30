@@ -1,0 +1,21 @@
+{
+  "name": "company-portal",
+  "version": "1.0.0",
+  "description": "موقع الشركة وبوابة الموظفين: أقسام، موظفين، حسابات دخول ولوحة إدارة",
+  "main": "src/server.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-session": "^2.1.1",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1"
+  }
+}

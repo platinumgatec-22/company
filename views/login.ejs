@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container narrow">
+    <div class="card form-card">
+      <h1 class="h2">دخول الموظفين</h1>
+      <p class="muted">استخدم اسم المستخدم وكلمة المرور الخاصة بك.</p>
+      <form method="post" action="/login" class="form">
+        <input type="hidden" name="next" value="<%= next %>">
+        <label>اسم المستخدم
+          <input name="username" value="<%= username %>" required autofocus autocomplete="username" dir="ltr">
+        </label>
+        <label>كلمة المرور
+          <input name="password" type="password" required autocomplete="current-password" dir="ltr">
+        </label>
+        <button class="btn btn-primary btn-block">دخول</button>
+      </form>
+      <p class="muted small">نسيت كلمة المرور؟ تواصل مع مدير النظام لإعادة تعيينها.</p>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

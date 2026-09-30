@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container">
+    <a href="/departments" class="back">→ كل الأقسام</a>
+    <div class="page-head">
+      <div class="dept-title">
+        <span class="dept-icon lg"><%= department.icon %></span>
+        <div>
+          <h1 class="h2"><%= department.name %></h1>
+          <p class="muted"><%= department.description %></p>
+        </div>
+      </div>
+      <div class="actions">
+        <form class="search">
+          <input name="q" value="<%= search %>" placeholder="ابحث في هذا القسم…">
+          <button class="btn btn-primary">بحث</button>
+        </form>
+        <% if (user.role === 'admin') { %>
+          <a class="btn btn-ghost" href="/admin/employees/new?department=<%= department.id %>">+ إضافة موظف</a>
+        <% } %>
+      </div>
+    </div>
+    <p class="muted"><%= employees.length %> موظف<%= search ? ' مطابق للبحث' : '' %></p>
+    <% if (employees.length === 0) { %>
+      <div class="empty">لا يوجد موظفون <%= search ? 'مطابقون للبحث' : 'في هذا القسم بعد' %>.</div>
+    <% } else { %>
+      <div class="grid grid-3">
+        <% employees.forEach(e => { %><%- include('partials/employee-card', { e }) %><% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>
