@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>الهيكل التنظيمي للشركة</title>
+<style>
+  :root {
+    --primary: #0f3d3e;
+    --accent: #d4a017;
+    --ink: #1d2433;
+    --muted: #6b7385;
+    --line: #9fb3b4;
+    --soft: #f5f7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Tajawal", "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+    background: #eef1f5; color: var(--ink);
+    width: 1780px; padding: 40px;
+  }
+  .sheet {
+    background: #fff; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15, 61, 62, .10);
+  }
+  .title {
+    background: var(--primary); color: #fff; text-align: center;
+    padding: 26px 20px 22px; position: relative;
+  }
+  .title::after {
+    content: ""; position: absolute; inset: auto 0 0 0; height: 6px;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 40px, #f0c75a 40px 80px);
+  }
+  .title h1 { font-size: 34px; font-weight: 800; }
+  .title p { font-size: 16px; opacity: .8; margin-top: 4px; }
+  .chart { padding: 44px 30px 40px; }
+
+  /* الشجرة */
+  .tree ul ul ul { padding-top: 34px; }
+  .tree ul { display: flex; justify-content: center; position: relative; padding-top: 34px; }
+  .tree > ul { padding-top: 0; }
+  .tree li { list-style: none; position: relative; padding: 34px 10px 0; display: flex; flex-direction: column; align-items: center; }
+  .tree > ul > li { padding-top: 0; }
+  /* الخطوط: نصف يسار ونصف يمين لكل عنصر، وخط عمودي من المنتصف */
+  .tree li::before, .tree li::after {
+    content: ""; position: absolute; top: 0; width: 50%; height: 34px;
+    border-top: 2px solid var(--line);
+  }
+  .tree li::before { right: 50%; }
+  .tree li::after { left: 50%; border-left: 2px solid var(--line); margin-left: -1px; }
+  .tree li:first-child::after { border-top: 0; }   /* أقصى اليمين في RTL */
+  .tree li:last-child::before { border-top: 0; }   /* أقصى اليسار */
+  .tree li:only-child::before, .tree li:only-child::after { display: none; }
+  .tree li:only-child { padding-top: 0; }
+  .tree ul ul::before {
+    content: ""; position: absolute; top: 0; left: 50%; height: 34px;
+    border-left: 2px solid var(--line); margin-left: -1px;
+  }
+
+  .node {
+    border-radius: 12px; padding: 14px 20px; text-align: center; min-width: 190px;
+    background: #fff; border: 2px solid var(--primary); position: relative; z-index: 1;
+  }
+  .node .role { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .node .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .node.board { background: var(--accent); border-color: var(--accent); min-width: 260px; }
+  .node.board .role { color: var(--primary); font-size: 22px; }
+  .node.board .sub { color: #4a3a05; }
+  .node.ceo { background: var(--primary); min-width: 260px; }
+  .node.ceo .role { color: #fff; font-size: 22px; }
+  .node.ceo .sub { color: #c9d6d6; }
+  .node.dept { background: var(--primary); min-width: 230px; }
+  .node.dept .role { color: #fff; font-size: 17px; }
+  .node.dept .sub { color: var(--accent); font-weight: 700; }
+
+  /* الأقسام الفرعية */
+  .units { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; width: 230px; position: relative; padding-right: 22px; }
+  .units::before {
+    content: ""; position: absolute; top: -14px; bottom: 22px; right: 8px;
+    border-right: 2px dashed var(--line);
+  }
+  .unit {
+    background: var(--soft); border: 1px solid #dfe4ec; border-radius: 10px;
+    padding: 9px 12px; font-size: 14.5px; font-weight: 600; position: relative;
+  }
+  .unit::before {
+    content: ""; position: absolute; top: 50%; right: -14px; width: 14px;
+    border-top: 2px dashed var(--line);
+  }
+
+  /* الوحدات المساندة للرئيس التنفيذي */
+  .ceo-row { position: relative; padding-bottom: 80px; }
+  .ceo-row::after {
+    content: ""; position: absolute; bottom: 0; left: 50%; height: 80px;
+    border-left: 2px solid var(--line); margin-left: -1px;
+  }
+  .staff-wrap {
+    position: absolute; right: 100%; top: 0;
+    display: flex; align-items: center;
+  }
+  .staff { display: flex; flex-direction: column; gap: 10px; }
+  .staff .node { white-space: nowrap; min-width: 200px; padding: 10px 14px; border-style: dashed; border-color: var(--accent); background: #fffaf0; }
+  .staff .node .role { font-size: 15px; }
+  .link { width: 60px; border-top: 2px dashed var(--accent); align-self: flex-start; margin-top: 37px; }
+  .staff-wrap { align-items: flex-start !important; }
+
+  .legend {
+    display: flex; gap: 28px; justify-content: center; margin-top: 36px;
+    font-size: 14px; color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 18px; height: 18px; border-radius: 5px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="title">
+    <h1>الهيكل التنظيمي للشركة</h1>
+    <p>شركة الأبطال لتنظيم البطولات والفعاليات الرياضية</p>
+  </div>
+
+  <div class="chart tree">
+    <ul>
+      <li>
+        <div class="node board"><div class="role">مجلس الإدارة</div><div class="sub">الجمعية العمومية للمساهمين</div></div>
+        <ul>
+          <li>
+            <div class="ceo-row">
+              <div class="node ceo"><div class="role">الرئيس التنفيذي</div><div class="sub">CEO</div></div>
+              <div class="staff-wrap">
+              <div class="link"></div>
+              <div class="staff">
+                <div class="node"><div class="role">مكتب الرئيس التنفيذي</div></div>
+                <div class="node"><div class="role">الشؤون القانونية</div></div>
+                <div class="node"><div class="role">التدقيق الداخلي والجودة</div></div>
+              </div>
+              </div>
+            </div>
+            <ul>
+              <li>
+                <div class="node dept"><div class="role">إدارة البطولات والفعاليات</div><div class="sub">مدير العمليات</div></div>
+                <div class="units">
+                  <div class="unit">تخطيط وجدولة البطولات</div>
+                  <div class="unit">تسجيل المشتركين والفرق</div>
+                  <div class="unit">الحكام والشؤون الفنية</div>
+                  <div class="unit">إدارة الملاعب والمرافق</div>
+                </div>
+              </li>
+              <li>
+                <div class="node dept"><div class="role">التسويق والرعايات</div><div class="sub">مدير التسويق</div></div>
+                <div class="units">
+                  <div class="unit">الرعايات والشراكات</div>
+                  <div class="unit">الإعلام والتواصل الاجتماعي</div>
+                  <div class="unit">التصميم والمحتوى</div>
+                  <div class="unit">خدمة العملاء</div>
+                </div>
+              </li>
+              <li>
+                <div class="node dept"><div class="role">الإدارة المالية</div><div class="sub">المدير المالي</div></div>
+                <div class="units">
+                  <div class="unit">المحاسبة والفوترة</div>
+                  <div class="unit">التحصيل والمدفوعات</div>
+                  <div class="unit">المشتريات</div>
+                  <div class="unit">الميزانيات والتقارير</div>
+                </div>
+              </li>
+              <li>
+                <div class="node dept"><div class="role">الموارد البشرية والشؤون الإدارية</div><div class="sub">مدير الموارد البشرية</div></div>
+                <div class="units">
+                  <div class="unit">التوظيف والاستقطاب</div>
+                  <div class="unit">التدريب والتطوير</div>
+                  <div class="unit">شؤون الموظفين والرواتب</div>
+                  <div class="unit">الخدمات العامة</div>
+                </div>
+              </li>
+              <li>
+                <div class="node dept"><div class="role">تقنية المعلومات</div><div class="sub">مدير التقنية</div></div>
+                <div class="units">
+                  <div class="unit">منصة التسجيل الإلكتروني</div>
+                  <div class="unit">البنية التحتية والدعم الفني</div>
+                  <div class="unit">البيانات والأتمتة</div>
+                  <div class="unit">أمن المعلومات</div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i>جهة الحوكمة</span>
+      <span><i style="background:var(--primary)"></i>الإدارة التنفيذية والإدارات الرئيسية</span>
+      <span><i style="background:#fffaf0;border:2px dashed var(--accent)"></i>وحدات مساندة ترتبط بالرئيس التنفيذي</span>
+      <span><i style="background:var(--soft);border:1px solid #dfe4ec"></i>الأقسام</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
