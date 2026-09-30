@@ -139,6 +139,9 @@
   .hc .s { color: var(--muted); font-variant-numeric: tabular-nums; }
   .hc.err { border-color: var(--bad); }
   .sec-note { font-size: 13px; color: var(--muted); margin: 0; }
+  details.hs { margin-bottom: 12px; border-color: var(--gold); }
+  details.hs summary { cursor: pointer; padding: 10px 14px; background: var(--gold-soft); list-style-position: inside; }
+  .hs-body { padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; max-height: 420px; overflow: auto; }
 </style>
 
 <header class="top">
@@ -172,6 +175,10 @@
   </nav>
 
   <section id="view-pending" role="tabpanel" aria-labelledby="tab-pending">
+    <details class="panel hs" id="hassounBox" hidden>
+      <summary><b>تقرير حسون، المشرف الأعلى</b> <span class="sec-note" id="hassounAt"></span></summary>
+      <div class="hs-body" id="hassounText"></div>
+    </details>
     <div class="cards" id="pendingList">
       <div class="empty"><b>الطلبات التي تنتظر قرارك تظهر هنا</b>اضغط «تحديث البيانات» لقراءة الجدول. لكل طلب زر «موافق» وزر «رفض» ومكان لملاحظتك.</div>
     </div>
@@ -221,6 +228,7 @@
   const TEAM_ID = 2966345;
   const READ_ID = 7696466;   // لوحة التحكم - قراءة الجدول
   const WRITE_ID = 7696468;  // لوحة التحكم - تسجيل القرار
+  const STORE_ID = 202705;   // مخزن «لوحة التحكم - لقطة الجدول»
   const SHEET_URL = "https://docs.google.com/spreadsheets/d/10dfoIATCxI55Alz2_aaSrUqhjmeqvjxe19KubHscc8A";
 
   // Each tab of the spreadsheet → the digital employee who owns it.
@@ -257,7 +265,7 @@
   };
 
   let mcp = null;
-  let state = { ranges: null, at: null, scen: null, scenAt: null };
+  let state = { ranges: null, at: null, scen: null, scenAt: null, hassoun: null };
   const decided = new Map(); // "Tab!row" → decision made this session (until the sheet confirms)
 
   // ---------- status classification ----------
@@ -333,6 +341,11 @@
     if (state.at) {
       const d = new Date(state.at);
       $("syncInfo").textContent = "آخر تحديث: " + d.toLocaleString("ar-KW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kuwait" });
+    }
+    if (state.hassoun && state.hassoun.text) {
+      $("hassounBox").hidden = false;
+      $("hassounText").textContent = state.hassoun.text;
+      $("hassounAt").textContent = state.hassoun.at ? "· " + state.hassoun.at : "";
     }
     if (tabs) { renderPending(pending); renderTasks(tasks); renderActivity(tabs, tasks); }
     if (state.scen) renderHealth();
@@ -493,13 +506,16 @@
   }
 
   async function loadSheet() {
-    const { p, execId } = await runScenario(READ_ID);
-    let ranges = deepFind(p, (k, v) => (k === "valueRanges" && Array.isArray(v)) ? v : undefined);
-    if (!ranges && execId) {
-      const det = await mcp.callTool(MAKE, "executions_get-detail", { scenarioId: READ_ID, executionId: execId }, { cache: false });
-      ranges = deepFind(payloadOf(det), (k, v) => (k === "valueRanges" && Array.isArray(v)) ? v : undefined);
-    }
-    if (!ranges) throw { code: "parse", message: "قرأت الصفحة نتيجة Make لكن لم تجد فيها بيانات الجدول." };
+    // 1) the read scenario copies every tab into the data store; 2) read that snapshot back
+    await runScenario(READ_ID);
+    const res = await mcp.callTool(MAKE, "data-store-records_list", { dataStoreId: STORE_ID, limit: 10 }, { cache: false });
+    const recs = payloadOf(res);
+    const list = Array.isArray(recs) ? recs : (deepFind(recs, (k, v) => (Array.isArray(v) && v.length && v[0] && "key" in v[0]) ? v : undefined) || []);
+    const byKey = Object.fromEntries(list.map((r) => [r.key, r.data || {}]));
+    const snap = byKey.snapshot;
+    let ranges = snap && deepFind(snap.json, (k, v) => (k === "valueRanges" && Array.isArray(v)) ? v : undefined);
+    if (!ranges) throw { code: "parse", message: "لم أجد لقطة الجدول في مخزن بيانات Make." };
+    state.hassoun = byKey.hassoun ? { text: String(byKey.hassoun.json || ""), at: String(byKey.hassoun.at || "") } : null;
     return ranges;
   }
 
@@ -521,7 +537,7 @@
     if (sheet.status === "fulfilled") {
       state.ranges = sheet.value; state.at = Date.now();
       decided.clear();
-      store.set("pg-snapshot", { ranges: state.ranges, at: state.at });
+      store.set("pg-snapshot", { ranges: state.ranges, at: state.at, hassoun: state.hassoun });
     } else errs.push(["قراءة الجدول", explain(sheet.reason, "«لوحة التحكم - قراءة الجدول»")]);
     if (scen.status === "fulfilled") { state.scen = scen.value; state.scenAt = Date.now(); store.set("pg-scen", { scen: state.scen, at: state.scenAt }); }
     else errs.push(["حالة الموظفين", explain(scen.reason, "")]);
@@ -590,7 +606,7 @@
 
   // restore last snapshot (this browser only) so the page opens with data
   const snap = store.get("pg-snapshot");
-  if (snap && Array.isArray(snap.ranges)) { state.ranges = snap.ranges; state.at = snap.at; }
+  if (snap && Array.isArray(snap.ranges)) { state.ranges = snap.ranges; state.at = snap.at; state.hassoun = snap.hassoun || null; }
   const sc = store.get("pg-scen");
   if (sc && Array.isArray(sc.scen)) { state.scen = sc.scen; state.scenAt = sc.at; }
   try { const t = localStorage.getItem("pg-tab"); if (t) showTab(t); } catch {}
