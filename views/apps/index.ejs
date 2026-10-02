@@ -1,0 +1,22 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1 class="h2">الأنظمة</h1>
+        <p class="muted">أنظمة الشركة داخل البوابة، وبياناتها محفوظة في قاعدة بيانات الموقع.</p>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <% Object.entries(apps).forEach(([key, a]) => { %>
+        <a class="card dept-card" href="/apps/<%= key %>">
+          <span class="dept-icon"><%= a.icon %></span>
+          <h3><%= a.title %></h3>
+          <p class="muted"><%= a.description %></p>
+          <% if (a.mcp) { %><span class="chip">مرتبط بـ Make</span><% } %>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

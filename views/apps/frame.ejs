@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<div class="app-bar">
+  <div class="container app-bar-inner">
+    <a href="/apps" class="back">→ الأنظمة</a>
+    <strong><%= app.icon %> <%= app.title %></strong>
+    <a href="/apps/<%= app.key %>/page" target="_blank" rel="noopener" class="muted small">فتح في نافذة كاملة ↗</a>
+  </div>
+  <% if (mcpMissing) { %>
+    <div class="container"><p class="alert alert-warning">Make غير مربوط بالموقع بعد، فلن تظهر بيانات القرارات. يحتاج مدير النظام إضافة <span dir="ltr">MAKE_MCP_URL</span> في إعدادات الخادم.</p></div>
+  <% } %>
+</div>
+<iframe class="app-frame" src="/apps/<%= app.key %>/page" title="<%= app.title %>"></iframe>
+</main>
+</body>
+</html>

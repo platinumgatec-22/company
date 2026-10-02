@@ -8,6 +8,7 @@ const { seed, seedWorkflow } = require('./seed');
 const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
 const agents = require('./agents');
 const { createConnectRoutes } = require('./connect');
+const { createAppRoutes } = require('./apps');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -434,6 +435,7 @@ app.use('/admin', admin);
 // ---------- publishing workflow ----------
 app.use(agents.createAgentRoutes({ toId, clean }));
 app.use(createConnectRoutes({ requireAuth, requireAdmin, flash, clean, toId }));
+app.use(createAppRoutes({ requireAuth }));
 app.use('/workflow', createWorkflowRouter({ requireAuth, flash, clean, toId }));
 
 // ---------- errors ----------

@@ -26,6 +26,11 @@ services:
         sync: false
       - key: WORKFLOW_CALLBACK_TOKEN
         generateValue: true
+      # Decisions portal → Make MCP server.
+      - key: MAKE_MCP_URL
+        sync: false
+      - key: MAKE_MCP_TOKEN
+        sync: false
     disk:
       name: data
       mountPath: /var/data

@@ -124,4 +124,33 @@ addColumns('publish_assignments', [
   ['buffer_profile_id', "TEXT NOT NULL DEFAULT ''"],
 ]);
 
+// Data of the integrated apps (tournaments dashboard, invoices): document collections
+// like the Claude artifact database they were built on, plus uploaded files.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS app_docs (
+    app         TEXT NOT NULL,
+    col         TEXT NOT NULL,
+    id          TEXT NOT NULL,
+    data        TEXT NOT NULL,
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (app, col, id)
+  );
+
+  -- One counter per app, bumped on every write, so pages can poll cheaply for changes.
+  CREATE TABLE IF NOT EXISTS app_revs (
+    app  TEXT PRIMARY KEY,
+    rev  INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS app_blobs (
+    id          TEXT PRIMARY KEY,
+    app         TEXT NOT NULL,
+    type        TEXT NOT NULL,
+    size        INTEGER NOT NULL,
+    data        BLOB NOT NULL,
+    created_by  INTEGER REFERENCES employees(id) ON DELETE SET NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 module.exports = db;

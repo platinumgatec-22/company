@@ -266,3 +266,10 @@ input:disabled { background: var(--bg); color: var(--muted); }
 .connect-steps { margin: 1.5rem 0 0; padding-inline-start: 1.25rem; display: grid; gap: 1.25rem; }
 .connect-steps p { margin: .25rem 0 .5rem; }
 .form-card textarea[readonly] { font-size: .85rem; }
+
+/* ---------- integrated apps ---------- */
+.app-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
+.app-bar-inner { display: flex; align-items: center; gap: 1rem; min-height: 44px; flex-wrap: wrap; }
+.app-bar .back { margin: 0; }
+.app-bar .alert { margin: .5rem 0; }
+.app-frame { display: block; width: 100%; height: calc(100vh - 110px); min-height: 520px; border: 0; background: var(--bg); }

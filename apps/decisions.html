@@ -1,0 +1,1188 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>بوابة قرارات Platinum Gate</title>
+<script>document.documentElement.dir = "rtl"; document.documentElement.lang = "ar";</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: top bar + summary strip, then one working pane switched by tabs. Teal ground of the company identity, gold only for "needs you". */
+  :root {
+    --bg: #f3f5f4;
+    --surface: #ffffff;
+    --surface-2: #eef2f1;
+    --fg: #16211f;
+    --muted: #5d6b68;
+    --line: #dbe2e0;
+    --brand: #0f3d3e;
+    --brand-fg: #ffffff;
+    --gold: #c9971a;
+    --gold-soft: #fbf3dc;
+    --ok: #1f7a4a;
+    --ok-soft: #e3f3ea;
+    --bad: #b3382c;
+    --bad-soft: #fbe7e4;
+    --info: #2d5f8a;
+    --info-soft: #e5eef7;
+    --focus: #c9971a;
+    --font-display: "Reem Kufi", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+    --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1615; --surface: #152120; --surface-2: #1b2a28; --fg: #e6eeec; --muted: #9aaca8; --line: #2a3b39;
+      --brand: #134c4d; --brand-fg: #f1f7f6; --gold: #e2b440; --gold-soft: #3a3016; --ok: #5cc28a; --ok-soft: #173327;
+      --bad: #f0877a; --bad-soft: #3d1f1b; --info: #8dbbe6; --info-soft: #1a2c3d; --focus: #e2b440; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1615; --surface: #152120; --surface-2: #1b2a28; --fg: #e6eeec; --muted: #9aaca8; --line: #2a3b39;
+    --brand: #134c4d; --brand-fg: #f1f7f6; --gold: #e2b440; --gold-soft: #3a3016; --ok: #5cc28a; --ok-soft: #173327;
+    --bad: #f0877a; --bad-soft: #3d1f1b; --info: #8dbbe6; --info-soft: #1a2c3d; --focus: #e2b440; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { direction: rtl; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6; margin: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  .top { background: var(--brand); color: var(--brand-fg); }
+  .top-in { max-width: 1180px; margin: 0 auto; padding: 18px 16px 16px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+  .brand h1 { font-family: var(--font-display); font-size: 26px; margin: 0; letter-spacing: .2px; text-wrap: balance; }
+  .brand p { margin: 0; font-size: 13.5px; opacity: .8; }
+  .sync { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sync small { font-size: 13px; opacity: .85; font-variant-numeric: tabular-nums; }
+  .btn { border: 0; border-radius: 9px; padding: 8px 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn:disabled { opacity: .55; cursor: progress; }
+  .btn-light { background: var(--brand-fg); color: var(--brand); }
+  .btn-ok { background: var(--ok); color: #fff; }
+  .btn-bad { background: transparent; color: var(--bad); border: 1px solid var(--bad); }
+  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+  .btn-brand { background: var(--brand); color: var(--brand-fg); }
+  .btn-gold { background: var(--gold); color: #1d1503; }
+  .btn-sm { padding: 5px 12px; font-size: 13.5px; }
+
+  main { max-width: 1180px; margin: 0 auto; padding-block: 18px 40px; padding-inline: 16px; display: grid; gap: 16px; }
+
+  .notice { border-radius: 10px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--line); background: var(--surface); }
+  .notice.warn { background: var(--gold-soft); border-color: var(--gold); }
+  .notice.err { background: var(--bad-soft); border-color: var(--bad); }
+  .notice b { display: block; margin-bottom: 2px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; text-align: right; cursor: pointer; }
+  .tile.hot { border-color: var(--gold); background: var(--gold-soft); }
+  .tile .n { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; display: block; }
+  .tile .l { font-size: 13px; color: var(--muted); }
+  @media (max-width: 700px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab { background: none; border: 0; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--gold); }
+  .tab .c { font-size: 12px; background: var(--surface-2); border-radius: 20px; padding: 0 7px; margin-inline-start: 4px; font-variant-numeric: tabular-nums; }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 16px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; }
+  .empty b { display: block; color: var(--fg); font-size: 16px; margin-bottom: 4px; }
+
+  /* approval cards */
+  .cards { display: grid; gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+  .card.done { opacity: .6; }
+  .who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .av { width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: var(--brand-fg); display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+  .who .nm { font-weight: 700; }
+  .who .meta { font-size: 12.5px; color: var(--muted); }
+  .card h3 { margin: 0; font-size: 16.5px; text-wrap: balance; overflow-wrap: anywhere; }
+  .draft { background: var(--surface-2); border-radius: 9px; padding: 10px 12px; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 190px; overflow: auto; }
+  .card textarea { width: 100%; min-height: 58px; border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: var(--surface); resize: vertical; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .actions .msg { font-size: 13px; color: var(--muted); }
+  .actions .msg.err { color: var(--bad); }
+  .actions .msg.ok { color: var(--ok); }
+
+  details.more summary { cursor: pointer; font-size: 13.5px; color: var(--info); }
+  dl.fields { display: grid; grid-template-columns: minmax(110px, 200px) minmax(0, 1fr); gap: 6px 12px; margin: 8px 0 0; font-size: 13.5px; }
+  dl.fields dt { color: var(--muted); }
+  dl.fields dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  dl.fields a { color: var(--info); word-break: break-all; }
+  @media (max-width: 560px) { dl.fields { grid-template-columns: 1fr; } dl.fields dt { margin-top: 6px; } }
+
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 1px 10px; white-space: nowrap; }
+  .p-wait { background: var(--gold-soft); color: var(--fg); box-shadow: inset 0 0 0 1px var(--gold); }
+  .p-ok { background: var(--ok-soft); color: var(--ok); }
+  .p-bad { background: var(--bad-soft); color: var(--bad); }
+  .p-work { background: var(--info-soft); color: var(--info); }
+  .p-new { background: var(--surface-2); color: var(--muted); }
+
+  .chipbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+
+  /* tasks view */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .filters select, .filters input { border: 1px solid var(--line); background: var(--surface); border-radius: 9px; padding: 7px 10px; min-width: 0; }
+  .filters input { flex: 1 1 200px; }
+  .emp { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .emp-h { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface-2); flex-wrap: wrap; }
+  .emp-h .counts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .rows { display: grid; }
+  .row { padding: 10px 14px; border-top: 1px solid var(--line); display: grid; gap: 4px; min-width: 0; }
+  .row-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .row-top .t { font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
+  .row .sub { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stack { display: grid; gap: 12px; }
+
+  /* managers view */
+  .lulu { background: var(--brand); color: var(--brand-fg); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
+  .lulu h2 { font-family: var(--font-display); font-size: 20px; margin: 0; text-wrap: balance; }
+  .lulu p { margin: 0; font-size: 14px; opacity: .88; }
+  .lulu .actions .msg { color: var(--brand-fg); opacity: .9; }
+  .lulu a.lk { color: var(--brand-fg); }
+  .mgrs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 860px) { .mgrs { grid-template-columns: 1fr; } }
+  .mgr { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto auto 1fr auto; min-width: 0; }
+  .mgr-h { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .mgr-h .av { width: 44px; height: 44px; font-size: 18px; font-family: var(--font-display); }
+  .mgr-h h3 { margin: 0; font-size: 18px; font-family: var(--font-display); }
+  .mgr-h .meta { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .mgr-counts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+  .mgr-counts div { padding: 8px 10px; text-align: center; border-inline-start: 1px solid var(--line); }
+  .mgr-counts div:first-child { border-inline-start: 0; }
+  .mgr-counts b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .mgr-counts span { font-size: 12px; color: var(--muted); }
+  .mgr-counts .w b { color: var(--gold); }
+  .mgr-counts .o b { color: var(--ok); }
+  .mgr-counts .r b { color: var(--bad); }
+  .mgr-body { padding: 12px 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .mgr-body h4 { margin: 0; font-size: 13.5px; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+  .decs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .decs li { background: var(--gold-soft); border-radius: 8px; padding: 7px 10px; font-size: 14px; overflow-wrap: anywhere; }
+  .decs li small { display: block; color: var(--muted); font-size: 12px; }
+  .mgr-foot { padding: 12px 16px; border-top: 1px solid var(--line); background: var(--surface-2); display: grid; gap: 8px; }
+  .exp-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .exp-links a { color: var(--info); font-weight: 600; }
+
+  /* report dashboard */
+  .dash-head { background: var(--brand); color: var(--brand-fg); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; }
+  .dash-head h2 { font-family: var(--font-display); font-size: 22px; margin: 0; text-wrap: balance; }
+  .dash-head .sub { font-size: 13.5px; opacity: .85; font-variant-numeric: tabular-nums; }
+  .dash-head .actions .msg { color: var(--brand-fg); opacity: .92; }
+  .dash-head a.lk { color: var(--brand-fg); font-weight: 600; }
+  .stamp { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 3px 12px; font-size: 13px; font-weight: 700; }
+  .stamp.ok { background: var(--ok-soft); color: var(--ok); }
+  .stamp.wait { background: var(--gold-soft); color: var(--fg); box-shadow: inset 0 0 0 1px var(--gold); }
+  .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 480px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; }
+  .kpi.hot { border-color: var(--gold); background: var(--gold-soft); }
+  .kpi b { font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 12.5px; color: var(--muted); }
+  .dash-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+  .panel-b { padding: 12px 14px; display: grid; gap: 10px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 5px; vertical-align: -1px; }
+  .bars { display: grid; gap: 10px; }
+  .bar-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) 34px; gap: 10px; align-items: center; font-size: 14px; }
+  .bar-row .nm { font-weight: 700; }
+  .bar-row .tot { color: var(--muted); font-variant-numeric: tabular-nums; text-align: left; }
+  .bar { display: flex; gap: 2px; height: 18px; min-width: 0; }
+  .bar span { display: block; height: 100%; min-width: 4px; cursor: default; }
+  .bar span:first-child { border-start-start-radius: 4px; border-end-start-radius: 4px; }
+  .bar span:last-child { border-start-end-radius: 4px; border-end-end-radius: 4px; }
+  .s-wait { background: var(--gold); } .s-new { background: var(--info); } .s-ok { background: var(--ok); } .s-bad { background: var(--bad); }
+  .bar-empty { height: 18px; border-radius: 4px; background: var(--surface-2); }
+  .tip { position: fixed; z-index: 10; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12.5px; padding: 5px 9px; border-radius: 7px; white-space: nowrap; }
+  .tbl-wrap { overflow-x: auto; }
+  table.mt { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  table.mt th, table.mt td { padding: 7px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  table.mt th { color: var(--muted); font-weight: 600; font-size: 12.5px; border-top: 0; }
+  .req { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; background: var(--surface); min-width: 0; }
+  .req.done { opacity: .55; }
+  .req h3 { margin: 0; font-size: 15.5px; overflow-wrap: anywhere; text-wrap: balance; }
+  .req .meta { font-size: 12.5px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .req .ask { background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold); border-radius: 8px; padding: 7px 10px; font-size: 14px; overflow-wrap: anywhere; }
+  .req .ask b { display: block; font-size: 12px; color: var(--fg); }
+  .req textarea { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: 9px; padding: 6px 10px; background: var(--surface); resize: vertical; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 20px; padding: 4px 12px; font-size: 13.5px; cursor: pointer; font-weight: 600; }
+  .chip[aria-pressed="true"] { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); }
+  .confirm { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+
+  /* activity */
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .panel h2 { font-size: 15.5px; margin: 0; padding: 10px 14px; background: var(--surface-2); }
+  .tl { list-style: none; margin: 0; padding: 4px 0; }
+  .tl li { padding: 9px 14px; border-top: 1px solid var(--line); display: grid; gap: 2px; font-size: 14px; }
+  .tl li:first-child { border-top: 0; }
+  .tl time { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tl .x { overflow-wrap: anywhere; }
+
+  /* make health */
+  .health { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .hc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; font-size: 13.5px; }
+  .hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+  .hc .s { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hc.err { border-color: var(--bad); }
+  .sec-note { font-size: 13px; color: var(--muted); margin: 0; }
+  details.hs { margin-bottom: 12px; border-color: var(--gold); }
+  details.hs summary { cursor: pointer; padding: 10px 14px; background: var(--gold-soft); list-style-position: inside; }
+  .hs-body { padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; max-height: 420px; overflow: auto; }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <h1>بوابة قرارات Platinum Gate</h1>
+      <p>موافقاتك ومهام المديرين والموظفين الرقميين وتقارير لؤلؤ، من جدول الموظفين في Make</p>
+    </div>
+    <div class="sync">
+      <small id="syncInfo">لم يتم التحديث بعد</small>
+      <button class="btn btn-light" id="refreshBtn" type="button">تحديث البيانات</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="notice" hidden></div>
+
+  <section class="tiles" aria-label="ملخص">
+    <button class="tile hot" type="button" data-go="pending"><span class="n" id="tPending">–</span><span class="l">بانتظار موافقتك</span></button>
+    <button class="tile" type="button" data-go="dash"><span class="n" id="tMgr">–</span><span class="l">طلبات تقرير المديرين بانتظارك</span></button>
+    <button class="tile" type="button" data-go="tasks"><span class="n" id="tWork">–</span><span class="l">قيد العمل</span></button>
+    <button class="tile" type="button" data-go="health"><span class="n" id="tErr">–</span><span class="l">أخطاء حالية تحتاج مراجعة</span></button>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="الأقسام">
+    <button class="tab" role="tab" id="tab-pending" aria-selected="true" data-tab="pending">بانتظار موافقتك<span class="c" id="cPending">0</span></button>
+    <button class="tab" role="tab" id="tab-dash" aria-selected="false" data-tab="dash">داشبورد تقرير المديرين<span class="c" id="cDash">0</span></button>
+    <button class="tab" role="tab" id="tab-managers" aria-selected="false" data-tab="managers">المديرون وتقارير لؤلؤ<span class="c" id="cMgr">0</span></button>
+    <button class="tab" role="tab" id="tab-tasks" aria-selected="false" data-tab="tasks">مهام الموظفين</button>
+    <button class="tab" role="tab" id="tab-activity" aria-selected="false" data-tab="activity">سجل الحركة</button>
+    <button class="tab" role="tab" id="tab-health" aria-selected="false" data-tab="health">حالة الموظفين في Make</button>
+  </nav>
+
+  <section id="view-pending" role="tabpanel" aria-labelledby="tab-pending">
+    <details class="panel hs" id="hassounBox" hidden>
+      <summary><b>تقرير حسون، المشرف الأعلى</b> <span class="sec-note" id="hassounAt"></span></summary>
+      <div class="hs-body" id="hassounText"></div>
+    </details>
+    <div class="chipbar" id="pendChip" hidden>
+      <span id="pendChipText"></span>
+      <button class="btn btn-ghost btn-sm" type="button" id="pendChipClear">إظهار كل الطلبات</button>
+    </div>
+    <div class="cards" id="pendingList">
+      <div class="empty"><b>الطلبات التي تنتظر قرارك تظهر هنا</b>اضغط «تحديث البيانات» لقراءة الجدول. لكل طلب زر «موافق» وزر «رفض» ومكان لملاحظتك.</div>
+    </div>
+  </section>
+
+  <section id="view-dash" role="tabpanel" aria-labelledby="tab-dash" hidden>
+    <div class="stack">
+      <div class="dash-head">
+        <div class="who" style="justify-content:space-between">
+          <div><h2>تقرير المديرين من لؤلؤ</h2><div class="sub" id="dashSub">آخر تقرير: –</div></div>
+          <span class="stamp wait" id="dashStamp">بانتظار اعتمادك</span>
+        </div>
+        <div class="actions">
+          <span class="exp-links" id="dashLinks"></span>
+          <button class="btn btn-gold" type="button" id="dashApprove">اعتماد التقرير</button>
+          <button class="btn btn-light btn-sm" type="button" id="dashReq">اطلب تقريراً جديداً</button>
+          <span class="msg" id="dashMsg" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="filters">
+        <label class="sec-note" for="dashPeriod">الفترة</label>
+        <select id="dashPeriod"><option value="7">آخر 7 أيام</option><option value="30">آخر 30 يوماً</option><option value="all">كل المهام</option></select>
+      </div>
+      <div class="kpis" id="dashKpis"></div>
+      <div class="dash-grid">
+        <div class="stack">
+          <div class="panel">
+            <h2>الطلبات بانتظار اعتمادك</h2>
+            <div class="panel-b">
+              <div class="chips" id="dashChips"></div>
+              <div id="dashBulk"></div>
+              <div class="stack" id="dashReqs"></div>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel">
+            <h2>حالة المهام لكل مدير</h2>
+            <div class="panel-b">
+              <div class="legend"><span><i class="s-wait"></i>بانتظارك</span><span><i class="s-new"></i>قيد الإعداد</span><span><i class="s-ok"></i>معتمد</span><span><i class="s-bad"></i>مرفوض</span></div>
+              <div class="bars" id="dashBars"></div>
+              <div class="tbl-wrap"><table class="mt" id="dashTable"></table></div>
+            </div>
+          </div>
+          <div class="panel"><h2>آخر قراراتك على خطط المديرين</h2><ul class="tl" id="dashLog"><li class="x">لا توجد قرارات بعد.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-managers" role="tabpanel" aria-labelledby="tab-managers" hidden>
+    <div class="stack">
+      <div class="lulu">
+        <h2>تقرير لؤلؤ الشامل</h2>
+        <p id="luluInfo">تقرير منسّق بصفحة لكل مدير وصفحة للقرارات. يصلك على تيليجرام والبريد كل يوم الساعة 8 صباحاً، ومع كل طلب تقرير في بوت المديرين.</p>
+        <div class="actions">
+          <span class="exp-links" id="luluLinks"></span>
+          <button class="btn btn-gold" type="button" id="luluReq">اطلب تقريراً شاملاً جديداً الآن</button>
+          <span class="msg" id="luluMsg" aria-live="polite"></span>
+        </div>
+      </div>
+      <div class="mgrs" id="mgrList">
+        <div class="empty"><b>بطاقات المديرين الأربعة تظهر هنا</b>اضغط «تحديث البيانات». لكل مدير ملخص مهامه، والقرارات المطلوبة منك، وزر لتصدير تقريره الكامل.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-tasks" role="tabpanel" aria-labelledby="tab-tasks" hidden>
+    <div class="stack">
+      <div class="filters">
+        <select id="fDept" aria-label="الإدارة"><option value="">كل الإدارات</option></select>
+        <select id="fEmp" aria-label="الموظف"><option value="">كل الموظفين</option></select>
+        <select id="fStatus" aria-label="الحالة">
+          <option value="">كل الحالات</option>
+          <option value="wait">بانتظار موافقتك</option>
+          <option value="work">قيد العمل</option>
+          <option value="ok">معتمد ومنجز</option>
+          <option value="bad">مرفوض أو ملغى</option>
+          <option value="new">جديد</option>
+        </select>
+        <input id="fSearch" type="search" placeholder="ابحث في الطلبات…" aria-label="بحث">
+      </div>
+      <div class="stack" id="tasksList"><div class="empty"><b>مهام كل موظف تظهر هنا</b>بعد التحديث ستجد كل صف في تبويبات الموظفين مع حالته وتفاصيله.</div></div>
+    </div>
+  </section>
+
+  <section id="view-activity" role="tabpanel" aria-labelledby="tab-activity" hidden>
+    <div class="grid2">
+      <div class="panel"><h2>قراراتك (سجل Activity_Log)</h2><ul class="tl" id="logList"><li class="x">لا توجد قرارات مسجلة بعد.</li></ul></div>
+      <div class="stack">
+        <div class="panel"><h2>آخر تحديثات الموظفين</h2><ul class="tl" id="updList"><li class="x">لا توجد بيانات بعد.</li></ul></div>
+        <div class="panel"><h2>محادثات واتساب (بلاتين)</h2><ul class="tl" id="leadList"><li class="x">لا توجد بيانات بعد.</li></ul></div>
+        <div class="panel"><h2>طابور النشر (برونز)</h2><ul class="tl" id="postList"><li class="x">لا توجد بيانات بعد.</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-health" role="tabpanel" aria-labelledby="tab-health" hidden>
+    <div class="stack">
+      <p class="sec-note">عدد مرات التشغيل والأخطاء لكل سيناريو من حساب Make، والموعد القادم لكل موظف.</p>
+      <div class="health" id="healthList"><div class="empty"><b>حالة كل موظف في Make تظهر هنا</b>اضغط «تحديث البيانات».</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const MAKE = "Make";
+  const TEAM_ID = 2966345;
+  const READ_ID = 7696466;   // لوحة التحكم - قراءة الجدول
+  const WRITE_ID = 7696468;  // لوحة التحكم - تسجيل القرار
+  const EXPORT_ID = 7722495; // لؤلؤ - التقرير الكامل لمدير
+  const LULU_REQ_ID = 7722500; // لوحة التحكم - طلب تقرير لؤلؤ الشامل
+  const STORE_ID = 202705;   // مخزن «لوحة التحكم - لقطة الجدول»
+  const FILES_ID = 204153;   // مخزن «البوابة - ملفات التقارير (لؤلؤ)»
+  const MGR_TAB = "Managers_Tasks";
+
+  // Each tab of the spreadsheet → the digital employee who owns it.
+  const TABS = {
+    Almas_Tasks: ["ألماس", "المكتب التنفيذي"],
+    Lulu_Tasks: ["لؤلؤ", "المكتب التنفيذي"],
+    Captain_Ops: ["كابتن", "البطولات والعمليات"],
+    Zumurrud_Venues: ["زمرد", "البطولات والعمليات"],
+    Nuhas_Procurement: ["نحاس", "البطولات والعمليات"],
+    Kahraman_Feedback: ["كهرمان", "خدمة العملاء"],
+    Registrations: ["بلاتين", "خدمة العملاء"],
+    Yaqoot_Tasks: ["ياقوت", "التسويق والمحتوى"],
+    Content: ["فضة", "التسويق والمحتوى"],
+    Studio: ["جوهر", "التسويق والمحتوى"],
+    SponsorMgr_Tasks: ["زمرّد", "الرعايات والمبيعات"],
+    Dhahab_Deals: ["ذهب", "الرعايات والمبيعات"],
+    Aziza_Sponsors: ["عزيزة", "الرعايات والمبيعات"],
+    Dinar_Tasks: ["دينار", "الإدارة المالية"],
+    Bukhamseen_Tasks: ["بوخمسين", "الإدارة المالية"],
+    Fils_Tasks: ["فلس", "الإدارة المالية"],
+    Baiza_Tasks: ["بيزة", "الإدارة المالية"],
+    Sadr_Tasks: ["صدر", "الإدارة القانونية"],
+    Adl_Tasks: ["عدل", "الإدارة القانونية"],
+    Mithaq_Tasks: ["ميثاق", "الإدارة القانونية"],
+    Hasana_Tasks: ["حصانة", "الإدارة القانونية"],
+  };
+  // The four department managers (tab Managers_Tasks, column B names the manager).
+  const MGRS = {
+    "علي": { dept: "البطولات والعمليات", team: "كابتن · نحاس · زمرد", key: "exp_ali" },
+    "مفلح": { dept: "خدمة العملاء والرعايات والمبيعات", team: "بلاتين · كهرمان · ذهب · عزيزة · زمرّد", key: "exp_mufleh" },
+    "جمانة": { dept: "المالية والقانونية", team: "دينار · فلس · بيزة · بوخمسين · صدر · عدل · ميثاق · حصانة", key: "exp_jumana" },
+    "ماس": { dept: "التسويق والمحتوى", team: "ياقوت · جوهر · فضة · عقيق · فيروز · مرجان · برونز", key: "exp_mas" },
+  };
+  const MGR_DEPT_FILTER = { "علي": "البطولات والعمليات", "مفلح": "خدمة العملاء", "جمانة": "الإدارة المالية", "ماس": "التسويق والمحتوى" };
+
+  const $ = (id) => document.getElementById(id);
+  const HIDE_RE = /^(setup|مؤقت|لوحة التحكم)/;
+  // current failures; if they couldn't be checked, fall back to the lifetime count
+  const liveErr = (s) => s.recentErrors === undefined ? (s.errors || 0) : (s.recentErrors === null ? (s.errors || 0) : s.recentErrors);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const colLetter = (i) => { let s = ""; i += 1; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const docUrl = (id) => `https://docs.google.com/document/d/${encodeURIComponent(id)}/edit`;
+  const pdfUrl = (id) => `https://docs.google.com/document/d/${encodeURIComponent(id)}/export?format=pdf`;
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+
+  let mcp = null;
+  let state = { ranges: null, at: null, scen: null, scenAt: null, hassoun: null, files: {} };
+  let pendFilter = ""; // manager name, or "" for all
+  const exporting = {}; // manager → { started, prev }
+  const decided = new Map(); // "Tab!row" → decision made this session (until the sheet confirms)
+
+  // ---------- status classification ----------
+  function statusKind(s) {
+    const t = String(s || "").trim();
+    if (!t) return "new";
+    if (/بانتظار|مراجعة|يحتاج موافقة|pending/i.test(t)) return "wait";
+    if (/مرفوض|ملغى|رفض|cancel/i.test(t)) return "bad";
+    if (/موافق|معتمد|منجز|تم |^تم$|أُرسل|ارسل|منشور|نُشر|done|approved/i.test(t)) return "ok";
+    return "work";
+  }
+  // A manager's plan is a draft for Hussein: "خطة جاهزة" waits for his decision, "جديدة" is still being written.
+  function mgrKind(s) {
+    const t = String(s || "").trim();
+    if (/خطة جاهزة/.test(t)) return "wait";
+    if (!t || /^جديدة$/.test(t)) return "new";
+    return statusKind(t);
+  }
+  const KIND_LABEL = { wait: "بانتظار موافقتك", ok: "معتمد", bad: "مرفوض", work: "قيد العمل", new: "جديد" };
+  const pill = (status, kind) => { const k = kind || statusKind(status); return `<span class="pill p-${k}">${esc(status || KIND_LABEL[k])}</span>`; };
+
+  // ---------- parse sheet data ----------
+  function tabsFromRanges(ranges) {
+    const out = {};
+    for (const vr of ranges || []) {
+      const name = String(vr.range || "").split("!")[0].replace(/^'|'$/g, "");
+      const values = vr.values || [];
+      const headers = (values[0] || []).map((h) => String(h || ""));
+      const rows = values.slice(1).map((cells, i) => ({ row: i + 2, cells })).filter((r) => r.cells.some((c) => String(c || "").trim()));
+      const tab = {
+        name, headers, rows,
+        statusIdx: headers.findIndex((h) => /الحالة|Status/i.test(h)),
+        noteIdx: headers.findIndex((h) => /ملاحظات/.test(h)),
+        updIdx: headers.findIndex((h) => /آخر تحديث|تاريخ التسليم/.test(h)),
+      };
+      if (name === MGR_TAB) {
+        // Hussein's notes go to column J; its header is written with the first note.
+        if (tab.noteIdx < 0) { tab.noteIdx = 9; tab.noteHeaderMissing = true; while (tab.headers.length < 10) tab.headers.push(""); tab.headers[9] = "ملاحظات حسين / Notes"; }
+      }
+      out[name] = tab;
+    }
+    return out;
+  }
+
+  function draftIdx(tab) {
+    if (tab.name === MGR_TAB) return 5;
+    const i = tab.headers.findIndex((h) => /يكتب|تكتب|\((عقيق|فيروز|مرجان|كهرمان)\)/.test(h));
+    return i;
+  }
+
+  function allTasks(tabs) {
+    const list = [];
+    for (const [name, [emp, dept]] of Object.entries(TABS)) {
+      const tab = tabs[name];
+      if (!tab) continue;
+      for (const r of tab.rows) {
+        const key = `${name}!${r.row}`;
+        let status = tab.statusIdx >= 0 ? String(r.cells[tab.statusIdx] || "") : "";
+        if (decided.has(key)) status = decided.get(key);
+        list.push({ key, tab, name, emp, dept, row: r.row, cells: r.cells, status, kind: statusKind(status), title: String(r.cells[0] || "(بدون عنوان)") });
+      }
+    }
+    const mt = tabs[MGR_TAB];
+    if (mt) {
+      for (const r of mt.rows) {
+        const key = `${MGR_TAB}!${r.row}`;
+        const emp = String(r.cells[1] || "").trim() || "مدير";
+        let status = mt.statusIdx >= 0 ? String(r.cells[mt.statusIdx] || "") : "";
+        if (decided.has(key)) status = decided.get(key);
+        list.push({ key, tab: mt, name: MGR_TAB, emp, dept: MGR_DEPT_FILTER[emp] || "المديرون", isMgr: true, row: r.row, cells: r.cells, status, kind: mgrKind(status), title: String(r.cells[0] || "(بدون عنوان)") });
+      }
+    }
+    return list;
+  }
+
+  function fieldsHtml(t) {
+    const parts = t.tab.headers.map((h, i) => {
+      const v = String(t.cells[i] ?? "").trim();
+      if (!v) return "";
+      const val = /^https?:\/\//.test(v) ? `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v.length > 70 ? v.slice(0, 70) + "…" : v)}</a>` : esc(v);
+      return `<dt>${esc(h || colLetter(i))}</dt><dd>${val}</dd>`;
+    }).join("");
+    return `<dl class="fields">${parts}</dl>`;
+  }
+
+  // Decisions a manager flagged for Hussein: the plan's "للاجتماع الأسبوعي:" line (anything but "لا يوجد").
+  function decisionOf(plan) {
+    const m = String(plan || "").match(/للاجتماع الأسبوعي\s*:?\s*([\s\S]*?)(?:\n\s*\n|مراجعة الجودة|$)/);
+    if (!m) return "";
+    const d = m[1].trim();
+    if (!d || /^لا يوجد/.test(d)) return "";
+    return d.length > 260 ? d.slice(0, 260) + "…" : d;
+  }
+
+  // ---------- render ----------
+  function render() {
+    const tabs = state.ranges ? tabsFromRanges(state.ranges) : null;
+    const tasks = tabs ? allTasks(tabs) : [];
+    const pending = tasks.filter((t) => t.kind === "wait");
+    const mgrPending = pending.filter((t) => t.isMgr);
+    $("tPending").textContent = tabs ? pending.length : "–";
+    $("cPending").textContent = pending.length;
+    $("tMgr").textContent = tabs ? mgrPending.length : "–";
+    $("cMgr").textContent = mgrPending.length;
+    $("tWork").textContent = tabs ? tasks.filter((t) => t.kind === "work" || t.kind === "new").length : "–";
+    $("tErr").textContent = state.scen ? state.scen.filter((s) => !HIDE_RE.test(s.name) && s.isActive && liveErr(s) > 0).length : "–";
+    if (state.at) {
+      const d = new Date(state.at);
+      $("syncInfo").textContent = "آخر تحديث: " + d.toLocaleString("ar-KW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kuwait" });
+    }
+    if (state.hassoun && state.hassoun.text) {
+      $("hassounBox").hidden = false;
+      $("hassounText").textContent = state.hassoun.text;
+      $("hassounAt").textContent = state.hassoun.at ? "· " + state.hassoun.at : "";
+    }
+    renderLulu();
+    $("cDash").textContent = mgrPending.length;
+    if (tabs) { renderDash(tabs, tasks); renderPending(pending); renderManagers(tasks); renderTasks(tasks); renderActivity(tabs, tasks); }
+    if (state.scen) renderHealth();
+  }
+
+  function renderPending(pending) {
+    const box = $("pendingList");
+    const shown = pendFilter ? pending.filter((t) => t.isMgr && t.emp === pendFilter) : pending;
+    $("pendChip").hidden = !pendFilter;
+    $("pendChipText").textContent = pendFilter ? `تعرض خطط ${pendFilter} فقط (${shown.length})` : "";
+    if (!shown.length) {
+      box.innerHTML = `<div class="empty"><b>لا يوجد شيء بانتظارك الآن</b>كل الطلبات إما معتمدة أو قيد العمل عند الموظفين.</div>`;
+      return;
+    }
+    box.innerHTML = shown.map((t) => {
+      const di = draftIdx(t.tab);
+      const draft = di >= 0 ? String(t.cells[di] || "").trim() : "";
+      const note = t.tab.noteIdx >= 0 ? String(t.cells[t.tab.noteIdx] || "") : "";
+      const noteId = `note-${t.name}-${t.row}`;
+      const meta = t.isMgr
+        ? `مدير ${esc((MGRS[t.emp] || {}).dept || "")} · خطة مهمة من ${esc(t.cells[2] || "حسين")} · ${esc(t.cells[3] || "")}${t.cells[4] ? " · " + esc(t.cells[4]) : ""}`
+        : `${esc(t.dept)} · تبويب ${esc(t.name)} · الصف ${t.row}`;
+      return `<article class="card" data-key="${esc(t.key)}">
+        <div class="who"><span class="av" aria-hidden="true">${esc(t.emp.slice(0, 1))}</span>
+          <div><div class="nm">${esc(t.emp)} ${pill(t.status, t.kind)}</div><div class="meta">${meta}</div></div></div>
+        <h3>${esc(t.title)}</h3>
+        ${draft ? `<div class="draft">${esc(draft)}</div>` : ""}
+        <details class="more"><summary>كل تفاصيل الصف</summary>${fieldsHtml(t)}</details>
+        ${t.tab.noteIdx >= 0 ? `<label for="${esc(noteId)}" class="sec-note">ملاحظتك (تُحفظ في عمود «${esc(t.tab.headers[t.tab.noteIdx])}»)</label>
+        <textarea id="${esc(noteId)}" data-orig="${esc(note)}">${esc(note)}</textarea>` : ""}
+        <div class="actions">
+          <button class="btn btn-ok" type="button" data-act="approve">موافق</button>
+          <button class="btn btn-bad" type="button" data-act="reject">رفض</button>
+          <span class="msg" aria-live="polite"></span>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  function linksHtml(rec, label) {
+    if (!rec || !rec.json) return `<span>${esc(label || "لم يُصدَّر بعد")}</span>`;
+    return `<span>آخر نسخة: ${esc(rec.at || "")}</span><a href="${esc(pdfUrl(rec.json))}" target="_blank" rel="noopener">تنزيل PDF</a><a href="${esc(docUrl(rec.json))}" target="_blank" rel="noopener">فتح المستند</a>`;
+  }
+
+  function renderLulu() {
+    const rec = state.files.lulu;
+    $("luluLinks").innerHTML = rec && rec.json
+      ? `<span style="color:inherit;opacity:.85">آخر تقرير: ${esc(rec.at || "")}</span><a class="btn btn-light btn-sm" href="${esc(pdfUrl(rec.json))}" target="_blank" rel="noopener">تنزيل PDF</a><a class="lk" href="${esc(docUrl(rec.json))}" target="_blank" rel="noopener">فتح المستند</a>`
+      : "";
+  }
+
+  function renderManagers(tasks) {
+    const anyBusy = Object.keys(exporting).length > 0;
+    $("mgrList").innerHTML = Object.entries(MGRS).map(([name, m]) => {
+      const list = tasks.filter((t) => t.isMgr && t.emp === name);
+      const n = (k) => list.filter((t) => t.kind === k).length;
+      const decs = [];
+      const seen = new Set();
+      for (const t of list.slice().reverse()) {
+        if (t.kind !== "wait") continue;
+        const d = decisionOf(t.cells[5]);
+        if (d && !seen.has(d)) { seen.add(d); decs.push({ d, title: t.title }); }
+        if (decs.length >= 4) break;
+      }
+      const busy = exporting[name];
+      const rec = state.files[m.key];
+      const latest = list.slice(-3).reverse().map((t) => `<li style="background:var(--surface-2)">${esc(t.title.slice(0, 120))}<small>${pill(t.status, t.kind)} · ${esc(t.cells[3] || "")}</small></li>`).join("");
+      return `<article class="mgr" data-mgr="${esc(name)}">
+        <div class="mgr-h"><span class="av" aria-hidden="true">${esc(name.slice(0, 1))}</span>
+          <div><h3>${esc(name)}</h3><div class="meta">${esc(m.dept)} · الفريق: ${esc(m.team)}</div></div></div>
+        <div class="mgr-counts">
+          <div class="w"><b>${n("wait")}</b><span>بانتظارك</span></div>
+          <div><b>${n("new") + n("work")}</b><span>قيد الإعداد</span></div>
+          <div class="o"><b>${n("ok")}</b><span>معتمد</span></div>
+          <div class="r"><b>${n("bad")}</b><span>مرفوض</span></div>
+        </div>
+        <div class="mgr-body">
+          <h4>أسئلة تنتظر قرارك</h4>
+          ${decs.length ? `<ul class="decs">${decs.map((x) => `<li>${esc(x.d)}<small>من مهمة: ${esc(x.title.slice(0, 90))}</small></li>`).join("")}</ul>` : `<p class="sec-note">لا توجد أسئلة معلّقة في خطط ${esc(name)}.</p>`}
+          <h4>آخر المهام</h4>
+          ${latest ? `<ul class="decs">${latest}</ul>` : `<p class="sec-note">لا توجد مهام مسجلة بعد. أرسل في بوت المديرين: «${esc(name)}: نص المهمة».</p>`}
+        </div>
+        <div class="mgr-foot">
+          <div class="actions">
+            <button class="btn btn-brand" type="button" data-export="${esc(name)}" ${anyBusy ? "disabled" : ""}>${busy ? "لؤلؤ تجهّز التقرير…" : "تصدير التقرير الكامل (PDF)"}</button>
+            ${n("wait") ? `<button class="btn btn-ghost" type="button" data-review="${esc(name)}">راجع واعتمد خططه (${n("wait")})</button>` : ""}
+            <span class="msg" data-expmsg="${esc(name)}" aria-live="polite">${busy ? esc(busy.msg || "") : ""}</span>
+          </div>
+          <div class="exp-links">${linksHtml(rec, "لم يُصدَّر تقرير كامل بعد. يضم ملخصاً تنفيذياً وصفحة مفصلة لكل مهمة.")}</div>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  function renderTasks(tasks) {
+    const dept = $("fDept").value, emp = $("fEmp").value, st = $("fStatus").value, q = $("fSearch").value.trim();
+    // fill filter options once
+    if ($("fDept").options.length === 1) {
+      [...new Set(Object.values(TABS).map((v) => v[1]))].forEach((d) => $("fDept").add(new Option(d, d)));
+      Object.keys(MGRS).forEach((e) => $("fEmp").add(new Option(`${e} (مدير)`, e)));
+      [...new Set(Object.values(TABS).map((v) => v[0]))].forEach((e) => $("fEmp").add(new Option(e, e)));
+    }
+    const shown = tasks.filter((t) => (!dept || t.dept === dept) && (!emp || t.emp === emp) && (!st || t.kind === st) &&
+      (!q || t.cells.some((c) => String(c || "").includes(q))));
+    const byEmp = new Map();
+    for (const t of shown) { const k = t.emp + "|" + t.name; if (!byEmp.has(k)) byEmp.set(k, []); byEmp.get(k).push(t); }
+    if (!byEmp.size) { $("tasksList").innerHTML = `<div class="empty"><b>لا توجد مهام بهذه الفلاتر</b>غيّر الإدارة أو الحالة أو كلمة البحث.</div>`; return; }
+    $("tasksList").innerHTML = [...byEmp.values()].map((list) => {
+      const t0 = list[0];
+      const cnt = (k) => list.filter((t) => t.kind === k).length;
+      const counts = ["wait", "work", "ok", "bad", "new"].filter((k) => cnt(k)).map((k) => `<span class="pill p-${k}">${KIND_LABEL[k]} ${cnt(k)}</span>`).join("");
+      const rows = list.slice().reverse().map((t) => {
+        const upd = t.tab.updIdx >= 0 ? String(t.cells[t.tab.updIdx] || "") : "";
+        return `<div class="row"><div class="row-top"><span class="t">${esc(t.title)}</span>${pill(t.status, t.kind)}</div>
+          <span class="sub">الصف ${t.row}${upd ? " · " + esc(upd) : ""}</span>
+          <details class="more"><summary>التفاصيل</summary>${fieldsHtml(t)}</details></div>`;
+      }).join("");
+      const label = t0.isMgr ? `${esc(t0.emp)} <span class="sec-note">· مدير ${esc((MGRS[t0.emp] || {}).dept || "")} · Managers_Tasks</span>` : `${esc(t0.emp)} <span class="sec-note">· ${esc(t0.dept)} · ${esc(t0.name)}</span>`;
+      return `<div class="emp"><div class="emp-h"><div><b>${label}</b></div><div class="counts">${counts}</div></div><div class="rows">${rows}</div></div>`;
+    }).join("");
+  }
+
+  function renderActivity(tabs, tasks) {
+    const log = tabs.Activity_Log;
+    $("logList").innerHTML = log && log.rows.length
+      ? log.rows.slice().reverse().slice(0, 60).map((r) => {
+          const c = r.cells.map((x) => String(x || ""));
+          return `<li><time>${esc(c[0])}</time><span class="x"><b>${esc(c[1])}</b> · ${pill(c[5])} ${esc(c[4])}</span>${c[6] ? `<span class="sec-note">${esc(c[6])}</span>` : ""}</li>`;
+        }).join("")
+      : `<li class="x">${log ? "لا توجد قرارات مسجلة بعد. أول ضغطة على «موافق» أو «رفض» تظهر هنا." : "تبويب Activity_Log غير موجود بعد في الجدول. شغّل سيناريو «setup - تبويب سجل القرارات» مرة واحدة في Make."}</li>`;
+
+    const upd = tasks.filter((t) => t.tab.updIdx >= 0 && String(t.cells[t.tab.updIdx] || "").trim())
+      .map((t) => ({ t, when: String(t.cells[t.tab.updIdx]) })).sort((a, b) => b.when.localeCompare(a.when)).slice(0, 25);
+    $("updList").innerHTML = upd.length
+      ? upd.map(({ t, when }) => `<li><time>${esc(when)}</time><span class="x"><b>${esc(t.emp)}</b> · ${esc(t.title.slice(0, 90))}</span></li>`).join("")
+      : `<li class="x">لا توجد تحديثات مؤرخة في التبويبات.</li>`;
+
+    const leads = tabs.Leads;
+    $("leadList").innerHTML = leads && leads.rows.length
+      ? leads.rows.slice().reverse().slice(0, 25).map((r) => {
+          const c = r.cells.map((x) => String(x || ""));
+          const follow = /نعم|yes/i.test(c[6]);
+          return `<li><time>${esc(c[0])}</time><span class="x"><b>${esc(c[1] || c[2])}</b> · ${esc(c[3])} ${follow ? '<span class="pill p-wait">يحتاج متابعة</span>' : ""}</span><span class="sec-note">${esc((c[4] || "").slice(0, 120))}</span></li>`;
+        }).join("")
+      : `<li class="x">لا توجد محادثات.</li>`;
+
+    const posts = tabs.Posts;
+    $("postList").innerHTML = posts && posts.rows.length
+      ? posts.rows.slice().reverse().slice(0, 15).map((r) => {
+          const c = r.cells.map((x) => String(x || ""));
+          return `<li><span class="x">${esc(c[0].slice(0, 140))}</span><span class="sec-note">المنصات: ${esc(c[2] || "الكل")}</span></li>`;
+        }).join("")
+      : `<li class="x">لا توجد منشورات في الطابور.</li>`;
+  }
+
+  function renderHealth() {
+    const list = state.scen.filter((s) => !HIDE_RE.test(s.name))
+      .sort((a, b) => liveErr(b) - liveErr(a) || String(a.name).localeCompare(String(b.name), "ar"));
+    $("healthList").innerHTML = list.map((s) => {
+      const next = s.nextExec ? new Date(s.nextExec).toLocaleString("ar-KW", { timeStyle: "short", dateStyle: "short", timeZone: "Asia/Kuwait" }) : "عند الطلب";
+      const live = liveErr(s);
+      const old = Math.max(0, (s.errors || 0) - live);
+      const st = !s.isActive ? `<span class="pill p-new">متوقف</span>`
+        : live ? `<span class="pill p-bad">${live} ${live === 1 ? "خطأ حالي" : "أخطاء حالية"}</span>`
+        : `<span class="pill p-ok">يعمل</span>`;
+      const oldNote = old && s.recentErrors !== null ? ` · أخطاء قديمة انحلّت: ${old}` : (s.recentErrors === null && s.errors ? ` · ${s.errors} أخطاء مسجلة (تعذر التحقق)` : "");
+      const [who, ...rest] = String(s.name).split(" - ");
+      return `<div class="hc${live ? " err" : ""}"><div class="h"><span>${esc(who)}</span>${st}</div>
+        <span>${esc(rest.join(" - ") || s.name)}</span>
+        <span class="s">مرات التشغيل: ${s.executions ?? "–"} · التشغيل القادم: ${esc(next)}${esc(oldNote)}</span>${s.lastErr ? `<span class="s" style="color:var(--bad)">${esc(s.lastErr)}</span>` : ""}</div>`;
+    }).join("");
+  }
+
+  // ---------- Make calls ----------
+  function deepFind(obj, test, depth = 0) {
+    if (obj == null || depth > 12) return undefined;
+    if (typeof obj === "string") {
+      const s = obj.trim();
+      if ((s.startsWith("{") || s.startsWith("[")) && s.length < 5e6) { try { return deepFind(JSON.parse(s), test, depth + 1); } catch {} }
+      return undefined;
+    }
+    if (typeof obj !== "object") return undefined;
+    for (const [k, v] of Object.entries(obj)) { const hit = test(k, v); if (hit !== undefined) return hit; }
+    for (const v of Object.values(obj)) { const hit = deepFind(v, test, depth + 1); if (hit !== undefined) return hit; }
+    return undefined;
+  }
+
+  function payloadOf(res) { return res && (res.payload !== undefined ? res.payload : res); }
+
+  const FIXES = {
+    needs_reauth: "انتهت صلاحية اتصال Make. أعد ربطه من claude.ai ← الإعدادات ← الموصلات، ثم اضغط «تحديث البيانات».",
+    server_not_connected: "موصل Make غير مضاف لحسابك. أضفه من claude.ai ← الإعدادات ← الموصلات.",
+    selection_required: "عندك أكثر من اتصال باسم Make. اختر واحداً من النافذة التي تظهر لك ثم حدّث.",
+    not_in_manifest: "لم تسمح لهذه الصفحة باستخدام Make. اسمح لها عند السؤال ثم حدّث.",
+    blocked_by_policy: "سياسة المؤسسة تمنع هذا الاستدعاء إلى Make.",
+    approval_required: "هذا الاستدعاء يحتاج موافقة من إدارة المؤسسة.",
+    server_unavailable: "Make لم يرد في الوقت المحدد. انتظر قليلاً ثم حدّث.",
+    not_granted: "هذا العرض لا يسمح بالاتصال بـ Make. افتح الصفحة من claude.ai.",
+    capability_disabled: "هذا العرض لا يسمح بالاتصال بـ Make. افتح الصفحة من claude.ai.",
+    consent_required: "لم تسمح للصفحة باستخدام Make بعد. اضغط «تحديث البيانات» ووافق على الطلب.",
+  };
+  function explain(e, ctx) {
+    const code = e && e.code;
+    if (code === "tool_error") {
+      const m = String(e.message || "");
+      if (/not activ|غير مفعل|inactive/i.test(m)) return `سيناريو ${ctx} غير مفعّل في Make. فعّله مرة واحدة (زر التشغيل في صفحة السيناريو) ثم أعد المحاولة.`;
+      if (/already being executed/i.test(m)) return "تشغيل سابق لنفس السيناريو ما زال يعمل. انتظر دقيقة ثم أعد المحاولة.";
+      return `Make رفض الطلب: ${m}`;
+    }
+    return FIXES[code] || `تعذر الاتصال بـ Make (${code || "خطأ غير معروف"}). ${e && e.message ? e.message : ""}`;
+  }
+  function showNotice(kind, title, text) {
+    const n = $("notice");
+    if (!title) { n.hidden = true; return; }
+    n.className = "notice " + kind;
+    n.innerHTML = `<b>${esc(title)}</b>${esc(text || "")}`;
+    n.hidden = false;
+  }
+
+  async function runScenario(id, data, responsive = true) {
+    const res = await mcp.callTool(MAKE, "scenarios_run", { scenarioId: id, responsive, ...(data ? { data } : {}) }, { cache: false });
+    const p = payloadOf(res);
+    const execId = deepFind(p, (k, v) => (/execution/i.test(k) && typeof v === "string" && /^[0-9a-f]{32}$/.test(v)) ? v : undefined);
+    const status = deepFind(p, (k, v) => (k === "status" && (typeof v === "number" || typeof v === "string")) ? v : undefined);
+    return { p, execId, status };
+  }
+
+  async function listStore(id, limit) {
+    const res = await mcp.callTool(MAKE, "data-store-records_list", { dataStoreId: id, limit }, { cache: false });
+    const recs = payloadOf(res);
+    const list = Array.isArray(recs) ? recs : (deepFind(recs, (k, v) => (Array.isArray(v) && v.length && v[0] && "key" in v[0]) ? v : undefined) || []);
+    return Object.fromEntries(list.map((r) => [r.key, r.data || {}]));
+  }
+
+  async function loadFiles() {
+    state.files = await listStore(FILES_ID, 20);
+    store.set("pg-files", state.files);
+    return state.files;
+  }
+
+  async function loadSheet() {
+    // 1) the read scenario copies every tab into the data store; 2) read that snapshot back
+    await runScenario(READ_ID);
+    const byKey = await listStore(STORE_ID, 10);
+    const snap = byKey.snapshot;
+    let ranges = snap && deepFind(snap.json, (k, v) => (k === "valueRanges" && Array.isArray(v)) ? v : undefined);
+    if (!ranges) throw { code: "parse", message: "لم أجد لقطة الجدول في مخزن بيانات Make." };
+    state.hassoun = byKey.hassoun ? { text: String(byKey.hassoun.json || ""), at: String(byKey.hassoun.at || "") } : null;
+    return ranges;
+  }
+
+  async function loadScenarios() {
+    const res = await mcp.callTool(MAKE, "scenarios_list", { teamId: TEAM_ID }, { cache: false });
+    const p = payloadOf(res);
+    const arr = Array.isArray(p) ? p : deepFind(p, (k, v) => (Array.isArray(v) && v.length && v[0] && v[0].name && "isActive" in v[0]) ? v : undefined);
+    const list = (arr || []).map((s) => ({ id: s.id, name: s.name, isActive: s.isActive, errors: s.errors || 0, executions: s.executions, nextExec: s.nextExec, lastEdit: s.lastEdit, recentErrors: 0, lastErr: "" }));
+    // Make's "errors" is a lifetime counter; only failures after the scenario was last edited count as current.
+    const toCheck = list.filter((s) => s.errors > 0 && s.isActive && !HIDE_RE.test(s.name));
+    await Promise.all(toCheck.map(async (s) => {
+      try {
+        const since = Date.parse(s.lastEdit) || 0;
+        const r = await mcp.callTool(MAKE, "executions_list", { scenarioId: s.id, status: 3, from: since }, { cache: false });
+        const pp = payloadOf(r);
+        const ex = Array.isArray(pp) ? pp : (deepFind(pp, (k, v) => (Array.isArray(v) && (!v.length || (v[0] && "status" in v[0]))) ? v : undefined) || []);
+        const fails = ex.filter((e) => e && e.status === 3 && Date.parse(e.timestamp) >= since);
+        s.recentErrors = fails.length;
+        if (fails[0] && fails[0].error) s.lastErr = `آخر خطأ: ${fails[0].error.message || fails[0].error.name || ""}`.slice(0, 200);
+      } catch { s.recentErrors = null; }
+    }));
+    return list;
+  }
+
+  let busy = false;
+  async function refresh() {
+    if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح هنا", "افتح هذه الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+    if (busy) return;
+    busy = true; $("refreshBtn").disabled = true; $("refreshBtn").textContent = "جارٍ التحديث…";
+    showNotice();
+    const [sheet, scen] = await Promise.allSettled([loadSheet(), loadScenarios(), loadFiles().catch(() => null)]);
+    const errs = [];
+    if (sheet.status === "fulfilled") {
+      state.ranges = sheet.value; state.at = Date.now();
+      decided.clear();
+      store.set("pg-snapshot", { ranges: state.ranges, at: state.at, hassoun: state.hassoun });
+    } else errs.push(["قراءة الجدول", explain(sheet.reason, "«لوحة التحكم - قراءة الجدول»")]);
+    if (scen.status === "fulfilled") { state.scen = scen.value; state.scenAt = Date.now(); store.set("pg-scen2", { scen: state.scen, at: state.scenAt }); }
+    else errs.push(["حالة الموظفين", explain(scen.reason, "")]);
+    if (errs.length) showNotice(errs.length === 2 ? "err" : "warn", errs.length === 2 ? "تعذر التحديث" : "تم التحديث جزئياً", errs.map((e) => `${e[0]}: ${e[1]}`).join("  ·  ") + (state.at ? " البيانات المعروضة من آخر تحديث ناجح." : ""));
+    render();
+    busy = false; $("refreshBtn").disabled = false; $("refreshBtn").textContent = "تحديث البيانات";
+  }
+
+  function kuwaitNow() {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kuwait", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
+  }
+
+  // Writes one or more decisions in a single Make run: status (+ note) cells, and one Activity_Log row each.
+  async function writeDecisions(items, extra) {
+    const tabs = tabsFromRanges(state.ranges);
+    const data = [], log = [];
+    for (const it of items) {
+      const tab = tabs[it.name];
+      const r = tab && tab.rows.find((x) => x.row === it.row);
+      if (!tab || !r || tab.statusIdx < 0) continue;
+      const value = it.approve ? "موافق" : "مرفوض";
+      data.push({ range: `${it.name}!${colLetter(tab.statusIdx)}${it.row}`, values: [[value]] });
+      if (it.note !== undefined && tab.noteIdx >= 0 && it.note !== String(r.cells[tab.noteIdx] || "")) {
+        data.push({ range: `${it.name}!${colLetter(tab.noteIdx)}${it.row}`, values: [[it.note]] });
+        if (tab.noteHeaderMissing && !data.some((d) => d.range === `${it.name}!${colLetter(tab.noteIdx)}1`)) data.push({ range: `${it.name}!${colLetter(tab.noteIdx)}1`, values: [[tab.headers[tab.noteIdx]]] });
+      }
+      const emp = it.name === MGR_TAB ? `${String(r.cells[1] || "").trim()} (مدير)` : (TABS[it.name] || [it.name])[0];
+      log.push([kuwaitNow(), emp, it.name, it.row, String(r.cells[0] || "").slice(0, 300), value, it.note || ""]);
+    }
+    if (extra) { data.push(...extra.data); log.push(...extra.log); }
+    if (!data.length) throw { code: "parse", message: "لم أجد الصفوف في آخر لقطة من الجدول. اضغط «تحديث البيانات» ثم أعد المحاولة." };
+    await runScenario(WRITE_ID, { updateBody: JSON.stringify({ valueInputOption: "RAW", data }), logBody: JSON.stringify({ values: log }) });
+    for (const it of items) decided.set(`${it.name}!${it.row}`, it.approve ? "موافق" : "مرفوض");
+  }
+  const ambiguousErr = (e) => e && (e.code === "server_unavailable" || e.code === "upstream_error" || e.code === "cancelled");
+  const AMBIG = "لم يصل رد من Make، وقد يكون القرار حُفظ. اضغط «تحديث البيانات» وتأكد قبل المحاولة مرة أخرى.";
+
+  async function decide(card, approve) {
+    const [name, rowStr] = card.dataset.key.split("!");
+    const msg = card.querySelector(".msg");
+    const btns = card.querySelectorAll("button");
+    const ta = card.querySelector("textarea");
+    btns.forEach((b) => (b.disabled = true));
+    msg.className = "msg"; msg.textContent = approve ? "جارٍ تسجيل الموافقة…" : "جارٍ تسجيل الرفض…";
+    try {
+      await writeDecisions([{ name, row: Number(rowStr), approve, note: ta ? ta.value : undefined }]);
+      msg.className = "msg ok";
+      msg.textContent = approve ? "تمت الموافقة وكُتبت «موافق» في الجدول." : "تم الرفض وسُجّل في الجدول.";
+      card.classList.add("done");
+      setTimeout(render, 1400);
+    } catch (e) {
+      msg.className = "msg err";
+      msg.textContent = ambiguousErr(e) ? AMBIG : (e && e.code === "parse" ? e.message : explain(e, "«لوحة التحكم - تسجيل القرار»"));
+      if (!ambiguousErr(e)) btns.forEach((b) => (b.disabled = false));
+    }
+  }
+
+  // ---------- report dashboard ----------
+  let dashMgr = "";        // manager chip filter
+  let bulkAsk = null;      // { label, items } awaiting in-page confirmation
+  let reportApprovedLocal = "";
+  const dayNum = (s) => Number(String(s || "").slice(0, 10).replace(/-/g, "")) || 0;
+  function sinceNum(days) {
+    const d = new Date(Date.now() - days * 864e5);
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kuwait", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(d).map((x) => [x.type, x.value]));
+    return Number(`${p.year}${p.month}${p.day}`);
+  }
+  const normTitle = (t) => String(t || "").replace(/\s+/g, " ").replace(/[«»"'.،,:]/g, "").trim();
+
+  function reportState(tabs) {
+    const rec = state.files.lulu;
+    const id = rec && rec.json;
+    const log = tabs && tabs.Activity_Log;
+    const row = id && log ? log.rows.find((r) => String(r.cells[2] || "") === "Lulu_Report" && String(r.cells[3] || "") === id) : null;
+    return { rec, id, approved: !!(id && (row || reportApprovedLocal === id)), at: row ? String(row.cells[0] || "") : "" };
+  }
+
+  function renderDash(tabs, tasks) {
+    const rs = reportState(tabs);
+    $("dashSub").textContent = rs.rec && rs.rec.at ? `آخر تقرير: ${rs.rec.at} · يصلك يومياً 8 صباحاً على تيليجرام والبريد` : "لم يصل تقرير من لؤلؤ بعد. اضغط «اطلب تقريراً جديداً».";
+    $("dashLinks").innerHTML = rs.id ? `<a class="btn btn-light btn-sm" href="${esc(pdfUrl(rs.id))}" target="_blank" rel="noopener">تنزيل PDF</a><a class="lk" href="${esc(docUrl(rs.id))}" target="_blank" rel="noopener">فتح المستند</a>` : "";
+    const st = $("dashStamp");
+    st.className = "stamp " + (rs.approved ? "ok" : "wait");
+    st.textContent = rs.approved ? `معتمد ✓${rs.at ? " · " + rs.at : ""}` : (rs.id ? "بانتظار اعتمادك" : "لا يوجد تقرير");
+    $("dashApprove").hidden = rs.approved || !rs.id;
+
+    const per = $("dashPeriod").value;
+    const since = per === "all" ? 0 : sinceNum(Number(per));
+    const mt = tasks.filter((t) => t.isMgr && (t.kind === "wait" || t.kind === "new" || !since || dayNum(t.cells[3]) >= since));
+    const cnt = (list, k) => list.filter((t) => t.kind === k).length;
+    const urgent = mt.filter((t) => /عاجل/.test(String(t.cells[4] || "")) && t.kind !== "ok" && t.kind !== "bad").length;
+    const K = [["إجمالي المهام", mt.length], ["بانتظار اعتمادك", cnt(mt, "wait"), "hot"], ["قيد الإعداد", cnt(mt, "new") + cnt(mt, "work")],
+      ["معتمد", cnt(mt, "ok")], ["مرفوض", cnt(mt, "bad")], ["عاجلة مفتوحة", urgent]];
+    $("dashKpis").innerHTML = K.map(([l, n, c]) => `<div class="kpi${c && n ? " " + c : ""}"><b>${n}</b><span>${l}</span></div>`).join("");
+
+    // per-manager stacked bars (status) + the same numbers as a table
+    const max = Math.max(1, ...Object.keys(MGRS).map((m) => mt.filter((t) => t.emp === m).length));
+    const segs = [["wait", "بانتظارك"], ["new", "قيد الإعداد"], ["ok", "معتمد"], ["bad", "مرفوض"]];
+    $("dashBars").innerHTML = Object.keys(MGRS).map((m) => {
+      const l = mt.filter((t) => t.emp === m);
+      const parts = segs.map(([k, lab]) => [k, lab, k === "new" ? cnt(l, "new") + cnt(l, "work") : cnt(l, k)]).filter((x) => x[2]);
+      const bar = parts.length
+        ? `<div class="bar" style="width:${(l.length / max) * 100}%">${parts.map(([k, lab, n]) => `<span class="s-${k}" style="flex:${n}" data-tip="${esc(m)} · ${lab}: ${n}"></span>`).join("")}</div>`
+        : `<div class="bar-empty"></div>`;
+      return `<div class="bar-row"><span class="nm">${esc(m)}</span>${bar}<span class="tot">${l.length}</span></div>`;
+    }).join("");
+    $("dashTable").innerHTML = `<thead><tr><th>المدير</th><th>الإجمالي</th><th>بانتظارك</th><th>قيد الإعداد</th><th>معتمد</th><th>مرفوض</th><th>آخر تحديث</th></tr></thead><tbody>` +
+      Object.keys(MGRS).map((m) => {
+        const l = mt.filter((t) => t.emp === m);
+        const last = l.map((t) => String(t.cells[8] || t.cells[3] || "")).sort().pop() || "–";
+        return `<tr><td><b>${esc(m)}</b></td><td>${l.length}</td><td>${cnt(l, "wait")}</td><td>${cnt(l, "new") + cnt(l, "work")}</td><td>${cnt(l, "ok")}</td><td>${cnt(l, "bad")}</td><td>${esc(last)}</td></tr>`;
+      }).join("") + `</tbody>`;
+
+    // pending requests (manager plans marked «خطة جاهزة»)
+    const pend = tasks.filter((t) => t.isMgr && t.kind === "wait");
+    $("dashChips").innerHTML = [["", `الكل (${pend.length})`], ...Object.keys(MGRS).map((m) => [m, `${m} (${pend.filter((t) => t.emp === m).length})`])]
+      .map(([v, l]) => `<button class="chip" type="button" data-chip="${esc(v)}" aria-pressed="${dashMgr === v}">${esc(l)}</button>`).join("");
+    const shown = pend.filter((t) => !dashMgr || t.emp === dashMgr).slice().reverse();
+    // duplicates: same manager + same request text; keep the newest
+    const seen = new Set(), dups = [];
+    for (const t of shown) { const k = t.emp + "|" + normTitle(t.title); if (seen.has(k)) dups.push(t); else seen.add(k); }
+    const dupKeys = new Set(dups.map((t) => t.key));
+    let bulk = "";
+    if (bulkAsk) {
+      bulk = `<div class="confirm"><span>${esc(bulkAsk.label)}</span><button class="btn btn-ok btn-sm" type="button" data-bulk="go">تأكيد</button><button class="btn btn-ghost btn-sm" type="button" data-bulk="cancel">إلغاء</button><span class="msg" id="bulkMsg" aria-live="polite"></span></div>`;
+    } else if (shown.length > 1 || dups.length) {
+      bulk = `<div class="actions">${shown.length > 1 ? `<button class="btn btn-ok btn-sm" type="button" data-bulk="all">اعتماد الكل${dashMgr ? " لـ" + esc(dashMgr) : ""} (${shown.length})</button>` : ""}${dups.length ? `<button class="btn btn-bad btn-sm" type="button" data-bulk="dups">رفض النسخ المكررة (${dups.length})</button>` : ""}</div>`;
+    }
+    $("dashBulk").innerHTML = bulk;
+    $("dashReqs").innerHTML = shown.length ? shown.map((t) => {
+      const ask = decisionOf(t.cells[5]);
+      const note = t.tab.noteIdx >= 0 ? String(t.cells[t.tab.noteIdx] || "") : "";
+      const urgent = /عاجل/.test(String(t.cells[4] || ""));
+      return `<article class="req" data-key="${esc(t.key)}">
+        <div class="meta"><span class="av" style="width:28px;height:28px;font-size:13px" aria-hidden="true">${esc(t.emp.slice(0, 1))}</span><b>${esc(t.emp)}</b>
+          ${urgent ? '<span class="pill p-bad">عاجلة</span>' : '<span class="pill p-new">عادية</span>'}${dupKeys.has(t.key) ? '<span class="pill p-wait">مكرر</span>' : ""}
+          <span>${esc(t.cells[3] || "")} · من ${esc(t.cells[2] || "حسين")} · المكلّف: ${esc(t.cells[6] || "–")}</span></div>
+        <h3>${esc(t.title)}</h3>
+        ${ask ? `<div class="ask"><b>سؤال من المدير ينتظر قرارك</b>${esc(ask)}</div>` : ""}
+        <details class="more"><summary>الخطة كاملة</summary><div class="draft" style="max-height:320px">${esc(String(t.cells[5] || "").trim())}</div></details>
+        <textarea id="dnote-${t.row}" aria-label="ملاحظتك" placeholder="ملاحظتك للمدير (اختياري)">${esc(note)}</textarea>
+        <div class="actions"><button class="btn btn-ok" type="button" data-dact="approve">اعتماد</button><button class="btn btn-bad" type="button" data-dact="reject">رفض</button><span class="msg" aria-live="polite"></span></div>
+      </article>`;
+    }).join("") : `<div class="empty"><b>لا توجد طلبات بانتظارك${dashMgr ? " من " + esc(dashMgr) : ""}</b>كل خطط المديرين معتمدة أو قيد الإعداد. الخطط الجديدة تظهر هنا خلال 15 دقيقة من تسجيلها.</div>`;
+    window.__dashDups = dups; window.__dashShown = shown;
+
+    // recent decisions on manager plans
+    const log = tabs.Activity_Log;
+    const lr = log ? log.rows.filter((r) => String(r.cells[2] || "") === MGR_TAB || String(r.cells[2] || "") === "Lulu_Report").slice(-10).reverse() : [];
+    $("dashLog").innerHTML = lr.length ? lr.map((r) => {
+      const c = r.cells.map((x) => String(x || ""));
+      return `<li><time>${esc(c[0])}</time><span class="x"><b>${esc(c[1])}</b> · ${pill(c[5])} ${esc(c[4].slice(0, 110))}</span>${c[6] ? `<span class="sec-note">${esc(c[6])}</span>` : ""}</li>`;
+    }).join("") : `<li class="x">لا توجد قرارات على خطط المديرين بعد.</li>`;
+  }
+
+  async function dashDecide(card, approve) {
+    const [name, rowStr] = card.dataset.key.split("!");
+    const msg = card.querySelector(".msg"), btns = card.querySelectorAll("button"), ta = card.querySelector("textarea");
+    btns.forEach((b) => (b.disabled = true));
+    msg.className = "msg"; msg.textContent = approve ? "جارٍ الاعتماد…" : "جارٍ الرفض…";
+    try {
+      await writeDecisions([{ name, row: Number(rowStr), approve, note: ta ? ta.value : undefined }]);
+      msg.className = "msg ok"; msg.textContent = approve ? "اعتُمد وكُتب «موافق» في الجدول." : "رُفض وسُجّل في الجدول.";
+      card.classList.add("done");
+      setTimeout(render, 1400);
+    } catch (e) {
+      msg.className = "msg err";
+      msg.textContent = ambiguousErr(e) ? AMBIG : (e && e.code === "parse" ? e.message : explain(e, "«لوحة التحكم - تسجيل القرار»"));
+      if (!ambiguousErr(e)) btns.forEach((b) => (b.disabled = false));
+    }
+  }
+
+  async function runBulk() {
+    const ask = bulkAsk; if (!ask) return;
+    const m = $("bulkMsg"); document.querySelectorAll("[data-bulk]").forEach((b) => (b.disabled = true));
+    if (m) m.textContent = "جارٍ التسجيل…";
+    try {
+      await writeDecisions(ask.items);
+      bulkAsk = null; render();
+      $("dashMsg").textContent = ask.done;
+    } catch (e) {
+      if (m) m.textContent = ambiguousErr(e) ? AMBIG : (e && e.code === "parse" ? e.message : explain(e, "«لوحة التحكم - تسجيل القرار»"));
+      if (!ambiguousErr(e)) document.querySelectorAll("[data-bulk]").forEach((b) => (b.disabled = false));
+    }
+  }
+
+  async function approveReport() {
+    if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح هنا", "افتح هذه الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+    const rs = reportState(state.ranges ? tabsFromRanges(state.ranges) : null);
+    if (!rs.id) return;
+    const b = $("dashApprove"), msg = $("dashMsg");
+    b.disabled = true; msg.textContent = "جارٍ اعتماد التقرير…";
+    const title = `تقرير المديرين المنسّق — ${rs.rec.at || ""}`;
+    try {
+      await writeDecisions([], {
+        data: [{ range: "Activity_Log!J1", values: [[`آخر تقرير معتمد: ${rs.id} (${kuwaitNow()})`]] }],
+        log: [[kuwaitNow(), "لؤلؤ", "Lulu_Report", rs.id, title, "معتمد", ""]],
+      });
+      reportApprovedLocal = rs.id;
+      msg.textContent = "اعتُمد التقرير وسُجّل في سجل القرارات.";
+      render();
+    } catch (e) {
+      msg.textContent = ambiguousErr(e) ? AMBIG : explain(e, "«لوحة التحكم - تسجيل القرار»");
+      if (!ambiguousErr(e)) b.disabled = false;
+    }
+  }
+
+  // ---------- Lulu exports ----------
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  function setExpMsg(name, text, cls) {
+    if (exporting[name]) exporting[name].msg = text;
+    const el = document.querySelector(`[data-expmsg="${CSS.escape(name)}"]`);
+    if (el) { el.textContent = text; el.className = "msg" + (cls ? " " + cls : ""); }
+  }
+
+  async function exportManager(name) {
+    if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح هنا", "افتح هذه الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+    if (Object.keys(exporting).length) return;
+    const m = MGRS[name];
+    const prev = (state.files[m.key] || {}).json || "";
+    exporting[name] = { started: Date.now(), msg: "" };
+    render();
+    setExpMsg(name, "أرسلت الطلب إلى لؤلؤ…");
+    try {
+      await runScenario(EXPORT_ID, { manager: name }, false);
+    } catch (e) {
+      delete exporting[name]; render();
+      setExpMsg(name, explain(e, "«لؤلؤ - التقرير الكامل لمدير»"), "err");
+      return;
+    }
+    // The report takes one to three minutes; poll the files store until a new document appears.
+    let done = false;
+    for (let i = 0; i < 36 && !done; i++) {
+      await sleep(10000);
+      const secs = Math.round((Date.now() - exporting[name].started) / 1000);
+      setExpMsg(name, `لؤلؤ تكتب وتنسّق تقرير ${name}… (${secs} ثانية، يستغرق عادةً دقيقتين)`);
+      try {
+        const files = await listStore(FILES_ID, 20);
+        const rec = files[m.key];
+        if (rec && rec.json && rec.json !== prev) { state.files = files; store.set("pg-files", files); done = true; }
+      } catch {}
+    }
+    delete exporting[name];
+    render();
+    if (done) setExpMsg(name, "جاهز. اضغط «تنزيل PDF» تحت.", "ok");
+    else setExpMsg(name, "تأخر التقرير أكثر من المعتاد. اضغط «تحديث البيانات» بعد دقائق وسيظهر الرابط هنا.", "err");
+  }
+
+  async function requestLulu() {
+    if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح هنا", "افتح هذه الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+    const b = $("luluReq"), msg = $("luluMsg");
+    b.disabled = true; msg.textContent = "جارٍ إرسال الطلب…";
+    try {
+      await runScenario(LULU_REQ_ID);
+      msg.textContent = "وصل الطلب. لؤلؤ ترسل التقرير الشامل خلال 15 دقيقة على تيليجرام والبريد، ويظهر رابطه هنا بعد «تحديث البيانات».";
+    } catch (e) {
+      msg.textContent = explain(e, "«لوحة التحكم - طلب تقرير لؤلؤ الشامل»");
+      b.disabled = false;
+    }
+  }
+
+  // ---------- wiring ----------
+  function showTab(name) {
+    document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+    ["pending", "dash", "managers", "tasks", "activity", "health"].forEach((v) => ($("view-" + v).hidden = v !== name));
+    try { localStorage.setItem("pg-tab", name); } catch {}
+  }
+  document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.go)));
+  ["fDept", "fEmp", "fStatus"].forEach((id) => $(id).addEventListener("change", render));
+  $("fSearch").addEventListener("input", render);
+  $("refreshBtn").addEventListener("click", refresh);
+  $("luluReq").addEventListener("click", requestLulu);
+  $("dashReq").addEventListener("click", async () => {
+    if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح هنا", "افتح هذه الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+    const b = $("dashReq"); b.disabled = true; $("dashMsg").textContent = "جارٍ إرسال الطلب…";
+    try { await runScenario(LULU_REQ_ID); $("dashMsg").textContent = "وصل الطلب. التقرير الجديد يصلك خلال 15 دقيقة على تيليجرام والبريد، ويظهر هنا بعد «تحديث البيانات»."; }
+    catch (e) { $("dashMsg").textContent = explain(e, "«لوحة التحكم - طلب تقرير لؤلؤ الشامل»"); b.disabled = false; }
+  });
+  $("dashApprove").addEventListener("click", approveReport);
+  $("dashPeriod").addEventListener("change", render);
+  $("view-dash").addEventListener("click", (ev) => {
+    const chip = ev.target.closest("[data-chip]");
+    if (chip) { dashMgr = chip.dataset.chip; bulkAsk = null; render(); return; }
+    const d = ev.target.closest("button[data-dact]");
+    if (d) { dashDecide(d.closest(".req"), d.dataset.dact === "approve"); return; }
+    const bk = ev.target.closest("button[data-bulk]");
+    if (!bk) return;
+    const notes = (t) => { const el = document.getElementById(`dnote-${t.row}`); return el ? el.value : undefined; };
+    if (bk.dataset.bulk === "all") {
+      const list = window.__dashShown || [];
+      bulkAsk = { label: `اعتماد ${list.length} طلب${dashMgr ? " لـ" + dashMgr : ""} دفعة واحدة؟ سيُكتب «موافق» لكل خطة.`, done: `اعتُمدت ${list.length} خطة.`,
+        items: list.map((t) => ({ name: t.name, row: t.row, approve: true, note: notes(t) })) };
+      render();
+    } else if (bk.dataset.bulk === "dups") {
+      const list = window.__dashDups || [];
+      bulkAsk = { label: `رفض ${list.length} نسخة مكررة والإبقاء على أحدث نسخة من كل طلب؟`, done: `رُفضت ${list.length} نسخة مكررة.`,
+        items: list.map((t) => ({ name: t.name, row: t.row, approve: false, note: "نسخة مكررة" })) };
+      render();
+    } else if (bk.dataset.bulk === "cancel") { bulkAsk = null; render(); }
+    else if (bk.dataset.bulk === "go") runBulk();
+  });
+  // hover tooltip for chart segments
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; document.body.appendChild(tip);
+  $("dashBars").addEventListener("pointermove", (ev) => {
+    const seg = ev.target.closest("[data-tip]");
+    if (!seg) { tip.hidden = true; return; }
+    tip.textContent = seg.dataset.tip; tip.hidden = false;
+    tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, ev.clientX + 12) + "px"; tip.style.top = (ev.clientY - 34) + "px";
+  });
+  $("dashBars").addEventListener("pointerleave", () => { tip.hidden = true; });
+  $("pendChipClear").addEventListener("click", () => { pendFilter = ""; render(); });
+  $("pendingList").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[data-act]");
+    if (!b) return;
+    decide(b.closest(".card"), b.dataset.act === "approve");
+  });
+  $("mgrList").addEventListener("click", (ev) => {
+    const ex = ev.target.closest("button[data-export]");
+    if (ex) { exportManager(ex.dataset.export); return; }
+    const rv = ev.target.closest("button[data-review]");
+    if (rv) { pendFilter = rv.dataset.review; render(); showTab("pending"); }
+  });
+
+  // restore last snapshot (this browser only) so the page opens with data
+  const snap = store.get("pg-snapshot");
+  if (snap && Array.isArray(snap.ranges)) { state.ranges = snap.ranges; state.at = snap.at; state.hassoun = snap.hassoun || null; }
+  const sc = store.get("pg-scen2");
+  if (sc && Array.isArray(sc.scen)) { state.scen = sc.scen; state.scenAt = sc.at; }
+  const fl = store.get("pg-files");
+  if (fl && typeof fl === "object") state.files = fl;
+  try { const t = localStorage.getItem("pg-tab"); if (t && $("view-" + t)) showTab(t); } catch {}
+  render();
+
+  if (window.claude && window.claude.use) {
+    window.claude.use("mcp").then((ns) => {
+      mcp = ns;
+      if (!mcp) { showNotice("warn", "الاتصال بـ Make غير متاح في هذا العرض", "افتح الصفحة من claude.ai وأنت مسجّل الدخول، ومعها موصل Make."); return; }
+      if (!state.ranges) refresh(); else loadFiles().then(render).catch(() => {});
+    });
+  } else {
+    showNotice("warn", "الاتصال بـ Make غير متاح هنا", "هذه نسخة خارج claude.ai. افتح رابط الصفحة من claude.ai.");
+  }
+})();
+</script>
+
+</body></html>

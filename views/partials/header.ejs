@@ -23,6 +23,9 @@
         <% if (user.role === 'admin' || user.workflow_role) { %>
           <a href="/workflow" class="<%= path.startsWith('/workflow') ? 'active' : '' %>">سير النشر<% if (workflowInbox) { %> <span class="count"><%= workflowInbox %></span><% } %></a>
         <% } %>
+        <% if (user.role === 'admin' || user.workflow_role === 'owner') { %>
+          <a href="/apps" class="<%= path.startsWith('/apps') ? 'active' : '' %>">الأنظمة</a>
+        <% } %>
         <% if (user.role === 'admin') { %>
           <a href="/admin/employees" class="<%= path.startsWith('/admin') ? 'active' : '' %>">لوحة الإدارة</a>
         <% } %>
