@@ -261,3 +261,4 @@ input:disabled { background: var(--bg); color: var(--muted); }
 @media (max-width: 960px) {
   .request-layout, .group-layout { grid-template-columns: 1fr; }
 }
+.badge-digital { background: #e6f6f8; color: #0e6b78; }

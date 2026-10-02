@@ -19,6 +19,13 @@ services:
         value: /var/data/company.db
       - key: COMPANY_NAME
         sync: false
+      # Digital employees (see README): Claude texts, and the Make scenario for designs + Buffer.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: WORKFLOW_WEBHOOK_URL
+        sync: false
+      - key: WORKFLOW_CALLBACK_TOKEN
+        generateValue: true
     disk:
       name: data
       mountPath: /var/data

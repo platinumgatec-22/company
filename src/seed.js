@@ -71,7 +71,8 @@ function seed() {
 }
 
 // Publishing team: حسون (director) → موزة (manager) → النخبة للتصاميم (designer) → 7 publishers,
-// each publisher with their own Instagram account and Buffer user.
+// each publisher with their own Instagram account and Buffer user. All of them are digital
+// employees (src/agents.js does their steps automatically).
 // [full_name, username, job_title, workflow_role, instagram, buffer_user]
 const workflowTeam = [
   ['حسون', 'hassoun', 'المدير العام للنشر', 'director', '', ''],
@@ -99,9 +100,9 @@ function seedWorkflow() {
     const byUsername = db.prepare('SELECT id FROM employees WHERE username = ?');
     const insert = db.prepare(`
       INSERT INTO employees (full_name, username, password_hash, job_title, department_id, is_manager,
-                             workflow_role, instagram_account, buffer_user, must_change_password)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`);
-    const setRole = db.prepare('UPDATE employees SET workflow_role = ? WHERE id = ?');
+                             workflow_role, instagram_account, buffer_user, is_digital, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`);
+    const setRole = db.prepare('UPDATE employees SET workflow_role = ?, is_digital = 1 WHERE id = ?');
 
     for (const [name, username, title, role, instagram, buffer] of workflowTeam) {
       const existing = byUsername.get(username);
@@ -120,7 +121,7 @@ function seedWorkflow() {
 
 if (require.main === module) {
   console.log(seed() ? 'تمت إضافة البيانات التجريبية.' : 'قاعدة البيانات تحتوي على بيانات مسبقاً، لم يتم تغيير شيء.');
-  if (seedWorkflow()) console.log('تمت إضافة فريق النشر (حسون، موزة، المصمم، و7 موظفين للنشر).');
+  if (seedWorkflow()) console.log('تمت إضافة فريق النشر الرقمي (حسون، موزة، المصمم، و7 موظفين للنشر).');
 }
 
 module.exports = { seed, seedWorkflow, DEFAULT_PASSWORD };

@@ -39,15 +39,21 @@ db.exec(`
 `);
 
 // Columns added after the first release: add them to existing databases.
-const employeeColumns = new Set(db.prepare('PRAGMA table_info(employees)').all().map((c) => c.name));
-for (const [name, def] of [
-  // '' | owner | director | manager | designer | publisher (see src/workflow.js)
+function addColumns(table, columns) {
+  const existing = new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name));
+  for (const [name, def] of columns) {
+    if (!existing.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+  }
+}
+
+addColumns('employees', [
+  // '' | owner | director | manager | designer | publisher (see src/workflow-core.js)
   ['workflow_role', "TEXT NOT NULL DEFAULT ''"],
   ['instagram_account', "TEXT NOT NULL DEFAULT ''"],
   ['buffer_user', "TEXT NOT NULL DEFAULT ''"],
-]) {
-  if (!employeeColumns.has(name)) db.exec(`ALTER TABLE employees ADD COLUMN ${name} ${def}`);
-}
+  // Digital employee: the system does this employee's workflow steps automatically (src/agents.js).
+  ['is_digital', 'INTEGER NOT NULL DEFAULT 0'],
+]);
 
 db.exec(`
   -- Each publisher has their own Instagram account and Buffer user.
@@ -102,5 +108,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_messages_request ON workflow_messages(request_id);
   CREATE INDEX IF NOT EXISTS idx_messages_group ON workflow_messages(group_key);
 `);
+
+addColumns('publish_requests', [
+  // When a digital designer asked the external design service (webhook) for the design.
+  ['design_requested_at', "TEXT NOT NULL DEFAULT ''"],
+]);
+addColumns('publish_assignments', [
+  // When a digital publisher handed the post to Buffer (webhook).
+  ['requested_at', "TEXT NOT NULL DEFAULT ''"],
+]);
 
 module.exports = db;

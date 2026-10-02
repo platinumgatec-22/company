@@ -2,7 +2,7 @@
   <span class="avatar" style="background:<%= avatarColor(e.id) %>"><%= initials(e.full_name) %></span>
   <div class="emp-info">
     <strong><%= e.full_name %></strong>
-    <span class="muted"><%= e.job_title || '—' %></span>
+    <span class="muted"><%= e.is_digital ? '🤖 ' : '' %><%= e.job_title || '—' %></span>
     <% if (typeof showDept !== 'undefined' && showDept && e.department_name) { %>
       <span class="chip"><%= e.department_icon %> <%= e.department_name %></span>
     <% } %>

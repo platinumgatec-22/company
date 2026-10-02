@@ -14,7 +14,7 @@
           <% members.forEach(m => { %>
             <li>
               <span class="avatar avatar-xs" style="background:<%= avatarColor(m.id) %>"><%= initials(m.full_name) %></span>
-              <span><a href="/employees/<%= m.id %>"><%= m.full_name %></a><br>
+              <span><a href="/employees/<%= m.id %>"><%= m.full_name %></a><% if (m.is_digital) { %> <span class="badge badge-digital">🤖 رقمي</span><% } %><br>
                 <span class="muted small"><%= ROLES[m.workflow_role] %><% if (m.instagram_account) { %> · <span dir="ltr">@<%= m.instagram_account %></span><% } %><% if (m.buffer_user) { %> · Buffer: <span dir="ltr"><%= m.buffer_user %></span><% } %></span></span>
             </li>
           <% }) %>

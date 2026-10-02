@@ -97,11 +97,13 @@
           <% assignments.forEach(a => { const mine = myAssignment && myAssignment.id === a.id; %>
             <li class="<%= a.published_at ? 'done' : '' %> <%= mine ? 'mine' : '' %>">
               <div>
-                <strong><%= a.employee_name %></strong>
+                <strong><%= a.employee_name %></strong><% if (a.is_digital) { %> <span class="badge badge-digital">🤖 رقمي</span><% } %>
                 <div class="muted small" dir="ltr">IG @<%= a.instagram_account %> · Buffer <%= a.buffer_user %></div>
                 <% if (a.published_at) { %>
                   <span class="badge badge-green">نُشر <%= fmt(a.published_at) %></span>
                   <% if (a.post_url) { %><a class="small" href="<%= a.post_url %>" target="_blank" rel="noopener">رابط المنشور</a><% } %>
+                <% } else if (a.requested_at) { %>
+                  <span class="badge">أُرسل إلى Buffer <%= fmt(a.requested_at) %></span>
                 <% } else { %>
                   <span class="badge">لم يُنشر</span>
                 <% } %>

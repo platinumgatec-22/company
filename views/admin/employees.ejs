@@ -36,7 +36,7 @@
                 </a>
               </td>
               <td dir="ltr" class="ltr-cell"><%= e.username %></td>
-              <td><%= e.department_name || '—' %><% if (e.is_manager) { %> <span class="badge badge-gold">رئيس</span><% } %></td>
+              <td><%= e.department_name || '—' %><% if (e.is_manager) { %> <span class="badge badge-gold">رئيس</span><% } %><% if (e.is_digital) { %> <span class="badge badge-digital">🤖 رقمي</span><% } %></td>
               <td><%= e.role === 'admin' ? 'مدير النظام' : 'موظف' %></td>
               <td>
                 <% if (!e.is_active) { %><span class="badge badge-red">معطّل</span>

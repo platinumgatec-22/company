@@ -13,6 +13,7 @@
           <div class="chips">
             <% if (employee.department_name) { %><span class="chip"><%= employee.department_icon %> <%= employee.department_name %></span><% } %>
             <% if (employee.is_manager) { %><span class="badge badge-gold">رئيس القسم</span><% } %>
+            <% if (employee.is_digital) { %><span class="badge badge-digital">🤖 موظف رقمي</span><% } %>
             <% if (employee.role === 'admin') { %><span class="badge">مدير النظام</span><% } %>
             <% if (!employee.is_active) { %><span class="badge badge-red">غير نشط</span><% } %>
           </div>

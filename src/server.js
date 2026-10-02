@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { seed, seedWorkflow } = require('./seed');
 const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
+const agents = require('./agents');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -324,7 +325,7 @@ admin.get('/employees', (req, res) => {
 const emptyEmployee = {
   full_name: '', username: '', email: '', phone: '', job_title: '', department_id: 0,
   is_manager: 0, role: 'employee', hire_date: '', bio: '', is_active: 1,
-  workflow_role: '', instagram_account: '', buffer_user: '',
+  workflow_role: '', instagram_account: '', buffer_user: '', is_digital: 0,
 };
 const handle = (v) => clean(v).replace(/^@+/, '').toLowerCase();
 
@@ -358,6 +359,7 @@ async function saveEmployee(req, res) {
     bio: clean(b.bio).slice(0, 500),
     is_active: b.is_active ? 1 : 0,
     workflow_role: ROLES[b.workflow_role] ? b.workflow_role : '',
+    is_digital: b.is_digital ? 1 : 0,
     instagram_account: handle(b.instagram_account),
     buffer_user: clean(b.buffer_user),
   };
@@ -387,7 +389,7 @@ async function saveEmployee(req, res) {
   }
 
   const fields = ['full_name', 'username', 'email', 'phone', 'job_title', 'department_id',
-    'is_manager', 'role', 'hire_date', 'bio', 'is_active', 'workflow_role', 'instagram_account', 'buffer_user'];
+    'is_manager', 'role', 'hire_date', 'bio', 'is_active', 'workflow_role', 'instagram_account', 'buffer_user', 'is_digital'];
   const values = fields.map((f) => employee[f]);
 
   try {
@@ -429,6 +431,7 @@ admin.post('/employees/:id/delete', (req, res) => {
 app.use('/admin', admin);
 
 // ---------- publishing workflow ----------
+app.use(agents.createAgentRoutes({ toId, clean }));
 app.use('/workflow', createWorkflowRouter({ requireAuth, flash, clean, toId }));
 
 // ---------- errors ----------
@@ -442,6 +445,7 @@ app.use((err, req, res, _next) => {
 });
 
 if (require.main === module) {
+  agents.start();
   app.listen(PORT, () => console.log(`${COMPANY_NAME}: http://localhost:${PORT}`));
 }
 
