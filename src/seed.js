@@ -1,127 +1,198 @@
-// Fills an empty database with sample departments and employees.
-// Run directly (`npm run seed`) or automatically on first server start.
+// Platinum Gate (البوابة البلاتينية): departments and team.
+// The team is the digital employees running in Make (each one's scenarios start with their
+// name, e.g. "كابتن - مدير العمليات"), plus the publishing team (موزة and 7 publishers).
+// ensureCompany() runs on every start: it adds what is missing and never overwrites edits.
+const crypto = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 
 const DEFAULT_PASSWORD = '123456';
 
-const departments = [
-  { name: 'الإدارة العليا', icon: '🏛️', description: 'رسم الاستراتيجية العامة للشركة واتخاذ القرارات الرئيسية.' },
-  { name: 'الموارد البشرية', icon: '🧑‍🤝‍🧑', description: 'التوظيف، شؤون الموظفين، التدريب والتطوير.' },
-  { name: 'المالية والمحاسبة', icon: '💰', description: 'الميزانيات، الرواتب، التقارير المالية والمشتريات.' },
-  { name: 'تقنية المعلومات', icon: '💻', description: 'الأنظمة، الشبكات، الدعم الفني وتطوير البرمجيات.' },
-  { name: 'المبيعات', icon: '📈', description: 'إدارة العملاء، العروض والعقود وتحقيق أهداف المبيعات.' },
-  { name: 'التسويق', icon: '📣', description: 'الهوية، الحملات الإعلانية، ووسائل التواصل الاجتماعي.' },
-  { name: 'العمليات', icon: '⚙️', description: 'تنفيذ المشاريع ومتابعة الجودة وسلاسل الإمداد.' },
+const departments = {
+  exec: ['المكتب التنفيذي', '🏛️', 'القيادة والإشراف، المساعدة التنفيذية، والتقارير اليومية والأسبوعية.'],
+  ops: ['البطولات والعمليات', '🏆', 'تنظيم البطولات وجداولها، علاقات الملاعب والمنشآت، والمشتريات واللوجستيات.'],
+  cs: ['خدمة العملاء', '💬', 'الاشتراكات والاستفسارات عبر واتساب، والشكاوى والاقتراحات.'],
+  sales: ['الرعايات والمبيعات', '🤝', 'عروض الرعاية، قاعدة الرعاة، والمبيعات.'],
+  mkt: ['التسويق والمحتوى', '📣', 'الأفكار والمحتوى والتصاميم وسكربتات الفيديو، والنشر على وسائل التواصل.'],
+  elite: ['فريق النخبة للنشر والتصاميم', '🎨', 'طلبات النشر، قروب النخبة للتصاميم، والنشر على حسابات إنستقرام عبر Buffer.'],
+  fin: ['الإدارة المالية', '💰', 'الميزانية والمحاسبة والمصروفات المتكررة.'],
+  legal: ['الإدارة القانونية', '⚖️', 'العقود والتراخيص، الشؤون القانونية، والامتثال والملكية الفكرية.'],
+};
+
+// [full_name, username, job_title, department, is_manager, workflow_role, make_names, bio]
+// make_names: the prefixes (before " - ") of this employee's scenarios in Make.
+const team = [
+  ['حسون', 'hassoun', 'المشرف الأعلى', 'exec', 0, 'director', 'حسون',
+    'يكتب التقرير التنفيذي اليومي ويدير الاجتماع الأسبوعي للمديرين، ويستلم طلبات النشر ويحوّلها إلى موزة.'],
+  ['لؤلؤ', 'lulu', 'المساعدة التنفيذية لحسين', 'exec', 0, '', 'لؤلؤ',
+    'تكتب المسودات والتقارير لحسين، وتقرير المديرين المنسّق (PDF)، والتقرير الكامل لكل مدير.'],
+  ['ألماس', 'almas', 'منسقة مساحة العمل', 'exec', 0, '', 'ألماس',
+    'تنسّق مساحة عمل المكتب التنفيذي، ومحادثة مباشرة مع حسين على تيليجرام تسجّل منها المهام.'],
+
+  ['علي', 'ali', 'مدير البطولات والعمليات', 'ops', 1, '', 'المديرون|بوت المديرين',
+    'يستلم مهام حسين عبر بوت المديرين ويكتب خطط التنفيذ لفريقه: كابتن، نحاس، زمرد.'],
+  ['كابتن', 'captain', 'مدير العمليات', 'ops', 0, '', 'كابتن', 'خطط البطولات وجداولها والتذكيرات.'],
+  ['زمرد', 'zumurrud', 'علاقات الملاعب والمنشآت', 'ops', 0, '', 'زمرد', 'التواصل مع الملاعب والمنشآت وحجزها.'],
+  ['نحاس', 'nuhas', 'المشتريات واللوجستيات', 'ops', 0, '', 'نحاس', 'مشتريات البطولات والخدمات اللوجستية.'],
+
+  ['مفلح', 'mufleh', 'مدير خدمة العملاء والرعايات والمبيعات', 'cs', 1, '', 'المديرون|بوت المديرين',
+    'يكتب خطط التنفيذ لفريقه: بلاتين، كهرمان، ذهب، عزيزة، زمرّد.'],
+  ['بلاتين', 'platin', 'خدمة العملاء (واتساب)', 'cs', 0, '', 'بلاتين',
+    'يستقبل العملاء على واتساب: الاشتراك، الاقتراحات، تنظيم البطولات، تشغيل الملاعب، المعسكرات.'],
+  ['كهرمان', 'kahraman', 'الشكاوى والاقتراحات', 'cs', 0, '', 'كهرمان', 'متابعة الشكاوى والاقتراحات والرد عليها.'],
+
+  ['زمرّد', 'zumurrud.sponsors', 'مدير الرعايات', 'sales', 1, '', 'زمرّد', 'إدارة الرعايات وخططها.'],
+  ['ذهب', 'dhahab', 'المبيعات والرعايات', 'sales', 0, '', 'ذهب', 'إعداد عروض الرعاية والمبيعات.'],
+  ['عزيزة', 'aziza', 'قاعدة الرعاة', 'sales', 0, '', 'عزيزة', 'قاعدة بيانات الرعاة ومسودات رسائل البطولات.'],
+
+  ['ماس', 'mas', 'مدير التسويق والمحتوى', 'mkt', 1, '', 'ماس|المديرون|بوت المديرين',
+    'خطة النشر ورفعها لحسين، المراجعة اليومية للفريق، والنشر على تيك توك ويوتيوب وSubstack.'],
+  ['ياقوت', 'yaqoot', 'مدير التسويق', 'mkt', 0, '', 'ياقوت', 'المراجعة التسويقية، ومنشور اليوم (فكرة يومية تُنشر 3:00 عصراً).'],
+  ['جوهر', 'jawhar', 'مدير الاستوديو', 'mkt', 0, '', 'جوهر', 'توزيع مهام الاستوديو ومراجعة الحزمة وتسليم الموافَق عليه لبرونز.'],
+  ['فضة', 'fidda', 'استقبال الأفكار', 'mkt', 0, '', 'فضة', 'تحويل الأفكار الجديدة إلى الاستوديو أو فريق النخبة، وتسليم المنشورات الموافَق عليها لبرونز.'],
+  ['عقيق', 'aqeeq', 'كاتب المحتوى', 'mkt', 0, '', 'عقيق', 'كتابة محتوى المنشورات في الاستوديو.'],
+  ['فيروز', 'fairouz', 'مصممة الصور', 'mkt', 0, '', 'فيروز', 'تصميم صور المنشورات بالذكاء الاصطناعي وحفظها في Drive وCanva.'],
+  ['مرجان', 'marjan', 'كاتب سكربتات الفيديو', 'mkt', 0, '', 'مرجان', 'كتابة سكربتات الفيديو في الاستوديو.'],
+  ['برونز', 'bronze', 'النشر الموحّد على السوشيال', 'mkt', 0, '', 'برونز',
+    'ينشر يومياً 3:00 عصراً على فيسبوك وإنستغرام وتيك توك @championshipskw وديسكورد وX.'],
+
+  ['موزة', 'moza', 'مانجير النشر', 'elite', 1, 'manager', '',
+    'توزّع طلبات النشر على قروب النخبة للتصاميم وموظفي النشر، وترسل تقرير النشر إلى حسون.'],
+  ['زبرجد', 'zabarjad', 'مصمم فريق النخبة', 'elite', 0, 'designer', 'زبرجد|النخبة', 'تصميم ونشر سريع لفريق النخبة.'],
+
+  ['جمانة', 'jumana', 'مدير الإدارة المالية والقانونية', 'fin', 1, '', 'المديرون|بوت المديرين',
+    'تكتب خطط التنفيذ لفريقها: دينار، فلس، بيزة، بوخمسين، صدر، عدل، ميثاق، حصانة.'],
+  ['دينار', 'dinar', 'المدير المالي', 'fin', 0, '', 'دينار', 'الإدارة المالية والتقارير المالية.'],
+  ['بوخمسين', 'bukhamseen', 'مسؤول الميزانية', 'fin', 0, '', 'بوخمسين', 'إعداد الميزانيات ومتابعتها.'],
+  ['فلس', 'fils', 'المحاسب', 'fin', 0, '', 'فلس', 'القيود المحاسبية والفواتير.'],
+  ['بيزة', 'baiza', 'المصروفات المتكررة', 'fin', 0, '', 'بيزة', 'متابعة المصروفات والاشتراكات المتكررة.'],
+
+  ['صدر', 'sadr', 'رئيس الإدارة القانونية', 'legal', 1, '', 'صدر', 'رئاسة الإدارة القانونية.'],
+  ['عدل', 'adl', 'الشؤون القانونية', 'legal', 0, '', 'عدل', 'الاستشارات والشؤون القانونية.'],
+  ['ميثاق', 'mithaq', 'العقود والتراخيص', 'legal', 0, '', 'ميثاق', 'صياغة العقود ومتابعة التراخيص.'],
+  ['حصانة', 'hasana', 'الامتثال والملكية الفكرية', 'legal', 0, '', 'حصانة', 'الامتثال وحماية الملكية الفكرية.'],
+
+  // Publishers: each one has their own Instagram account and Buffer user (connected from
+  // لوحة الإدارة ← ربط الحسابات); the values here are placeholders.
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => [
+    `موظف النشر ${n}`, `publisher${n}`, 'موظف نشر', 'elite', 0, 'publisher', '',
+    'ينشر تصاميم فريق النخبة على حساب الإنستقرام الخاص به عبر Buffer.',
+  ]),
 ];
+const PUBLISHER_PLACEHOLDERS = (username) => {
+  const n = /^publisher(\d)$/.exec(username)?.[1];
+  return n ? [`company.account${n}`, `buffer.user${n}`] : ['', ''];
+};
 
-// [full_name, username, job_title, department index, is_manager]
-const employees = [
-  ['أحمد العلي', 'ahmad', 'المدير التنفيذي', 0, 1],
-  ['سارة الكندري', 'sara', 'نائب المدير التنفيذي', 0, 0],
-  ['فاطمة الرشيد', 'fatima', 'مديرة الموارد البشرية', 1, 1],
-  ['يوسف الحربي', 'yousef', 'أخصائي توظيف', 1, 0],
-  ['نورة المطيري', 'noura', 'منسقة تدريب', 1, 0],
-  ['خالد العنزي', 'khaled', 'المدير المالي', 2, 1],
-  ['مريم الشمري', 'maryam', 'محاسبة', 2, 0],
-  ['عبدالله السالم', 'abdullah', 'مدير تقنية المعلومات', 3, 1],
-  ['محمد الهاجري', 'mohammad', 'مطوّر برمجيات', 3, 0],
-  ['ريم الصباح', 'reem', 'مهندسة شبكات', 3, 0],
-  ['عمر الدوسري', 'omar', 'فني دعم', 3, 0],
-  ['هند العتيبي', 'hind', 'مديرة المبيعات', 4, 1],
-  ['بدر القحطاني', 'bader', 'مندوب مبيعات', 4, 0],
-  ['لطيفة الفضلي', 'latifa', 'مديرة التسويق', 5, 1],
-  ['جاسم البلوشي', 'jasem', 'مصمم جرافيك', 5, 0],
-  ['دانة الرفاعي', 'dana', 'أخصائية تواصل اجتماعي', 5, 0],
-  ['سلمان العجمي', 'salman', 'مدير العمليات', 6, 1],
-  ['حصة الخالدي', 'hessa', 'مشرفة جودة', 6, 0],
-];
+// The sample company the portal shipped with; removed once from existing databases.
+const DEMO_USERS = ['ahmad', 'sara', 'fatima', 'yousef', 'noura', 'khaled', 'maryam', 'abdullah', 'mohammad',
+  'reem', 'omar', 'hind', 'bader', 'latifa', 'jasem', 'dana', 'salman', 'hessa'];
+const DEMO_DEPARTMENTS = ['الإدارة العليا', 'الموارد البشرية', 'المالية والمحاسبة', 'تقنية المعلومات', 'المبيعات', 'التسويق', 'العمليات'];
+const RENAMED_DEPARTMENTS = { 'النشر والتصاميم': departments.elite[0] };
 
-function seed() {
-  const { n } = db.prepare('SELECT COUNT(*) AS n FROM employees').get();
-  if (n > 0) return false;
+const meta = {
+  get: db.prepare('SELECT value FROM meta WHERE key = ?'),
+  set: db.prepare('INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'),
+};
 
-  const hash = bcrypt.hashSync(DEFAULT_PASSWORD, 10);
-  const insertDept = db.prepare('INSERT INTO departments (name, icon, description) VALUES (?, ?, ?)');
-  const insertEmp = db.prepare(`
-    INSERT INTO employees (full_name, username, password_hash, email, phone, job_title,
-                           department_id, is_manager, role, hire_date, must_change_password)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-
+function transaction(fn) {
   db.exec('BEGIN');
   try {
-    const deptIds = departments.map((d) => Number(insertDept.run(d.name, d.icon, d.description).lastInsertRowid));
-
-    insertEmp.run('مدير النظام', 'admin', bcrypt.hashSync('admin123', 10), 'admin@company.com', '',
-      'مسؤول النظام', deptIds[3], 0, 'admin', '2020-01-01', 1);
-
-    employees.forEach(([name, username, title, deptIdx, isManager], i) => {
-      const phone = `+965 5${String(1000000 + i * 73519).slice(-7)}`;
-      const year = 2015 + (i % 10);
-      const month = String((i % 12) + 1).padStart(2, '0');
-      insertEmp.run(name, username, hash, `${username}@company.com`, phone, title,
-        deptIds[deptIdx], isManager, 'employee', `${year}-${month}-01`, 1);
-    });
+    const result = fn();
     db.exec('COMMIT');
+    return result;
   } catch (err) {
     db.exec('ROLLBACK');
     throw err;
   }
-  return true;
 }
 
-// Publishing team: حسون (director) → موزة (manager) → النخبة للتصاميم (designer) → 7 publishers,
-// each publisher with their own Instagram account and Buffer user. All of them are digital
-// employees (src/agents.js does their steps automatically).
-// [full_name, username, job_title, workflow_role, instagram, buffer_user]
-const workflowTeam = [
-  ['حسون', 'hassoun', 'المدير العام للنشر', 'director', '', ''],
-  ['موزة', 'moza', 'مانجير النشر', 'manager', '', ''],
-  ['مصمم النخبة', 'elite.designer', 'مصمم — النخبة للتصاميم', 'designer', '', ''],
-  ...[1, 2, 3, 4, 5, 6, 7].map((n) => [
-    `موظف النشر ${n}`, `publisher${n}`, 'موظف نشر', 'publisher', `company.account${n}`, `buffer.user${n}`,
-  ]),
-];
+// Returns a summary of what was added (empty when nothing changed).
+function ensureCompany() {
+  const fresh = db.prepare('SELECT COUNT(*) AS n FROM employees').get().n === 0;
+  // Digital employees run in Make and don't sign in: they get an unknown random password
+  // (the admin can set one from لوحة الإدارة if a person needs to sign in as them).
+  const lockedHash = bcrypt.hashSync(crypto.randomBytes(24).toString('base64url'), 10);
+  const added = [];
 
-// Adds the publishing team once (on any database that has no director yet).
-function seedWorkflow() {
-  const { n } = db.prepare("SELECT COUNT(*) AS n FROM employees WHERE workflow_role = 'director'").get();
-  if (n > 0) return false;
-
-  const hash = bcrypt.hashSync(DEFAULT_PASSWORD, 10);
-  db.exec('BEGIN');
-  try {
-    let dept = db.prepare('SELECT id FROM departments WHERE name = ?').get('النشر والتصاميم');
-    if (!dept) {
-      const info = db.prepare('INSERT INTO departments (name, icon, description) VALUES (?, ?, ?)')
-        .run('النشر والتصاميم', '📸', 'طلبات النشر، قروب النخبة للتصاميم، والنشر على حسابات إنستقرام عبر Buffer.');
-      dept = { id: Number(info.lastInsertRowid) };
+  transaction(() => {
+    // 1. Departments (earlier names are renamed first, so their members follow).
+    for (const [from, to] of Object.entries(RENAMED_DEPARTMENTS)) {
+      if (!db.prepare('SELECT 1 FROM departments WHERE name = ?').get(to)) {
+        db.prepare('UPDATE departments SET name = ? WHERE name = ?').run(to, from);
+      }
     }
+    const deptId = {};
+    for (const [key, [name, icon, description]] of Object.entries(departments)) {
+      const row = db.prepare('SELECT id FROM departments WHERE name = ?').get(name);
+      deptId[key] = row ? row.id : Number(db.prepare('INSERT INTO departments (name, icon, description) VALUES (?, ?, ?)')
+        .run(name, icon, description).lastInsertRowid);
+    }
+
+    // 2. One-time clean-up of the sample company.
+    if (!meta.get.get('demo_removed')) {
+      const delUser = db.prepare('DELETE FROM employees WHERE username = ?');
+      for (const u of DEMO_USERS) delUser.run(u);
+      // The admin account (حسين's) moves out of the sample departments.
+      const demoDepts = JSON.stringify(DEMO_DEPARTMENTS);
+      db.prepare(`UPDATE employees SET department_id = ?,
+                    full_name = CASE WHEN full_name = 'مدير النظام' THEN 'حسين' ELSE full_name END,
+                    job_title = CASE WHEN job_title = 'مسؤول النظام' THEN 'الرئيس التنفيذي' ELSE job_title END
+                  WHERE username = 'admin'
+                    AND (department_id IS NULL OR department_id IN (SELECT id FROM departments WHERE name IN (SELECT value FROM json_each(?))))`)
+        .run(deptId.exec, demoDepts);
+      for (const name of DEMO_DEPARTMENTS) {
+        db.prepare(`DELETE FROM departments WHERE name = ?
+                    AND NOT EXISTS (SELECT 1 FROM employees WHERE department_id = departments.id)`).run(name);
+      }
+      // The earlier publishing team had a placeholder designer; Make's elite designer is زبرجد.
+      if (!db.prepare("SELECT 1 FROM employees WHERE username = 'zabarjad'").get()) {
+        db.prepare(`UPDATE employees SET username = 'zabarjad', full_name = 'زبرجد'
+                    WHERE username = 'elite.designer'`).run();
+      }
+      meta.set.run('demo_removed', '1');
+    }
+
+    // 3. The admin account is حسين's.
+    if (fresh) {
+      db.prepare(`INSERT INTO employees (full_name, username, password_hash, email, job_title, department_id,
+                    is_manager, role, workflow_role, must_change_password)
+                  VALUES ('حسين', 'admin', ?, 'info@platinumgatekw.com', 'الرئيس التنفيذي', ?, 1, 'admin', 'owner', 1)`)
+        .run(bcrypt.hashSync('admin123', 10), deptId.exec);
+      added.push('admin');
+    }
+
+    // 4. The team.
     const byUsername = db.prepare('SELECT id FROM employees WHERE username = ?');
     const insert = db.prepare(`
       INSERT INTO employees (full_name, username, password_hash, job_title, department_id, is_manager,
-                             workflow_role, instagram_account, buffer_user, is_digital, must_change_password)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`);
-    const setRole = db.prepare('UPDATE employees SET workflow_role = ?, is_digital = 1 WHERE id = ?');
-
-    for (const [name, username, title, role, instagram, buffer] of workflowTeam) {
+                             workflow_role, make_names, bio, instagram_account, buffer_user, is_digital, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`);
+    // Existing accounts keep their edits; only fill in what the earlier versions didn't have.
+    const complete = db.prepare(`
+      UPDATE employees SET department_id = COALESCE(department_id, ?), workflow_role = CASE WHEN workflow_role = '' THEN ? ELSE workflow_role END,
+        make_names = CASE WHEN make_names = '' THEN ? ELSE make_names END, bio = CASE WHEN bio = '' THEN ? ELSE bio END
+      WHERE id = ?`);
+    for (const [name, username, title, dept, isManager, role, makeNames, bio] of team) {
       const existing = byUsername.get(username);
-      if (existing) setRole.run(role, existing.id);
-      else insert.run(name, username, hash, title, dept.id, role === 'director' ? 1 : 0, role, instagram, buffer);
+      if (existing) {
+        complete.run(deptId[dept], role, makeNames, bio, existing.id);
+        continue;
+      }
+      const [instagram, buffer] = PUBLISHER_PLACEHOLDERS(username);
+      insert.run(name, username, lockedHash, title, deptId[dept], isManager, role, makeNames, bio, instagram, buffer);
+      added.push(username);
     }
-    // The system admin is the one who places the publishing requests.
-    db.prepare("UPDATE employees SET workflow_role = 'owner' WHERE username = 'admin' AND workflow_role = ''").run();
-    db.exec('COMMIT');
-  } catch (err) {
-    db.exec('ROLLBACK');
-    throw err;
-  }
-  return true;
+    // Earlier versions put the publishing team in its own department; move them to the elite team.
+    db.prepare(`UPDATE employees SET department_id = ? WHERE username IN ('hassoun') AND department_id = ?`)
+      .run(deptId.exec, deptId.elite);
+  });
+  return added;
 }
 
 if (require.main === module) {
-  console.log(seed() ? 'تمت إضافة البيانات التجريبية.' : 'قاعدة البيانات تحتوي على بيانات مسبقاً، لم يتم تغيير شيء.');
-  if (seedWorkflow()) console.log('تمت إضافة فريق النشر الرقمي (حسون، موزة، المصمم، و7 موظفين للنشر).');
+  const added = ensureCompany();
+  console.log(added.length ? `تمت إضافة: ${added.join('، ')}` : 'كل الأقسام والموظفين موجودون، لم يتغير شيء.');
 }
 
-module.exports = { seed, seedWorkflow, DEFAULT_PASSWORD };
+module.exports = { ensureCompany, DEFAULT_PASSWORD };

@@ -58,7 +58,12 @@ addColumns('employees', [
   // Private link (/connect/<token>) used to connect the employee's Instagram + Buffer accounts.
   ['connect_token', "TEXT NOT NULL DEFAULT ''"],
   ['connected_at', "TEXT NOT NULL DEFAULT ''"],
+  // Prefixes (before " - ") of this digital employee's scenarios in Make, separated by "|".
+  ['make_names', "TEXT NOT NULL DEFAULT ''"],
 ]);
+
+// Small key/value store for one-time migrations.
+db.exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
 
 db.exec(`
   -- Each publisher has their own Instagram account and Buffer user.

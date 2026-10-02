@@ -4,21 +4,27 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
-const { seed, seedWorkflow } = require('./seed');
+const { ensureCompany } = require('./seed');
 const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
 const agents = require('./agents');
 const { createConnectRoutes } = require('./connect');
-const { createAppRoutes, checkMake } = require('./apps');
+const { createAppRoutes, checkMake, scenariosFor } = require('./apps');
 
 const PORT = Number(process.env.PORT) || 3000;
-const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
+const COMPANY_NAME = process.env.COMPANY_NAME || 'البوابة البلاتينية';
+const COMPANY_NAME_EN = process.env.COMPANY_NAME_EN || 'Platinum Gate';
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'info@platinumgatekw.com';
+const INSTAGRAM = process.env.INSTAGRAM || 'championshipskw';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 if (!process.env.SESSION_SECRET) {
   console.warn('تنبيه: لم يتم ضبط SESSION_SECRET، سيتم تسجيل خروج الجميع عند إعادة تشغيل الخادم.');
 }
 
-if (seed()) console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
-if (seedWorkflow()) console.log('تم إنشاء فريق النشر: حسون، موزة، المصمم، و7 موظفين للنشر.');
+{
+  const added = ensureCompany();
+  if (added.includes('admin')) console.log('تم إنشاء حساب مدير النظام (admin / admin123).');
+  if (added.length) console.log(`تمت إضافة ${added.length} حساب من فريق البوابة البلاتينية.`);
+}
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -66,7 +72,9 @@ const q = {
   stats: db.prepare(`
     SELECT (SELECT COUNT(*) FROM departments) AS departments,
            (SELECT COUNT(*) FROM employees WHERE is_active = 1) AS employees,
-           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_manager = 1) AS managers`),
+           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_manager = 1) AS managers,
+           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_digital = 1) AS digital,
+           (SELECT COUNT(*) FROM app_docs WHERE app = 'tournaments' AND col = 'tournaments') AS tournaments`),
 };
 
 // ---------- helpers ----------
@@ -99,6 +107,9 @@ const asyncRoute = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next
 // ---------- per-request locals ----------
 app.use((req, res, next) => {
   res.locals.company = COMPANY_NAME;
+  res.locals.companyEn = COMPANY_NAME_EN;
+  res.locals.contactEmail = CONTACT_EMAIL;
+  res.locals.instagram = INSTAGRAM;
   res.locals.year = new Date().getFullYear();
   res.locals.path = req.path;
   res.locals.initials = initials;
@@ -200,13 +211,24 @@ app.get('/employees', requireAuth, (req, res) => {
   });
 });
 
-app.get('/employees/:id', requireAuth, (req, res) => {
+app.get('/employees/:id', requireAuth, asyncRoute(async (req, res) => {
   const employee = q.employeeById.get(toId(req.params.id));
   if (!employee || (!employee.is_active && req.user.role !== 'admin')) {
     return res.status(404).render('error', { title: 'غير موجود', message: 'الموظف غير موجود.' });
   }
-  res.render('employee', { title: employee.full_name, employee });
-});
+  // A digital employee's live scenarios in Make, for the admin and the owner.
+  let scenarios = null;
+  let makeError = '';
+  if (employee.make_names && (req.user.role === 'admin' || req.user.workflow_role === 'owner')) {
+    try {
+      scenarios = await scenariosFor(employee.make_names);
+    } catch (err) {
+      makeError = 'تعذر الوصول إلى Make الآن.';
+      console.error(`Make scenarios: ${err.message}`);
+    }
+  }
+  res.render('employee', { title: employee.full_name, employee, scenarios, makeError });
+}));
 
 // ---------- my profile ----------
 app.get('/profile', requireAuth, (req, res) => {

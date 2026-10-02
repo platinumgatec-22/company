@@ -98,6 +98,32 @@ async function makeClient() {
   throw lastErr || new Error('Make MCP is not configured');
 }
 
+// Scenarios of the Make team, cached for a few minutes (shown on digital employees' profiles).
+const MAKE_TEAM_ID = Number(process.env.MAKE_TEAM_ID) || 2966345;
+let scenarioCache = { at: 0, list: null };
+
+async function makeScenarios() {
+  if (!makeConfigured) return null;
+  if (scenarioCache.list && Date.now() - scenarioCache.at < 5 * 60 * 1000) return scenarioCache.list;
+  const result = await (await makeClient()).callTool({ name: 'scenarios_list', arguments: { teamId: MAKE_TEAM_ID } }, undefined, { timeout: 30000 });
+  const payload = payloadOf(result);
+  const list = (Array.isArray(payload) ? payload : payload?.scenarios || []).map((s) => ({
+    id: s.id, name: String(s.name || ''), active: Boolean(s.isActive), paused: Boolean(s.isPaused),
+    executions: s.executions ?? 0, errors: s.errors ?? 0, nextExec: s.nextExec || null,
+    url: MAKE_ZONE ? `https://${MAKE_ZONE}/${MAKE_TEAM_ID}/scenarios/${s.id}/edit` : '',
+  }));
+  scenarioCache = { at: Date.now(), list };
+  return list;
+}
+
+// The scenarios of one digital employee: those whose name starts with one of their prefixes.
+async function scenariosFor(makeNames) {
+  const prefixes = String(makeNames || '').split('|').map((p) => p.trim()).filter(Boolean);
+  if (!prefixes.length) return null;
+  const all = await makeScenarios();
+  return all && all.filter((s) => prefixes.includes(s.name.split(' - ')[0].trim()));
+}
+
 // Logs at startup whether the decisions portal can reach Make.
 async function checkMake() {
   if (!makeConfigured) return;
@@ -257,4 +283,4 @@ function createAppRoutes({ requireAuth }) {
   return router;
 }
 
-module.exports = { createAppRoutes, checkMake, APPS };
+module.exports = { createAppRoutes, checkMake, scenariosFor, APPS };

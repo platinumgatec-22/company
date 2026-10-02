@@ -30,6 +30,28 @@
         <% if (employee.buffer_user) { %><div><dt>مستخدم Buffer</dt><dd dir="ltr"><%= employee.buffer_user %></dd></div><% } %>
       </dl>
       <% if (employee.bio) { %><div class="bio"><h3>نبذة</h3><p><%= employee.bio %></p></div><% } %>
+      <% if (scenarios || makeError) { %>
+        <div class="bio">
+          <h3>⚙️ عمله في Make</h3>
+          <% if (makeError) { %><p class="muted"><%= makeError %></p>
+          <% } else if (!scenarios.length) { %><p class="muted">لا توجد سيناريوهات باسمه في Make.</p>
+          <% } else { %>
+            <ul class="scenarios">
+              <% scenarios.forEach(s => { %>
+                <li>
+                  <div><strong><%= s.name.split(' - ').slice(1).join(' - ') || s.name %></strong>
+                    <span class="muted small">مرات التشغيل: <%= s.executions %><% if (s.nextExec) { %> · التشغيل القادم: <span dir="ltr"><%= String(s.nextExec).slice(0, 16).replace('T', ' ') %></span><% } %></span></div>
+                  <div class="chips">
+                    <% if (!s.active || s.paused) { %><span class="badge">متوقف</span><% } else { %><span class="badge badge-green">يعمل</span><% } %>
+                    <% if (s.errors) { %><span class="badge badge-red"><%= s.errors %> أخطاء</span><% } %>
+                    <% if (s.url) { %><a class="small" href="<%= s.url %>" target="_blank" rel="noopener">فتح في Make ↗</a><% } %>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      <% } %>
       <% if (user.role === 'admin') { %>
         <div class="card-actions"><a class="btn btn-ghost" href="/admin/employees/<%= employee.id %>/edit">تعديل</a></div>
       <% } %>

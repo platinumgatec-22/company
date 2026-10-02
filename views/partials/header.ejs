@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %> | <%= company %></title>
+  <meta name="description" content="<%= company %> (<%= companyEn %>) — تنظيم البطولات الرياضية في الكويت.">
+  <link rel="icon" type="image/png" href="/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -12,7 +14,7 @@
 <body>
 <header class="topbar">
   <div class="container topbar-inner">
-    <a href="/" class="brand"><span class="brand-mark">◆</span> <%= company %></a>
+    <a href="/" class="brand"><img src="/img/logo-white.png" alt="" class="brand-logo" width="34" height="40"><span><%= company %><small><%= companyEn %></small></span></a>
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="القائمة">
     <label for="nav-toggle" class="nav-burger" aria-hidden="true">☰</label>
     <nav class="nav">
