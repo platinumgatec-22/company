@@ -262,3 +262,7 @@ input:disabled { background: var(--bg); color: var(--muted); }
   .request-layout, .group-layout { grid-template-columns: 1fr; }
 }
 .badge-digital { background: #e6f6f8; color: #0e6b78; }
+.link-input { min-width: 260px; font-size: .8rem; }
+.connect-steps { margin: 1.5rem 0 0; padding-inline-start: 1.25rem; display: grid; gap: 1.25rem; }
+.connect-steps p { margin: .25rem 0 .5rem; }
+.form-card textarea[readonly] { font-size: .85rem; }

@@ -90,7 +90,7 @@ function post(request, groupKey, from, toLabel, body) {
 
 const person = (e) => ({
   id: e.id ?? e.employee_id, name: e.full_name ?? e.employee_name, username: e.username,
-  phone: e.phone, instagram: e.instagram_account, buffer_user: e.buffer_user,
+  phone: e.phone, instagram: e.instagram_account, buffer_user: e.buffer_user, buffer_profile_id: e.buffer_profile_id,
 });
 
 function advance(r, from, to) {
@@ -158,11 +158,11 @@ function toDesign(r, actor, publisherIds, note) {
   const publishers = q.publishers.all().filter((p) => chosen.has(p.id));
   if (publishers.length === 0) throw new StepError('اختر موظف نشر واحداً على الأقل.');
   const insert = db.prepare(`
-    INSERT INTO publish_assignments (request_id, employee_id, employee_name, instagram_account, buffer_user)
-    VALUES (?, ?, ?, ?, ?)`);
+    INSERT INTO publish_assignments (request_id, employee_id, employee_name, instagram_account, buffer_user, buffer_profile_id)
+    VALUES (?, ?, ?, ?, ?, ?)`);
   transaction(() => {
     advance(r, 'to_manager', 'in_design');
-    for (const p of publishers) insert.run(r.id, p.id, p.full_name, p.instagram_account, p.buffer_user);
+    for (const p of publishers) insert.run(r.id, p.id, p.full_name, p.instagram_account, p.buffer_user, p.buffer_profile_id);
     post(r, 'designs', actor, 'فريق التصاميم',
       `مطلوب تصميم: ${r.title}\n${r.brief}${note ? `\nملاحظات: ${note}` : ''}\n`
       + `سيُنشر على: ${publishers.map((p) => `@${p.instagram_account}`).join('، ')}`);

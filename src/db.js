@@ -53,6 +53,11 @@ addColumns('employees', [
   ['buffer_user', "TEXT NOT NULL DEFAULT ''"],
   // Digital employee: the system does this employee's workflow steps automatically (src/agents.js).
   ['is_digital', 'INTEGER NOT NULL DEFAULT 0'],
+  // Buffer channel (profile) id of the employee's Instagram, used by the Make/Buffer scenario.
+  ['buffer_profile_id', "TEXT NOT NULL DEFAULT ''"],
+  // Private link (/connect/<token>) used to connect the employee's Instagram + Buffer accounts.
+  ['connect_token', "TEXT NOT NULL DEFAULT ''"],
+  ['connected_at', "TEXT NOT NULL DEFAULT ''"],
 ]);
 
 db.exec(`
@@ -116,6 +121,7 @@ addColumns('publish_requests', [
 addColumns('publish_assignments', [
   // When a digital publisher handed the post to Buffer (webhook).
   ['requested_at', "TEXT NOT NULL DEFAULT ''"],
+  ['buffer_profile_id', "TEXT NOT NULL DEFAULT ''"],
 ]);
 
 module.exports = db;

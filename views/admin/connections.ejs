@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="page-head">
+      <div>
+        <h1 class="h2">ربط حسابات موظفي النشر</h1>
+        <p class="muted">لكل موظف رابط خاص يربط منه حساب الإنستقرام مع Buffer. الرابط سري: لا تنشره إلا لمن سيربط الحساب.</p>
+      </div>
+    </div>
+    <div class="table-wrap card">
+      <table class="table">
+        <thead><tr><th>الموظف</th><th>الحسابات</th><th>الحالة</th><th>رابط الربط</th><th></th></tr></thead>
+        <tbody>
+          <% publishers.forEach(p => { const msg = `رابط ربط حسابات ${p.full_name} (إنستقرام + Buffer):\n${p.link}`; %>
+            <tr>
+              <td><strong><%= p.full_name %></strong><% if (p.is_digital) { %> <span class="badge badge-digital">🤖 رقمي</span><% } %></td>
+              <td class="small" dir="ltr"><% if (p.connected_at) { %>IG @<%= p.instagram_account %><br>Buffer <%= p.buffer_user %><% } else { %>—<% } %></td>
+              <td><% if (p.connected_at) { %><span class="badge badge-green">مربوط <%= p.connected_at.slice(0, 10) %></span><% } else { %><span class="badge badge-red">غير مربوط</span><% } %></td>
+              <td><input class="link-input" value="<%= p.link %>" readonly dir="ltr" onclick="this.select()"></td>
+              <td class="row-actions">
+                <button type="button" class="btn btn-ghost btn-sm" data-copy="<%= p.link %>">نسخ</button>
+                <a class="btn btn-ghost btn-sm" href="https://wa.me/?text=<%= encodeURIComponent(msg) %>" target="_blank" rel="noopener">واتساب</a>
+                <a class="btn btn-ghost btn-sm" href="<%= p.link %>" target="_blank" rel="noopener">فتح</a>
+                <form method="post" action="/admin/connections/<%= p.id %>/regenerate" class="inline"
+                      onsubmit="return confirm('إنشاء رابط جديد؟ الرابط الحالي سيتوقف.')">
+                  <button class="btn btn-danger btn-sm">رابط جديد</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% if (publishers.length === 0) { %><div class="empty">لا يوجد موظفو نشر.</div><% } %>
+    <% if (publishers.length) { %>
+      <div class="card form-card" style="margin-top:1rem">
+        <h3>كل الروابط (للنسخ دفعة واحدة)</h3>
+        <textarea rows="<%= publishers.length * 2 + 1 %>" readonly dir="auto" onclick="this.select()"><%= publishers.map(p => `${p.full_name}:\n${p.link}`).join('\n') %></textarea>
+      </div>
+    <% } %>
+  </div>
+</section>
+<script>
+  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'تم النسخ ✓'; } catch { prompt('انسخ الرابط:', b.dataset.copy); }
+  }));
+</script>
+<%- include('../partials/footer') %>
