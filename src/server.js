@@ -8,7 +8,7 @@ const { seed, seedWorkflow } = require('./seed');
 const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
 const agents = require('./agents');
 const { createConnectRoutes } = require('./connect');
-const { createAppRoutes } = require('./apps');
+const { createAppRoutes, checkMake } = require('./apps');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -450,6 +450,7 @@ app.use((err, req, res, _next) => {
 
 if (require.main === module) {
   agents.start();
+  checkMake();
   app.listen(PORT, () => console.log(`${COMPANY_NAME}: http://localhost:${PORT}`));
 }
 

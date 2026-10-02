@@ -45,29 +45,70 @@ const newId = () => crypto.randomBytes(12).toString('base64url');
 const isPlainObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
 
 // ---------- Make (MCP) for the decisions portal ----------
-// MAKE_MCP_URL is the Make MCP server address (Make → Profile → API/MCP access);
-// MAKE_MCP_TOKEN is sent as a Bearer token when the URL itself doesn't carry one.
+// Either MAKE_MCP_URL (the full Make MCP server address), or MAKE_ZONE (e.g. eu1.make.com) +
+// MAKE_MCP_TOKEN, from which the known Make MCP addresses are tried in order.
 const MAKE_MCP_URL = process.env.MAKE_MCP_URL || '';
 const MAKE_MCP_TOKEN = process.env.MAKE_MCP_TOKEN || '';
+const MAKE_ZONE = (process.env.MAKE_ZONE || '').replace(/^https?:\/\//, '').replace(/\/+$/, '');
+const makeConfigured = Boolean(MAKE_MCP_URL || (MAKE_ZONE && MAKE_MCP_TOKEN));
 let mcpClient = null;
+let workingTarget = null;
+
+function makeTargets() {
+  if (MAKE_MCP_URL) {
+    const auth = MAKE_MCP_TOKEN ? { Authorization: `Bearer ${MAKE_MCP_TOKEN}` } : undefined;
+    return [['stream', MAKE_MCP_URL, auth], ['sse', MAKE_MCP_URL, auth]];
+  }
+  const t = encodeURIComponent(MAKE_MCP_TOKEN);
+  const base = `https://${MAKE_ZONE}/mcp`;
+  return [
+    ['stream', `${base}/u/${t}/stateless`],
+    ['stream', `${base}/u/${t}/stream`],
+    ['sse', `${base}/u/${t}/sse`],
+    ['sse', `${base}/api/v1/u/${t}/sse`],
+    ['stream', `${base}/stateless`, { Authorization: `Bearer ${MAKE_MCP_TOKEN}` }],
+  ];
+}
+
+// For logs: never print the token.
+const redact = (url) => (MAKE_MCP_TOKEN ? url.split(encodeURIComponent(MAKE_MCP_TOKEN)).join('<token>') : url);
 
 async function makeClient() {
   if (mcpClient) return mcpClient;
   const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
   const { StreamableHTTPClientTransport } = require('@modelcontextprotocol/sdk/client/streamableHttp.js');
   const { SSEClientTransport } = require('@modelcontextprotocol/sdk/client/sse.js');
-  const url = new URL(MAKE_MCP_URL);
-  const requestInit = MAKE_MCP_TOKEN ? { headers: { Authorization: `Bearer ${MAKE_MCP_TOKEN}` } } : undefined;
-  const client = new Client({ name: 'company-portal', version: '1.0.0' });
-  try {
-    await client.connect(new StreamableHTTPClientTransport(url, { requestInit }));
-  } catch {
-    // Older servers only speak SSE.
-    await client.connect(new SSEClientTransport(url, { requestInit }));
+  const targets = workingTarget ? [workingTarget] : makeTargets();
+  let lastErr;
+  for (const target of targets) {
+    const [kind, url, headers] = target;
+    const Transport = kind === 'sse' ? SSEClientTransport : StreamableHTTPClientTransport;
+    const client = new Client({ name: 'company-portal', version: '1.0.0' });
+    try {
+      await client.connect(new Transport(new URL(url), { requestInit: headers ? { headers } : undefined }));
+      client.onclose = () => { mcpClient = null; };
+      workingTarget = target;
+      mcpClient = client;
+      return client;
+    } catch (err) {
+      lastErr = err;
+      console.error(`Make MCP: ${kind} ${redact(url)} failed: ${err.message}`);
+    }
   }
-  client.onclose = () => { mcpClient = null; };
-  mcpClient = client;
-  return client;
+  throw lastErr || new Error('Make MCP is not configured');
+}
+
+// Logs at startup whether the decisions portal can reach Make.
+async function checkMake() {
+  if (!makeConfigured) return;
+  try {
+    const { tools } = await (await makeClient()).listTools();
+    const needed = ['scenarios_run', 'scenarios_list', 'data-store-records_list', 'executions_list'];
+    const missing = needed.filter((n) => !tools.some((t) => t.name === n));
+    console.log(`Make MCP: connected via ${workingTarget[0]} ${redact(workingTarget[1])} (${tools.length} tools${missing.length ? `, missing: ${missing.join(', ')}` : ''})`);
+  } catch (err) {
+    console.error(`Make MCP: could not connect: ${err.message}`);
+  }
 }
 
 // Tool results come back as text blocks holding JSON; the pages expect the parsed value.
@@ -104,7 +145,7 @@ function createAppRoutes({ requireAuth }) {
   router.get('/apps/:app', requireAuth, guard, loadApp, (req, res) => {
     res.render('apps/frame', {
       title: req.app_.title, app: req.app_,
-      mcpMissing: req.app_.mcp && !MAKE_MCP_URL,
+      mcpMissing: req.app_.mcp && !makeConfigured,
     });
   });
 
@@ -128,7 +169,7 @@ function createAppRoutes({ requireAuth }) {
   }, guard, loadApp);
 
   api.get('/config', (req, res) => {
-    res.json({ user: req.user.full_name, canWrite: true, mcp: Boolean(req.app_.mcp && MAKE_MCP_URL) });
+    res.json({ user: req.user.full_name, canWrite: true, mcp: Boolean(req.app_.mcp && makeConfigured) });
   });
 
   // All collections of the app in one response; `same` when nothing changed since `rev`.
@@ -186,7 +227,7 @@ function createAppRoutes({ requireAuth }) {
   });
 
   api.post('/mcp', express.json({ limit: '256kb' }), async (req, res) => {
-    if (!req.app_.mcp || !MAKE_MCP_URL) return res.status(503).json({ code: 'server_not_connected', message: 'Make غير مربوط بالموقع.' });
+    if (!req.app_.mcp || !makeConfigured) return res.status(503).json({ code: 'server_not_connected', message: 'Make غير مربوط بالموقع.' });
     const { tool, args } = req.body || {};
     if (typeof tool !== 'string' || !/^[\w-]{1,80}$/.test(tool)) return res.status(400).json({ code: 'invalid_argument', message: 'أداة غير صالحة' });
     try {
@@ -216,4 +257,4 @@ function createAppRoutes({ requireAuth }) {
   return router;
 }
 
-module.exports = { createAppRoutes, APPS };
+module.exports = { createAppRoutes, checkMake, APPS };

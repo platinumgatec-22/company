@@ -107,8 +107,9 @@ npm start
 صُمّمت هذه الأنظمة أولاً كصفحات Claude (Artifacts). ملفاتها في مجلد `apps/` كما هي، والموقع يحقن فيها `public/js/claude-runtime.js`
 الذي يحوّل استدعاءاتها (قاعدة البيانات، رفع الملفات، التنزيل، Make) إلى خادم الموقع. البيانات تُحفظ في قاعدة بيانات الموقع (جداول `app_docs` و`app_blobs`).
 
-**ربط بوابة القرارات بـ Make:** ضع رابط خادم MCP الخاص بـ Make في `MAKE_MCP_URL` (من حسابك في Make: Profile ← API / MCP access)،
-وإن كان الرابط لا يحتوي التوكن فضعه في `MAKE_MCP_TOKEN`. بدونهما تظهر البوابة بدون بيانات.
+**ربط بوابة القرارات بـ Make:** ضع منطقة حسابك في `MAKE_ZONE` (مثل `eu1.make.com`) وتوكن MCP من Make في `MAKE_MCP_TOKEN`،
+فيجرّب الخادم صيغ روابط Make المعروفة ويحتفظ بالتي تعمل (أو ضع الرابط كاملاً في `MAKE_MCP_URL`). عند التشغيل يُكتب في السجل
+`Make MCP: connected …` أو سبب الفشل (بدون إظهار التوكن).
 
 ## الإعدادات (متغيرات البيئة)
 
@@ -123,7 +124,8 @@ npm start
 | `PUBLIC_URL` | رابط الموقع العام (لروابط الرد والتصاميم) | رابط Render أو `http://localhost:PORT` |
 | `ANTHROPIC_API_KEY` | مفتاح Claude لكتابة نصوص الموظفين الرقميين | — (نصوص جاهزة) |
 | `AI_MODEL` | نموذج Claude | `claude-opus-5-5` |
-| `MAKE_MCP_URL` | رابط خادم MCP في Make (لبوابة القرارات) | — |
+| `MAKE_ZONE` | منطقة حساب Make (مثل `eu1.make.com`) | — |
+| `MAKE_MCP_URL` | رابط خادم MCP في Make كاملاً (بديل عن المنطقة) | — |
 | `MAKE_MCP_TOKEN` | توكن Make إن لم يكن داخل الرابط | — |
 | `NODE_ENV` | ضعه `production` لتفعيل الكوكيز الآمنة (HTTPS) | — |
 

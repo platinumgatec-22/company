@@ -27,6 +27,8 @@ services:
       - key: WORKFLOW_CALLBACK_TOKEN
         generateValue: true
       # Decisions portal → Make MCP server.
+      - key: MAKE_ZONE
+        value: eu1.make.com
       - key: MAKE_MCP_URL
         sync: false
       - key: MAKE_MCP_TOKEN
