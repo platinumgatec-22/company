@@ -1,0 +1,123 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="page-head">
+      <div>
+        <h1 class="h2">#<%= r.id %> <%= r.title %></h1>
+        <p class="muted">من <%= r.created_by_name || '—' %> · <%= fmt(r.created_at) %><% if (r.due_date) { %> · موعد النشر <%= r.due_date %><% } %></p>
+      </div>
+      <%- include('status-badge', { status: r.status }) %>
+    </div>
+    <%- include('pipeline', { status: r.status }) %>
+
+    <div class="request-layout">
+      <div class="stack">
+        <div class="card form-card">
+          <h3>تفاصيل الطلب</h3>
+          <p class="pre"><%= r.brief || '—' %></p>
+          <% if (r.design_url) { %>
+            <h3>التصميم</h3>
+            <p><a href="<%= r.design_url %>" target="_blank" rel="noopener" dir="ltr"><%= r.design_url %></a>
+              <% if (r.designed_by_name) { %><span class="muted small"> — <%= r.designed_by_name %></span><% } %></p>
+            <% if (r.caption) { %><h3>الكابشن</h3><p class="pre"><%= r.caption %></p><% } %>
+          <% } %>
+        </div>
+
+        <%# ---------- the action for the current step ---------- %>
+        <% if (r.status === 'to_director' && hasRole('director')) { %>
+          <div class="card form-card highlight">
+            <h3>تحويل الطلب إلى <%= pipeline[2] %></h3>
+            <form method="post" action="/workflow/<%= r.id %>/forward" class="form">
+              <label>ملاحظات (اختياري)<textarea name="note" rows="3" maxlength="2000"></textarea></label>
+              <button class="btn btn-primary">إرسال إلى <%= pipeline[2] %> في قروب المانجير</button>
+            </form>
+          </div>
+        <% } %>
+
+        <% if (r.status === 'to_manager' && hasRole('manager')) { %>
+          <div class="card form-card highlight">
+            <h3>إرسال إلى قروب النخبة للتصاميم</h3>
+            <form method="post" action="/workflow/<%= r.id %>/to-design" class="form">
+              <fieldset class="publishers">
+                <legend>موظفو النشر (كل واحد على حسابه في إنستقرام عبر Buffer)</legend>
+                <% publishers.forEach(p => { %>
+                  <label class="check"><input type="checkbox" name="publishers" value="<%= p.id %>" checked>
+                    <%= p.full_name %> <span class="muted small" dir="ltr">@<%= p.instagram_account %> · <%= p.buffer_user %></span></label>
+                <% }) %>
+                <% if (publishers.length === 0) { %><p class="muted">لا يوجد موظفو نشر. أضفهم من لوحة الإدارة.</p><% } %>
+              </fieldset>
+              <label>ملاحظات للمصممين (اختياري)<textarea name="note" rows="3" maxlength="2000"></textarea></label>
+              <button class="btn btn-primary">إرسال إلى التصاميم</button>
+            </form>
+          </div>
+        <% } %>
+
+        <% if (r.status === 'in_design' && hasRole('designer')) { %>
+          <div class="card form-card highlight">
+            <h3>تسليم التصميم لموظفي النشر</h3>
+            <form method="post" action="/workflow/<%= r.id %>/design" class="form">
+              <label>رابط التصميم (Canva / Drive / …) *<input name="design_url" type="url" required dir="ltr" placeholder="https://"></label>
+              <label>الكابشن<textarea name="caption" rows="4" maxlength="2200"></textarea></label>
+              <button class="btn btn-primary">إرسال للنشر</button>
+            </form>
+          </div>
+        <% } %>
+
+        <% if (r.status === 'published' && hasRole('manager')) { %>
+          <div class="card form-card highlight">
+            <h3>إرسال تقرير النشر إلى <%= pipeline[1] %></h3>
+            <pre class="report"><%= reportPreview %></pre>
+            <form method="post" action="/workflow/<%= r.id %>/report" class="form">
+              <label>ملاحظات تُضاف للتقرير (اختياري)<textarea name="notes" rows="3" maxlength="2000"></textarea></label>
+              <button class="btn btn-primary">إرسال التقرير في قروب المانجير</button>
+            </form>
+          </div>
+        <% } %>
+
+        <% if (r.report_text) { %>
+          <div class="card form-card">
+            <h3>📊 تقرير النشر <span class="muted small"><%= fmt(r.reported_at) %></span></h3>
+            <pre class="report"><%= r.report_text %></pre>
+          </div>
+        <% } %>
+
+        <div class="card form-card">
+          <h3>سجل التحويلات</h3>
+          <%- include('messages', { messages, showGroup: true }) %>
+        </div>
+      </div>
+
+      <aside class="card form-card">
+        <h3>حسابات النشر</h3>
+        <% if (assignments.length === 0) { %>
+          <p class="muted">تختارها <%= pipeline[2] %> عند إرسال الطلب للتصاميم.</p>
+        <% } %>
+        <ul class="assignments">
+          <% assignments.forEach(a => { const mine = myAssignment && myAssignment.id === a.id; %>
+            <li class="<%= a.published_at ? 'done' : '' %> <%= mine ? 'mine' : '' %>">
+              <div>
+                <strong><%= a.employee_name %></strong>
+                <div class="muted small" dir="ltr">IG @<%= a.instagram_account %> · Buffer <%= a.buffer_user %></div>
+                <% if (a.published_at) { %>
+                  <span class="badge badge-green">نُشر <%= fmt(a.published_at) %></span>
+                  <% if (a.post_url) { %><a class="small" href="<%= a.post_url %>" target="_blank" rel="noopener">رابط المنشور</a><% } %>
+                <% } else { %>
+                  <span class="badge">لم يُنشر</span>
+                <% } %>
+              </div>
+              <% if (r.status === 'publishing' && !a.published_at && (mine || user.role === 'admin')) { %>
+                <form method="post" action="/workflow/<%= r.id %>/assignments/<%= a.id %>/publish" class="form">
+                  <% if (mine) { %><a class="btn btn-ghost btn-sm" href="https://publish.buffer.com" target="_blank" rel="noopener">فتح Buffer</a><% } %>
+                  <input name="post_url" type="url" dir="ltr" placeholder="رابط المنشور (اختياري)">
+                  <button class="btn btn-primary btn-sm">تم النشر ✓</button>
+                </form>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

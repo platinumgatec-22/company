@@ -38,4 +38,69 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department_id);
 `);
 
+// Columns added after the first release: add them to existing databases.
+const employeeColumns = new Set(db.prepare('PRAGMA table_info(employees)').all().map((c) => c.name));
+for (const [name, def] of [
+  // '' | owner | director | manager | designer | publisher (see src/workflow.js)
+  ['workflow_role', "TEXT NOT NULL DEFAULT ''"],
+  ['instagram_account', "TEXT NOT NULL DEFAULT ''"],
+  ['buffer_user', "TEXT NOT NULL DEFAULT ''"],
+]) {
+  if (!employeeColumns.has(name)) db.exec(`ALTER TABLE employees ADD COLUMN ${name} ${def}`);
+}
+
+db.exec(`
+  -- Each publisher has their own Instagram account and Buffer user.
+  CREATE UNIQUE INDEX IF NOT EXISTS uq_employees_instagram
+    ON employees(instagram_account COLLATE NOCASE) WHERE instagram_account <> '';
+  CREATE UNIQUE INDEX IF NOT EXISTS uq_employees_buffer
+    ON employees(buffer_user COLLATE NOCASE) WHERE buffer_user <> '';
+
+  CREATE TABLE IF NOT EXISTS publish_requests (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    title         TEXT NOT NULL,
+    brief         TEXT NOT NULL DEFAULT '',
+    due_date      TEXT NOT NULL DEFAULT '',
+    status        TEXT NOT NULL DEFAULT 'to_director',
+    created_by    INTEGER REFERENCES employees(id) ON DELETE SET NULL,
+    design_url    TEXT NOT NULL DEFAULT '',
+    caption       TEXT NOT NULL DEFAULT '',
+    designed_by   INTEGER REFERENCES employees(id) ON DELETE SET NULL,
+    report_text   TEXT NOT NULL DEFAULT '',
+    reported_at   TEXT NOT NULL DEFAULT '',
+    created_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS publish_assignments (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_id        INTEGER NOT NULL REFERENCES publish_requests(id) ON DELETE CASCADE,
+    employee_id       INTEGER REFERENCES employees(id) ON DELETE SET NULL,
+    -- Snapshot of the accounts used, so reports stay correct if the employee changes later.
+    employee_name     TEXT NOT NULL,
+    instagram_account TEXT NOT NULL DEFAULT '',
+    buffer_user       TEXT NOT NULL DEFAULT '',
+    post_url          TEXT NOT NULL DEFAULT '',
+    published_at      TEXT NOT NULL DEFAULT '',
+    UNIQUE (request_id, employee_id)
+  );
+
+  -- Hand-off messages posted to the groups (managers / elite designs) for each request.
+  CREATE TABLE IF NOT EXISTS workflow_messages (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_id  INTEGER NOT NULL REFERENCES publish_requests(id) ON DELETE CASCADE,
+    group_key   TEXT NOT NULL DEFAULT '',
+    from_id     INTEGER REFERENCES employees(id) ON DELETE SET NULL,
+    from_name   TEXT NOT NULL DEFAULT '',
+    to_label    TEXT NOT NULL DEFAULT '',
+    body        TEXT NOT NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_assignments_request ON publish_assignments(request_id);
+  CREATE INDEX IF NOT EXISTS idx_assignments_employee ON publish_assignments(employee_id);
+  CREATE INDEX IF NOT EXISTS idx_messages_request ON workflow_messages(request_id);
+  CREATE INDEX IF NOT EXISTS idx_messages_group ON workflow_messages(group_key);
+`);
+
 module.exports = db;

@@ -26,6 +26,17 @@
               <option value="admin" <%= employee.role === 'admin' ? 'selected' : '' %>>مدير النظام</option>
             </select>
           </label>
+          <label>الدور في سير النشر
+            <select name="workflow_role">
+              <option value="">— لا يشارك —</option>
+              <% Object.entries(ROLES).forEach(([key, label]) => { %>
+                <option value="<%= key %>" <%= employee.workflow_role === key ? 'selected' : '' %>><%= label %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>حساب إنستقرام<input name="instagram_account" value="<%= employee.instagram_account %>" dir="ltr" placeholder="@account"></label>
+          <label>مستخدم Buffer<input name="buffer_user" value="<%= employee.buffer_user %>" dir="ltr"></label>
+          <p class="muted small span-2">لكل موظف نشر حساب إنستقرام ومستخدم Buffer خاصين به (لا يتكرران بين الموظفين).</p>
           <label class="span-2">نبذة<textarea name="bio" rows="3" maxlength="500"><%= employee.bio %></textarea></label>
           <label class="span-2"><%= employee.id ? 'إعادة تعيين كلمة المرور (اتركها فارغة لعدم التغيير)' : 'كلمة المرور المبدئية *' %>
             <input name="password" type="text" <%= employee.id ? '' : 'required' %> minlength="6" autocomplete="new-password" dir="ltr">

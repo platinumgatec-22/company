@@ -4,7 +4,8 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
-const { seed } = require('./seed');
+const { seed, seedWorkflow } = require('./seed');
+const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -14,6 +15,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 if (seed()) console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
+if (seedWorkflow()) console.log('تم إنشاء فريق النشر: حسون، موزة، المصمم، و7 موظفين للنشر.');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -102,12 +104,14 @@ app.use((req, res, next) => {
   delete req.session.flash;
 
   res.locals.user = null;
+  res.locals.workflowInbox = 0;
   const userId = req.session.userId;
   if (userId) {
     const user = q.employeeById.get(userId);
     if (user && user.is_active) {
       req.user = user;
       res.locals.user = user;
+      if (inWorkflow(user)) res.locals.workflowInbox = inboxFor(user).length;
     } else {
       req.session = null;
     }
@@ -320,19 +324,21 @@ admin.get('/employees', (req, res) => {
 const emptyEmployee = {
   full_name: '', username: '', email: '', phone: '', job_title: '', department_id: 0,
   is_manager: 0, role: 'employee', hire_date: '', bio: '', is_active: 1,
+  workflow_role: '', instagram_account: '', buffer_user: '',
 };
+const handle = (v) => clean(v).replace(/^@+/, '').toLowerCase();
 
 admin.get('/employees/new', (req, res) => {
   res.render('admin/employee-form', {
     title: 'موظف جديد', employee: { ...emptyEmployee, department_id: toId(req.query.department) },
-    departments: q.departments.all(),
+    departments: q.departments.all(), ROLES,
   });
 });
 
 admin.get('/employees/:id/edit', (req, res) => {
   const employee = q.employeeById.get(toId(req.params.id));
   if (!employee) return res.redirect('/admin/employees');
-  res.render('admin/employee-form', { title: 'تعديل موظف', employee, departments: q.departments.all() });
+  res.render('admin/employee-form', { title: 'تعديل موظف', employee, departments: q.departments.all(), ROLES });
 });
 
 async function saveEmployee(req, res) {
@@ -351,12 +357,15 @@ async function saveEmployee(req, res) {
     hire_date: clean(b.hire_date),
     bio: clean(b.bio).slice(0, 500),
     is_active: b.is_active ? 1 : 0,
+    workflow_role: ROLES[b.workflow_role] ? b.workflow_role : '',
+    instagram_account: handle(b.instagram_account),
+    buffer_user: clean(b.buffer_user),
   };
   const password = typeof b.password === 'string' ? b.password : '';
   const render = (message) => {
     res.locals.flash = { type: 'error', message };
     res.status(400).render('admin/employee-form', {
-      title: id ? 'تعديل موظف' : 'موظف جديد', employee, departments: q.departments.all(),
+      title: id ? 'تعديل موظف' : 'موظف جديد', employee, departments: q.departments.all(), ROLES,
     });
   };
 
@@ -365,6 +374,12 @@ async function saveEmployee(req, res) {
     return render('اسم المستخدم يجب أن يكون 3-32 حرفاً إنجليزياً أو أرقام أو (. _ -).');
   }
   if (employee.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employee.email)) return render('البريد الإلكتروني غير صالح.');
+  if (employee.instagram_account && !/^[a-z0-9._]{1,30}$/.test(employee.instagram_account)) {
+    return render('حساب إنستقرام غير صالح (حروف إنجليزية وأرقام و . _ فقط).');
+  }
+  if (employee.workflow_role === 'publisher' && (!employee.instagram_account || !employee.buffer_user)) {
+    return render('موظف النشر يحتاج حساب إنستقرام ومستخدم Buffer خاصين به.');
+  }
   if (!id && password.length < 6) return render('كلمة المرور المبدئية يجب أن تكون 6 أحرف على الأقل.');
   if (id && password && password.length < 6) return render('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
   if (id === req.user.id && (employee.role !== 'admin' || !employee.is_active)) {
@@ -372,7 +387,7 @@ async function saveEmployee(req, res) {
   }
 
   const fields = ['full_name', 'username', 'email', 'phone', 'job_title', 'department_id',
-    'is_manager', 'role', 'hire_date', 'bio', 'is_active'];
+    'is_manager', 'role', 'hire_date', 'bio', 'is_active', 'workflow_role', 'instagram_account', 'buffer_user'];
   const values = fields.map((f) => employee[f]);
 
   try {
@@ -388,6 +403,8 @@ async function saveEmployee(req, res) {
         .run(...values, await bcrypt.hash(password, 10));
     }
   } catch (err) {
+    if (/instagram/.test(err.message)) return render('حساب الإنستقرام هذا مربوط بموظف آخر.');
+    if (/buffer/.test(err.message)) return render('مستخدم Buffer هذا مربوط بموظف آخر.');
     if (/UNIQUE/.test(err.message)) return render('اسم المستخدم مستخدم من قبل موظف آخر.');
     throw err;
   }
@@ -410,6 +427,9 @@ admin.post('/employees/:id/delete', (req, res) => {
 });
 
 app.use('/admin', admin);
+
+// ---------- publishing workflow ----------
+app.use('/workflow', createWorkflowRouter({ requireAuth, flash, clean, toId }));
 
 // ---------- errors ----------
 app.use((req, res) => {

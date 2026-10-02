@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow-lg">
+    <%- include('tabs') %>
+    <h1 class="h2">تقارير النشر</h1>
+    <p class="muted">التقارير التي أرسلتها <%= pipeline[2] %> إلى <%= pipeline[1] %> بعد اكتمال النشر.</p>
+    <% if (reports.length === 0) { %>
+      <div class="empty">لا توجد تقارير بعد.</div>
+    <% } %>
+    <% reports.forEach(r => { %>
+      <div class="card report-card">
+        <div class="msg-head">
+          <a href="/workflow/<%= r.id %>"><strong>#<%= r.id %> <%= r.title %></strong></a>
+          <span class="muted small msg-time"><%= fmt(r.reported_at) %></span>
+        </div>
+        <pre class="report"><%= r.report_text %></pre>
+      </div>
+    <% }) %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

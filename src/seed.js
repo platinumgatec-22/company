@@ -70,8 +70,57 @@ function seed() {
   return true;
 }
 
-if (require.main === module) {
-  console.log(seed() ? 'تمت إضافة البيانات التجريبية.' : 'قاعدة البيانات تحتوي على بيانات مسبقاً، لم يتم تغيير شيء.');
+// Publishing team: حسون (director) → موزة (manager) → النخبة للتصاميم (designer) → 7 publishers,
+// each publisher with their own Instagram account and Buffer user.
+// [full_name, username, job_title, workflow_role, instagram, buffer_user]
+const workflowTeam = [
+  ['حسون', 'hassoun', 'المدير العام للنشر', 'director', '', ''],
+  ['موزة', 'moza', 'مانجير النشر', 'manager', '', ''],
+  ['مصمم النخبة', 'elite.designer', 'مصمم — النخبة للتصاميم', 'designer', '', ''],
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => [
+    `موظف النشر ${n}`, `publisher${n}`, 'موظف نشر', 'publisher', `company.account${n}`, `buffer.user${n}`,
+  ]),
+];
+
+// Adds the publishing team once (on any database that has no director yet).
+function seedWorkflow() {
+  const { n } = db.prepare("SELECT COUNT(*) AS n FROM employees WHERE workflow_role = 'director'").get();
+  if (n > 0) return false;
+
+  const hash = bcrypt.hashSync(DEFAULT_PASSWORD, 10);
+  db.exec('BEGIN');
+  try {
+    let dept = db.prepare('SELECT id FROM departments WHERE name = ?').get('النشر والتصاميم');
+    if (!dept) {
+      const info = db.prepare('INSERT INTO departments (name, icon, description) VALUES (?, ?, ?)')
+        .run('النشر والتصاميم', '📸', 'طلبات النشر، قروب النخبة للتصاميم، والنشر على حسابات إنستقرام عبر Buffer.');
+      dept = { id: Number(info.lastInsertRowid) };
+    }
+    const byUsername = db.prepare('SELECT id FROM employees WHERE username = ?');
+    const insert = db.prepare(`
+      INSERT INTO employees (full_name, username, password_hash, job_title, department_id, is_manager,
+                             workflow_role, instagram_account, buffer_user, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`);
+    const setRole = db.prepare('UPDATE employees SET workflow_role = ? WHERE id = ?');
+
+    for (const [name, username, title, role, instagram, buffer] of workflowTeam) {
+      const existing = byUsername.get(username);
+      if (existing) setRole.run(role, existing.id);
+      else insert.run(name, username, hash, title, dept.id, role === 'director' ? 1 : 0, role, instagram, buffer);
+    }
+    // The system admin is the one who places the publishing requests.
+    db.prepare("UPDATE employees SET workflow_role = 'owner' WHERE username = 'admin' AND workflow_role = ''").run();
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+  return true;
 }
 
-module.exports = { seed, DEFAULT_PASSWORD };
+if (require.main === module) {
+  console.log(seed() ? 'تمت إضافة البيانات التجريبية.' : 'قاعدة البيانات تحتوي على بيانات مسبقاً، لم يتم تغيير شيء.');
+  if (seedWorkflow()) console.log('تمت إضافة فريق النشر (حسون، موزة، المصمم، و7 موظفين للنشر).');
+}
+
+module.exports = { seed, seedWorkflow, DEFAULT_PASSWORD };

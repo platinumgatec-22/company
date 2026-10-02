@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="page-head">
+      <div>
+        <h1 class="h2">سير النشر</h1>
+        <p class="muted">الطلب ← <%= pipeline[1] %> ← <%= pipeline[2] %> ← النخبة للتصاميم ← موظفو النشر ← تقرير النشر إلى <%= pipeline[1] %></p>
+      </div>
+      <% if (hasRole('owner')) { %><a class="btn btn-primary" href="/workflow/new">+ طلب نشر جديد</a><% } %>
+    </div>
+
+    <% if (inbox.length) { %>
+      <div class="card inbox">
+        <h3>⏳ بانتظارك (<%= inbox.length %>)</h3>
+        <ul>
+          <% inbox.forEach(r => { %>
+            <li><a href="/workflow/<%= r.id %>">#<%= r.id %> <%= r.title %></a> <%- include('status-badge', { status: r.status }) %></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form class="search filter">
+      <select name="status" onchange="this.form.submit()">
+        <option value="">كل المراحل</option>
+        <% Object.entries(STATUSES).forEach(([key, s]) => { %>
+          <option value="<%= key %>" <%= key === status ? 'selected' : '' %>><%= s.label %></option>
+        <% }) %>
+      </select>
+      <noscript><button class="btn btn-ghost">تصفية</button></noscript>
+    </form>
+
+    <% if (requests.length === 0) { %>
+      <div class="empty">لا توجد طلبات نشر<%= status ? ' في هذه المرحلة' : ' بعد' %>.</div>
+    <% } else { %>
+      <div class="table-wrap card">
+        <table class="table">
+          <thead><tr><th>الطلب</th><th>المرحلة</th><th>تم النشر</th><th>الموعد</th></tr></thead>
+          <tbody><% requests.forEach(r => { %><%- include('request-row', { r }) %><% }) %></tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

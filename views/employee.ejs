@@ -23,6 +23,10 @@
         <div><dt>الهاتف</dt><dd><% if (employee.phone) { %><a href="tel:<%= employee.phone.replace(/\s/g, '') %>" dir="ltr"><%= employee.phone %></a><% } else { %>—<% } %></dd></div>
         <div><dt>اسم المستخدم</dt><dd dir="ltr"><%= employee.username %></dd></div>
         <div><dt>تاريخ التعيين</dt><dd><%= employee.hire_date || '—' %></dd></div>
+        <% if (employee.instagram_account) { %>
+          <div><dt>حساب إنستقرام</dt><dd><a href="https://instagram.com/<%= employee.instagram_account %>" target="_blank" rel="noopener" dir="ltr">@<%= employee.instagram_account %></a></dd></div>
+        <% } %>
+        <% if (employee.buffer_user) { %><div><dt>مستخدم Buffer</dt><dd dir="ltr"><%= employee.buffer_user %></dd></div><% } %>
       </dl>
       <% if (employee.bio) { %><div class="bio"><h3>نبذة</h3><p><%= employee.bio %></p></div><% } %>
       <% if (user.role === 'admin') { %>
