@@ -39,7 +39,7 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
 
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
-camera.position.set(-11, 8, 30);
+camera.position.set(-12, 9, 34);
 
 // Materials
 const M = {
@@ -52,13 +52,14 @@ const M = {
 };
 
 const mascot = new THREE.Group();
-const part = (w, h, d, x, y, z, mat, r = 0.35) => {
+const part = (w, h, d, x, y, z, mat, r = 0.35, parent = mascot) => {
   const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 6, Math.min(r, w / 2, h / 2, d / 2)), mat);
   m.position.set(x, y, z);
   m.castShadow = m.receiveShadow = true;
-  mascot.add(m);
+  parent.add(m);
   return m;
 };
+const group = (x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); mascot.add(g); return g; };
 
 // body (pixel proportions of the 2D mascot)
 part(10, 6, 6.4, 0, 5.2, 0, M.platinum, 0.7);
@@ -67,32 +68,37 @@ part(10.25, 1, 6.65, 0, 3.4, 0, M.gold, 0.4);
 part(2, 1.4, 0.5, 0, 3.4, 3.35, M.gold, 0.2);
 const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.42), M.gem);
 gem.position.set(0, 3.4, 3.65); gem.scale.z = 0.6; mascot.add(gem);
+const gems = [gem];
 // arms
-for (const s of [-1, 1]) part(2.2, 2, 4, s * 6.1, 5.4, 0, M.platinum, 0.45);
+const arms = [-1, 1].map(s => { const g = group(s * 5, 5.4, 0); part(2.2, 2, 4, s * 1.1, 0, 0, M.platinum, 0.45, g); return g; });
 // legs
 for (const x of [-4.5, -2.5, 2.5, 4.5]) part(1, 2.2, 2, x, 1.3, 0, M.platinum, 0.3);
 // eyes + shine + blush
+const eyes = [];
 for (const s of [-1, 1]) {
-  part(1, 2, 0.5, s * 2.5, 6.1, 3.1, M.eye, 0.22);
+  const e = group(s * 2.5, 6.1, 3.1); eyes.push(e);
+  part(1, 2, 0.5, 0, 0, 0, M.eye, 0.22, e);
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), M.shine);
-  sh.position.set(s * 2.5 - 0.18, 6.65, 3.36); mascot.add(sh);
+  sh.position.set(-0.18, 0.55, 0.26); e.add(sh);
   const b = new THREE.Mesh(new THREE.CircleGeometry(0.55, 32), M.blush);
   b.position.set(s * 3.9, 4.9, 3.21); mascot.add(b);
 }
 // crown
-part(7.6, 1.2, 4.6, 0, 8.7, 0, M.gold, 0.3);
+const crown = group(0, 8.1, 0);
+const cpart = (w, h, d, x, y, z, mat, r) => part(w, h, d, x, y - 8.1, z, mat, r, crown);
+cpart(7.6, 1.2, 4.6, 0, 8.7, 0, M.gold, 0.3);
 for (const [x, h] of [[-3.3, 1.2], [3.3, 1.2], [0, 1.8]])
-  for (const z of [-1.8, 1.8]) part(1, h, 1, x, 9.3 + h / 2, z, M.gold, 0.25);
+  for (const z of [-1.8, 1.8]) cpart(1, h, 1, x, 9.3 + h / 2, z, M.gold, 0.25);
 for (const z of [-1.8, 1.8]) { // little orbs on the center points
   const o = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 16), M.gold);
-  o.position.set(0, 11.6, z); o.castShadow = true; mascot.add(o);
+  o.position.set(0, 11.6 - 8.1, z); o.castShadow = true; crown.add(o);
 }
 for (const x of [-1.8, 1.8]) {
   const g = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), M.gem);
-  g.position.set(x, 8.7, 2.35); g.scale.z = 0.6; mascot.add(g);
+  g.position.set(x, 0.6, 2.35); g.scale.z = 0.6; crown.add(g); gems.push(g);
 }
 const centerGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), M.gem);
-centerGem.position.set(0, 8.7, 2.4); centerGem.scale.z = 0.6; mascot.add(centerGem);
+centerGem.position.set(0, 0.6, 2.4); centerGem.scale.z = 0.6; crown.add(centerGem); gems.push(centerGem);
 
 // center the model
 const box = new THREE.Box3().setFromObject(mascot);
@@ -125,7 +131,7 @@ scene.add(rim);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 0.5));
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, -0.5, 0);
+controls.target.set(0, 0, 0);
 controls.enableDamping = true;
 controls.enablePan = false;
 controls.minDistance = 18;
@@ -138,13 +144,36 @@ addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
+const T = 6; // loop length in seconds
+const TAU = Math.PI * 2;
+function pose(t) {
+  const p = (t % T) / T;
+  // two hops per loop with squash & stretch
+  const hop = Math.sin(p * TAU * 2);
+  const up = Math.max(0, hop);
+  pivot.position.y = -6.5 + up * 1.4;
+  const squash = hop < 0 ? 1 + hop * 0.08 : 1 + up * 0.04;
+  mascot.scale.set(2 - squash, squash, 2 - squash);
+  ground.material.opacity = 0.35 - up * 0.15;
+  // gentle sway left/right
+  pivot.rotation.y = Math.sin(p * TAU) * 0.55;
+  pivot.rotation.z = Math.sin(p * TAU * 2 + 1) * 0.03;
+  // right arm waves, left arm swings
+  arms[1].rotation.z = 0.7 + Math.sin(p * TAU * 6) * 0.45;
+  arms[0].rotation.z = -0.15 + Math.sin(p * TAU * 2 + Math.PI) * 0.2;
+  // crown lags behind the hop
+  crown.rotation.z = Math.sin(p * TAU * 2 - 0.8) * 0.07;
+  crown.position.y = 8.1 + Math.max(0, Math.sin(p * TAU * 2 - 0.5)) * 0.35;
+  // blink twice per loop
+  const blink = [0.32, 0.78].some(b => Math.abs(p - b) < 0.012);
+  for (const e of eyes) e.scale.y = blink ? 0.12 : 1;
+  for (const g of gems) g.rotation.y = p * TAU * 2;
+}
+window.renderAt = t => { pose(t); controls.update(); renderer.render(scene, camera); };
+
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
-  const t = clock.getElapsedTime();
-  if (!still) {
-    pivot.rotation.y = Math.sin(t * 0.6) * 0.35;
-    pivot.position.y = -6.5 + Math.abs(Math.sin(t * 2.2)) * 0.5;
-  }
+  if (!window.__manual) pose(still ? 0.75 : clock.getElapsedTime());
   controls.update();
   renderer.render(scene, camera);
 });
