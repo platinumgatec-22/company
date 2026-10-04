@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تميمة الشركة</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 40%,#2a2d33 0%,#121316 70%);overflow:hidden}
+  .transparent,.transparent body{background:transparent!important}
+  canvas{display:block}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const params = new URLSearchParams(location.search);
+const still = params.has('still');
+const transparent = params.has('transparent');
+if (transparent) document.documentElement.classList.add('transparent');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(-11, 8, 30);
+
+// Materials
+const M = {
+  platinum: new THREE.MeshPhysicalMaterial({ color: 0xc9ced6, metalness: 1, roughness: 0.22, clearcoat: 0.6, clearcoatRoughness: 0.15 }),
+  gold: new THREE.MeshPhysicalMaterial({ color: 0xf0bf45, metalness: 1, roughness: 0.18, clearcoat: 0.8, clearcoatRoughness: 0.1 }),
+  eye: new THREE.MeshPhysicalMaterial({ color: 0x0b0c0f, metalness: 0, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 }),
+  shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+  blush: new THREE.MeshStandardMaterial({ color: 0xf2a7a0, roughness: 0.6, transparent: true, opacity: 0.55 }),
+  gem: new THREE.MeshPhysicalMaterial({ color: 0x3d7bff, metalness: 0.1, roughness: 0.05, clearcoat: 1, emissive: 0x0c2a8a, emissiveIntensity: 0.6 }),
+};
+
+const mascot = new THREE.Group();
+const part = (w, h, d, x, y, z, mat, r = 0.35) => {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 6, Math.min(r, w / 2, h / 2, d / 2)), mat);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  mascot.add(m);
+  return m;
+};
+
+// body (pixel proportions of the 2D mascot)
+part(10, 6, 6.4, 0, 5.2, 0, M.platinum, 0.7);
+// belt + buckle
+part(10.25, 1, 6.65, 0, 3.4, 0, M.gold, 0.4);
+part(2, 1.4, 0.5, 0, 3.4, 3.35, M.gold, 0.2);
+const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.42), M.gem);
+gem.position.set(0, 3.4, 3.65); gem.scale.z = 0.6; mascot.add(gem);
+// arms
+for (const s of [-1, 1]) part(2.2, 2, 4, s * 6.1, 5.4, 0, M.platinum, 0.45);
+// legs
+for (const x of [-4.5, -2.5, 2.5, 4.5]) part(1, 2.2, 2, x, 1.3, 0, M.platinum, 0.3);
+// eyes + shine + blush
+for (const s of [-1, 1]) {
+  part(1, 2, 0.5, s * 2.5, 6.1, 3.1, M.eye, 0.22);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), M.shine);
+  sh.position.set(s * 2.5 - 0.18, 6.65, 3.36); mascot.add(sh);
+  const b = new THREE.Mesh(new THREE.CircleGeometry(0.55, 32), M.blush);
+  b.position.set(s * 3.9, 4.9, 3.21); mascot.add(b);
+}
+// crown
+part(7.6, 1.2, 4.6, 0, 8.7, 0, M.gold, 0.3);
+for (const [x, h] of [[-3.3, 1.2], [3.3, 1.2], [0, 1.8]])
+  for (const z of [-1.8, 1.8]) part(1, h, 1, x, 9.3 + h / 2, z, M.gold, 0.25);
+for (const z of [-1.8, 1.8]) { // little orbs on the center points
+  const o = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 16), M.gold);
+  o.position.set(0, 11.6, z); o.castShadow = true; mascot.add(o);
+}
+for (const x of [-1.8, 1.8]) {
+  const g = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), M.gem);
+  g.position.set(x, 8.7, 2.35); g.scale.z = 0.6; mascot.add(g);
+}
+const centerGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), M.gem);
+centerGem.position.set(0, 8.7, 2.4); centerGem.scale.z = 0.6; mascot.add(centerGem);
+
+// center the model
+const box = new THREE.Box3().setFromObject(mascot);
+const c = box.getCenter(new THREE.Vector3());
+mascot.position.set(-c.x, -box.min.y + 0.5, -c.z);
+const pivot = new THREE.Group();
+pivot.add(mascot);
+pivot.position.y = -6.5;
+scene.add(pivot);
+
+// ground with soft shadow
+const ground = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.ShadowMaterial({ opacity: 0.35 }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -6.5;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// lights
+const key = new THREE.DirectionalLight(0xfff3e0, 2.4);
+key.position.set(-10, 20, 14);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = key.shadow.camera.bottom = -15;
+key.shadow.camera.right = key.shadow.camera.top = 15;
+key.shadow.radius = 6;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xbfd4ff, 1.6);
+rim.position.set(12, 8, -12);
+scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 0.5));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, -0.5, 0);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 18;
+controls.maxDistance = 60;
+controls.update();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  if (!still) {
+    pivot.rotation.y = Math.sin(t * 0.6) * 0.35;
+    pivot.position.y = -6.5 + Math.abs(Math.sin(t * 2.2)) * 0.5;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+});
+window.__ready = true;
+</script>
+</body>
+</html>
