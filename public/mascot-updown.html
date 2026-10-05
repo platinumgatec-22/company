@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تميمة الشركة</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 40%,#2a2d33 0%,#121316 70%);overflow:hidden}
+  .transparent,.transparent body{background:transparent!important}
+  canvas{display:block}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const params = new URLSearchParams(location.search);
+const still = params.has('still');
+const transparent = params.has('transparent');
+if (transparent) document.documentElement.classList.add('transparent');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 2, 44);
+
+// Materials
+const M = {
+  platinum: new THREE.MeshPhysicalMaterial({ color: 0xc9ced6, metalness: 1, roughness: 0.22, clearcoat: 0.6, clearcoatRoughness: 0.15 }),
+  gold: new THREE.MeshPhysicalMaterial({ color: 0xf0bf45, metalness: 1, roughness: 0.18, clearcoat: 0.8, clearcoatRoughness: 0.1 }),
+  eye: new THREE.MeshPhysicalMaterial({ color: 0x0b0c0f, metalness: 0, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 }),
+  shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+  blush: new THREE.MeshStandardMaterial({ color: 0xf2a7a0, roughness: 0.6, transparent: true, opacity: 0.55 }),
+  gem: new THREE.MeshPhysicalMaterial({ color: 0x3d7bff, metalness: 0.1, roughness: 0.05, clearcoat: 1, emissive: 0x0c2a8a, emissiveIntensity: 0.6 }),
+};
+
+const mascot = new THREE.Group();
+const part = (w, h, d, x, y, z, mat, r = 0.35, parent = mascot) => {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 6, Math.min(r, w / 2, h / 2, d / 2)), mat);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  parent.add(m);
+  return m;
+};
+const group = (x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); mascot.add(g); return g; };
+
+// body (pixel proportions of the 2D mascot)
+part(10, 6, 6.4, 0, 5.2, 0, M.platinum, 0.7);
+// belt + buckle
+part(10.25, 1, 6.65, 0, 3.4, 0, M.gold, 0.4);
+part(2, 1.4, 0.5, 0, 3.4, 3.35, M.gold, 0.2);
+const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.42), M.gem);
+gem.position.set(0, 3.4, 3.65); gem.scale.z = 0.6; mascot.add(gem);
+const gems = [gem];
+// arms
+const arms = [-1, 1].map(s => { const g = group(s * 5, 5.4, 0); part(2.2, 2, 4, s * 1.1, 0, 0, M.platinum, 0.45, g); return g; });
+// legs
+for (const x of [-4.5, -2.5, 2.5, 4.5]) part(1, 2.2, 2, x, 1.3, 0, M.platinum, 0.3);
+// eyes + shine + blush
+const eyes = [];
+for (const s of [-1, 1]) {
+  const e = group(s * 2.5, 6.1, 3.1); eyes.push(e);
+  part(1, 2, 0.5, 0, 0, 0, M.eye, 0.22, e);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), M.shine);
+  sh.position.set(-0.18, 0.55, 0.26); e.add(sh);
+  const b = new THREE.Mesh(new THREE.CircleGeometry(0.55, 32), M.blush);
+  b.position.set(s * 3.9, 4.9, 3.21); mascot.add(b);
+}
+// crown
+const crown = group(0, 8.1, 0);
+const cpart = (w, h, d, x, y, z, mat, r) => part(w, h, d, x, y - 8.1, z, mat, r, crown);
+cpart(7.6, 1.2, 4.6, 0, 8.7, 0, M.gold, 0.3);
+for (const [x, h] of [[-3.3, 1.2], [3.3, 1.2], [0, 1.8]])
+  for (const z of [-1.8, 1.8]) cpart(1, h, 1, x, 9.3 + h / 2, z, M.gold, 0.25);
+for (const z of [-1.8, 1.8]) { // little orbs on the center points
+  const o = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 16), M.gold);
+  o.position.set(0, 11.6 - 8.1, z); o.castShadow = true; crown.add(o);
+}
+for (const x of [-1.8, 1.8]) {
+  const g = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), M.gem);
+  g.position.set(x, 0.6, 2.35); g.scale.z = 0.6; crown.add(g); gems.push(g);
+}
+const centerGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), M.gem);
+centerGem.position.set(0, 0.6, 2.4); centerGem.scale.z = 0.6; crown.add(centerGem); gems.push(centerGem);
+
+// wings
+const wings = [-1, 1].map(s => {
+  const w = group(s * 4.6, 7.8, -1.2);
+  const feathers = [[5.2, 1.1, 2.2, 0.5], [4.2, 1.0, 1.9, -0.55], [3.0, 0.9, 1.6, -1.55]];
+  for (const [len, h, d, y] of feathers) {
+    part(len, h, d, s * (len / 2 + 0.2), y, 0, M.platinum, 0.3, w);
+    part(0.9, h * 1.02, d * 1.02, s * (len + 0.1), y, 0, M.gold, 0.3, w);
+  }
+  w.rotation.y = -s * 0.2;
+  return w;
+});
+
+// center the model
+const box = new THREE.Box3().setFromObject(mascot);
+const c = box.getCenter(new THREE.Vector3());
+mascot.position.set(-c.x, -c.y, -c.z);
+const pivot = new THREE.Group();
+pivot.add(mascot);
+scene.add(pivot);
+
+// ground with soft shadow
+const ground = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.ShadowMaterial({ opacity: 0.35 }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -6.5;
+ground.receiveShadow = true;
+ground.visible = false;
+scene.add(ground);
+
+// lights
+const key = new THREE.DirectionalLight(0xfff3e0, 2.4);
+key.position.set(-10, 20, 14);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = key.shadow.camera.bottom = -15;
+key.shadow.camera.right = key.shadow.camera.top = 15;
+key.shadow.radius = 6;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xbfd4ff, 1.6);
+rim.position.set(12, 8, -12);
+scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 0.5));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.maxDistance = 90;
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 18;
+controls.maxDistance = 60;
+controls.update();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const T = 6; // loop length in seconds
+const TAU = Math.PI * 2;
+const path = t => {
+  const p = t / T;
+  // rise from the bottom to the top and come back down, with a gentle side sway
+  return new THREE.Vector3(2.5 * Math.sin(TAU * p * 2), -4.6 * Math.cos(TAU * p), 2 * Math.sin(TAU * p) - 2);
+};
+const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+
+// sparkle trail
+const sparkMat = [0xffd86b, 0xffffff, 0xe0b23a].map(c => new THREE.MeshBasicMaterial({ color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+const sparks = [];
+for (let i = 0; i < 60; i++) {
+  const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), sparkMat[i % 3].clone());
+  scene.add(m); sparks.push(m);
+}
+const hash = n => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
+
+function pose(t) {
+  t = ((t % T) + T) % T;
+  const p = t / T;
+  const pos = path(t);
+  pivot.position.copy(pos);
+  pivot.scale.setScalar(0.8);
+  const vy = Math.sin(TAU * p); // >0 going up, <0 coming down
+  const up = Math.max(0, vy), down = Math.max(0, -vy);
+  // lean back when climbing, lean forward when diving, sway side to side
+  pivot.rotation.x = -up * 0.35 + down * 0.3 + 0.05;
+  pivot.rotation.z = -Math.cos(TAU * p * 2) * 0.15;
+  // happy spin at the top
+  pivot.rotation.y = Math.sin(TAU * p * 2) * 0.35 + smooth(0.4, 0.6, p) * TAU;
+  // strong fast flaps going up, wings held high to glide coming down
+  const flap = Math.sin(t * TAU * 4);
+  const amp = 0.25 + up * 0.5, lift = 0.25 + down * 0.45;
+  for (const [i, w] of wings.entries()) w.rotation.z = (i ? 1 : -1) * (lift + flap * amp);
+  // arms stretched like flying, small wiggle
+  arms[1].rotation.z = 0.35 + Math.sin(t * TAU * 2) * 0.15;
+  arms[0].rotation.z = -0.35 - Math.sin(t * TAU * 2) * 0.15;
+  // whole body bobs with the flaps
+  mascot.position.y = -6.6 - flap * 0.25;
+  crown.rotation.z = Math.sin(t * TAU * 4 - 1) * 0.04;
+  crown.position.y = 8.1 + Math.max(0, -flap) * 0.15;
+  const blink = [0.3, 0.8].some(b => Math.abs(p - b) < 0.012);
+  for (const e of eyes) e.scale.y = blink ? 0.12 : 1;
+  for (const g of gems) g.rotation.y = p * TAU * 3;
+  // trail follows the path behind the mascot
+  sparks.forEach((s, i) => {
+    const age = (i + 2) * 0.03;
+    const q = path(t - age);
+    const seed = i * 13.7;
+    q.x += (hash(seed) - 0.5) * 3; q.y += (hash(seed + 1) - 0.5) * 3; q.z -= 1.5;
+    s.position.copy(q);
+    const tw = 0.6 + 0.4 * Math.sin(t * 25 + i * 2.3);
+    s.scale.setScalar((1 - i / sparks.length) * 1.3 * tw);
+    s.rotation.set(t * 3 + i, t * 2 + i, 0);
+    s.material.opacity = (1 - i / sparks.length) * 0.9;
+  });
+}
+window.renderAt = t => { pose(t); controls.update(); renderer.render(scene, camera); };
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  if (!window.__manual) pose(still ? 0.75 : clock.getElapsedTime());
+  controls.update();
+  renderer.render(scene, camera);
+});
+window.__ready = true;
+</script>
+</body>
+</html>
