@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تميمة الشركة</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 40%,#2a2d33 0%,#121316 70%);overflow:hidden}
+  .transparent,.transparent body{background:transparent!important}
+  canvas{display:block}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const params = new URLSearchParams(location.search);
+const still = params.has('still');
+const transparent = params.has('transparent');
+if (transparent) document.documentElement.classList.add('transparent');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
+
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(-14, 6, 35);
+
+// Materials
+const M = {
+  platinum: new THREE.MeshPhysicalMaterial({ color: 0xc9ced6, metalness: 1, roughness: 0.22, clearcoat: 0.6, clearcoatRoughness: 0.15 }),
+  gold: new THREE.MeshPhysicalMaterial({ color: 0xf0bf45, metalness: 1, roughness: 0.18, clearcoat: 0.8, clearcoatRoughness: 0.1 }),
+  eye: new THREE.MeshPhysicalMaterial({ color: 0x0b0c0f, metalness: 0, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 }),
+  shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+  blush: new THREE.MeshStandardMaterial({ color: 0xf2a7a0, roughness: 0.6, transparent: true, opacity: 0.55 }),
+  gem: new THREE.MeshPhysicalMaterial({ color: 0x3d7bff, metalness: 0.1, roughness: 0.05, clearcoat: 1, emissive: 0x0c2a8a, emissiveIntensity: 0.6 }),
+};
+
+const mascot = new THREE.Group();
+const part = (w, h, d, x, y, z, mat, r = 0.35, parent = mascot) => {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 6, Math.min(r, w / 2, h / 2, d / 2)), mat);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  parent.add(m);
+  return m;
+};
+const group = (x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); mascot.add(g); return g; };
+
+// body (pixel proportions of the 2D mascot)
+part(10, 6, 6.4, 0, 5.2, 0, M.platinum, 0.7);
+// belt + buckle
+part(10.25, 1, 6.65, 0, 3.4, 0, M.gold, 0.4);
+part(2, 1.4, 0.5, 0, 3.4, 3.35, M.gold, 0.2);
+const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.42), M.gem);
+gem.position.set(0, 3.4, 3.65); gem.scale.z = 0.6; mascot.add(gem);
+const gems = [gem];
+// arms
+const arms = [-1, 1].map(s => { const g = group(s * 5, 5.4, 0); part(2.2, 2, 4, s * 1.1, 0, 0, M.platinum, 0.45, g); return g; });
+// legs
+const legs = [-4.5, -2.5, 2.5, 4.5].map(x => { const g = group(x, 2.4, 0); part(1, 2.2, 2, 0, -1.1, 0, M.platinum, 0.3, g); return g; });
+// eyes + shine + blush
+const eyes = [];
+for (const s of [-1, 1]) {
+  const e = group(s * 2.5, 6.1, 3.1); eyes.push(e);
+  part(1, 2, 0.5, 0, 0, 0, M.eye, 0.22, e);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), M.shine);
+  sh.position.set(-0.18, 0.55, 0.26); e.add(sh);
+  const b = new THREE.Mesh(new THREE.CircleGeometry(0.55, 32), M.blush);
+  b.position.set(s * 3.9, 4.9, 3.21); mascot.add(b);
+}
+// crown
+const crown = group(0, 8.1, 0);
+const cpart = (w, h, d, x, y, z, mat, r) => part(w, h, d, x, y - 8.1, z, mat, r, crown);
+cpart(7.6, 1.2, 4.6, 0, 8.7, 0, M.gold, 0.3);
+for (const [x, h] of [[-3.3, 1.2], [3.3, 1.2], [0, 1.8]])
+  for (const z of [-1.8, 1.8]) cpart(1, h, 1, x, 9.3 + h / 2, z, M.gold, 0.25);
+for (const z of [-1.8, 1.8]) { // little orbs on the center points
+  const o = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 16), M.gold);
+  o.position.set(0, 11.6 - 8.1, z); o.castShadow = true; crown.add(o);
+}
+for (const x of [-1.8, 1.8]) {
+  const g = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), M.gem);
+  g.position.set(x, 0.6, 2.35); g.scale.z = 0.6; crown.add(g); gems.push(g);
+}
+const centerGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), M.gem);
+centerGem.position.set(0, 0.6, 2.4); centerGem.scale.z = 0.6; crown.add(centerGem); gems.push(centerGem);
+
+// center the model
+const box = new THREE.Box3().setFromObject(mascot);
+const c = box.getCenter(new THREE.Vector3());
+mascot.position.set(-c.x, -box.min.y + 0.5, -c.z);
+const pivot = new THREE.Group();
+pivot.add(mascot);
+pivot.position.y = -6.5;
+scene.add(pivot);
+
+// ground with soft shadow
+const ground = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.ShadowMaterial({ opacity: 0.35 }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -6.5;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// lights
+const key = new THREE.DirectionalLight(0xfff3e0, 2.4);
+key.position.set(-10, 20, 14);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = key.shadow.camera.bottom = -15;
+key.shadow.camera.right = key.shadow.camera.top = 15;
+key.shadow.radius = 6;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xbfd4ff, 1.6);
+rim.position.set(12, 8, -12);
+scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 0.5));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.6, 0);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 18;
+controls.maxDistance = 60;
+controls.update();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// football: white ball with 12 dark pentagons
+const BR = 1.4;
+const ball = new THREE.Group();
+const ballCore = new THREE.Mesh(new THREE.SphereGeometry(BR, 48, 32),
+  new THREE.MeshPhysicalMaterial({ color: 0xf7f7f5, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.2 }));
+ballCore.castShadow = true;
+ball.add(ballCore);
+const patchMat = new THREE.MeshPhysicalMaterial({ color: 0x15161a, roughness: 0.4, clearcoat: 0.8 });
+const ico = new THREE.IcosahedronGeometry(1, 0).getAttribute('position');
+const seen = [];
+for (let i = 0; i < ico.count; i++) {
+  const v = new THREE.Vector3().fromBufferAttribute(ico, i).normalize();
+  if (seen.some(u => u.distanceTo(v) < 1e-3)) continue;
+  seen.push(v);
+  const patch = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.54, 0.08, 5), patchMat);
+  patch.position.copy(v.clone().multiplyScalar(BR - 0.036));
+  patch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v);
+  ball.add(patch);
+}
+scene.add(ball);
+
+const T = 8; // loop length in seconds
+const TAU = Math.PI * 2;
+const BASE = 0.3 - 6.5; // mascot-local y -> world y
+const L = new THREE.Vector3(-2.2, 1.8, 4.9), Rf = new THREE.Vector3(2.2, 1.8, 4.9), H = new THREE.Vector3(0, 11.1 + BR * 0.9, 0);
+// ball flights: [start, end, from, to, extra height]
+const hops = [
+  [0.0, 0.5, L, Rf, 4], [0.5, 1.0, Rf, L, 4], [1.0, 1.5, L, Rf, 4.5],
+  [1.5, 2.0, Rf, L, 4], [2.0, 2.5, L, Rf, 4.5],
+  [2.5, 3.5, Rf, H, 7],              // big touch up onto the head
+  [3.5, 4.2, H, H, 3], [4.2, 4.9, H, H, 3.5], // headers
+  [6.6, 7.5, H, Rf, 6],              // flick off the head, back to the feet
+  [7.5, 8.0, Rf, L, 4],
+];
+const touches = { left: [0, 1.0, 2.0, 8.0], right: [0.5, 1.5, 2.5, 7.5] };
+const headers = [3.5, 4.2, 4.9];
+const bump = (t, at, w) => Math.exp(-(((t - at) / w) ** 2));
+const near = (t, list, w) => Math.max(0, ...list.map(a => Math.max(bump(t, a, w), bump(t, a - T, w), bump(t, a + T, w))));
+const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+const balancing = t => t >= 4.9 && t < 6.6;
+
+function pose(t) {
+  t = ((t % T) + T) % T;
+  // kicks: inner legs swing forward and stretch (cartoon style)
+  const kl = near(t, touches.left, 0.11), kr = near(t, touches.right, 0.11) * (1 + 0.3 * bump(t, 2.5, 0.1));
+  legs[1].rotation.x = -1.2 * kl; legs[1].scale.y = 1 + 0.9 * kl;
+  legs[2].rotation.x = -1.2 * kr; legs[2].scale.y = 1 + 0.9 * kr;
+  legs[0].rotation.x = 0.25 * kl; legs[3].rotation.x = 0.25 * kr;
+  // body leans into each kick, hops on headers, nods to flick the ball
+  const hd = near(t, headers, 0.09);
+  const bal = smooth(4.9, 5.2, t) * (1 - smooth(6.3, 6.6, t));
+  pivot.position.y = -6.5 + hd * 0.8 + (kl + kr) * 0.15;
+  pivot.rotation.z = (kr - kl) * 0.08 + bal * Math.sin(t * TAU * 1.2) * 0.07;
+  pivot.rotation.x = -hd * 0.12 + bump(t, 6.6, 0.12) * 0.3;
+  pivot.rotation.y = Math.sin(t / T * TAU) * 0.25 + bal * Math.sin(t * TAU * 0.6) * 0.15;
+  // arms: balance pose on the head trick, little pumps while juggling
+  arms[1].rotation.z = bal * 0.9 + (kl + kr) * 0.25 + hd * 0.4;
+  arms[0].rotation.z = -bal * 0.9 - (kl + kr) * 0.25 - hd * 0.4;
+  crown.rotation.z = 0; crown.position.y = 8.1 - hd * 0.12;
+  const blink = Math.abs(t - 1.25) < 0.08 || Math.abs(t - 6.0) < 0.08;
+  for (const e of eyes) e.scale.y = blink ? 0.12 : 1;
+  for (const g of gems) g.rotation.y = t / T * TAU * 3;
+  ground.material.opacity = 0.35;
+
+  // ball
+  scene.updateMatrixWorld(true);
+  if (balancing(t)) {
+    ball.position.copy(crown.localToWorld(new THREE.Vector3(0, H.y - 8.1, 0)));
+    ball.rotation.set(0.3, (t - 4.9) * 9, 0);
+  } else {
+    const h = hops.find(([a, b]) => t >= a && t < b);
+    const [a, b, from, to, extra] = h;
+    const k = (t - a) / (b - a);
+    const p = from.clone().lerp(to, k);
+    p.y += 4 * extra * k * (1 - k) + BASE;
+    ball.position.copy(p);
+    ball.rotation.set(-t * 9, 0, t * 2);
+  }
+}
+window.renderAt = t => { pose(t); controls.update(); renderer.render(scene, camera); };
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  if (!window.__manual) pose(still ? 0.75 : clock.getElapsedTime());
+  controls.update();
+  renderer.render(scene, camera);
+});
+window.__ready = true;
+</script>
+</body>
+</html>
