@@ -1,0 +1,18 @@
+<% if (messages.length === 0) { %>
+  <div class="empty">لا توجد رسائل بعد.</div>
+<% } else { %>
+  <ul class="messages">
+    <% messages.forEach(m => { %>
+      <li>
+        <div class="msg-head">
+          <strong><%= m.is_digital ? '🤖 ' : '' %><%= m.from_name %></strong>
+          <% if (m.to_label) { %><span class="muted">← <%= m.to_label %></span><% } %>
+          <% if (m.group_key && GROUPS[m.group_key] && showGroup) { %><span class="chip"><%= GROUPS[m.group_key].icon %> <%= GROUPS[m.group_key].name %></span><% } %>
+          <% if (m.request_title) { %><a class="chip" href="/workflow/<%= m.request_id %>">#<%= m.request_id %> <%= m.request_title %></a><% } %>
+          <span class="muted small msg-time"><%= fmt(m.created_at) %></span>
+        </div>
+        <div class="msg-body"><%= m.body %></div>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>

@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container">
+    <%- include('tabs') %>
+    <div class="group-layout">
+      <div>
+        <h1 class="h2"><%= group.icon %> <%= group.name %></h1>
+        <p class="muted">كل التحويلات والتصاميم وتأكيدات النشر تظهر هنا تلقائياً.</p>
+        <%- include('messages', { messages, showGroup: false }) %>
+      </div>
+      <aside class="card members">
+        <h3>الأعضاء (<%= members.length %>)</h3>
+        <ul>
+          <% members.forEach(m => { %>
+            <li>
+              <span class="avatar avatar-xs" style="background:<%= avatarColor(m.id) %>"><%= initials(m.full_name) %></span>
+              <span><a href="/employees/<%= m.id %>"><%= m.full_name %></a><% if (m.is_digital) { %> <span class="badge badge-digital">🤖 رقمي</span><% } %><br>
+                <span class="muted small"><%= ROLES[m.workflow_role] %><% if (m.instagram_account) { %> · <span dir="ltr">@<%= m.instagram_account %></span><% } %><% if (m.buffer_user) { %> · Buffer: <span dir="ltr"><%= m.buffer_user %></span><% } %></span></span>
+            </li>
+          <% }) %>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

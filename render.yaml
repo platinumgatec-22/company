@@ -19,9 +19,21 @@ services:
         value: /var/data/company.db
       - key: COMPANY_NAME
         sync: false
-      # Optional: integrations can also be set from Atlas → الأتمتة (admin).
+      # Digital employees (see README): Claude texts, and the Make scenario for designs + Buffer.
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: WORKFLOW_WEBHOOK_URL
+        sync: false
+      - key: WORKFLOW_CALLBACK_TOKEN
+        generateValue: true
+      # Decisions portal → Make MCP server.
+      - key: MAKE_ZONE
+        value: eu1.make.com
+      - key: MAKE_MCP_URL
+        sync: false
+      - key: MAKE_MCP_TOKEN
+        sync: false
+      # Atlas (optional; can also be set from Atlas → الأتمتة).
       - key: MAKE_WEBHOOK_URL
         sync: false
       - key: WHATSAPP_TOKEN
@@ -29,6 +41,8 @@ services:
       - key: WHATSAPP_PHONE_ID
         sync: false
       - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: ADMIN_PASSWORD
         sync: false
       - key: TZ
         value: Asia/Kuwait

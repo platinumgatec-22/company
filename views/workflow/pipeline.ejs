@@ -1,0 +1,5 @@
+<ol class="pipeline">
+  <% pipeline.forEach((label, i) => { const s = STATUSES[status].step; %>
+    <li class="<%= i + 1 < s || status === 'reported' ? 'done' : i + 1 === s ? 'current' : '' %>"><span><%= i + 1 %></span><%= label %></li>
+  <% }) %>
+</ol>

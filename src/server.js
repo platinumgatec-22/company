@@ -4,19 +4,30 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
-const { seed, seedAtlas } = require('./seed');
+const { createWorkflowRouter, inboxFor, inWorkflow, ROLES } = require('./workflow');
+const agents = require('./agents');
+const { createConnectRoutes } = require('./connect');
+const { createAppRoutes, checkMake, scenariosFor } = require('./apps');
 const createAtlas = require('./atlas/routes');
 const { emit } = require('./atlas/events');
+const { ensureCompany, seedAtlas } = require('./seed');
 
 const PORT = Number(process.env.PORT) || 3000;
-const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
+const COMPANY_NAME = process.env.COMPANY_NAME || 'البوابة البلاتينية';
+const COMPANY_NAME_EN = process.env.COMPANY_NAME_EN || 'Platinum Gate';
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'info@platinumgatekw.com';
+const INSTAGRAM = process.env.INSTAGRAM || 'championshipskw';
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 if (!process.env.SESSION_SECRET) {
   console.warn('تنبيه: لم يتم ضبط SESSION_SECRET، سيتم تسجيل خروج الجميع عند إعادة تشغيل الخادم.');
 }
 
-if (seed()) console.log(`تم إنشاء بيانات تجريبية (admin / ${process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD' : 'admin123'}).`);
-if (seedAtlas()) console.log('تم إنشاء بيانات Atlas التجريبية (مهام، عملاء، لوحة).');
+{
+  const added = ensureCompany();
+  if (added.includes('admin')) console.log(`تم إنشاء حساب مدير النظام (admin / ${process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD' : 'admin123'}).`);
+  if (added.length) console.log(`تمت إضافة ${added.length} حساب من فريق البوابة البلاتينية.`);
+}
+if (seedAtlas()) console.log('تم إنشاء بيانات Atlas التجريبية.');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -66,7 +77,9 @@ const q = {
   stats: db.prepare(`
     SELECT (SELECT COUNT(*) FROM departments) AS departments,
            (SELECT COUNT(*) FROM employees WHERE is_active = 1) AS employees,
-           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_manager = 1) AS managers`),
+           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_manager = 1) AS managers,
+           (SELECT COUNT(*) FROM employees WHERE is_active = 1 AND is_digital = 1) AS digital,
+           (SELECT COUNT(*) FROM app_docs WHERE app = 'tournaments' AND col = 'tournaments') AS tournaments`),
 };
 
 // ---------- helpers ----------
@@ -99,6 +112,9 @@ const asyncRoute = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next
 // ---------- per-request locals ----------
 app.use((req, res, next) => {
   res.locals.company = COMPANY_NAME;
+  res.locals.companyEn = COMPANY_NAME_EN;
+  res.locals.contactEmail = CONTACT_EMAIL;
+  res.locals.instagram = INSTAGRAM;
   res.locals.year = new Date().getFullYear();
   res.locals.path = req.path;
   res.locals.initials = initials;
@@ -107,12 +123,14 @@ app.use((req, res, next) => {
   delete req.session.flash;
 
   res.locals.user = null;
+  res.locals.workflowInbox = 0;
   const userId = req.session.userId;
   if (userId) {
     const user = q.employeeById.get(userId);
     if (user && user.is_active) {
       req.user = user;
       res.locals.user = user;
+      if (inWorkflow(user)) res.locals.workflowInbox = inboxFor(user).length;
     } else {
       req.session = null;
     }
@@ -198,13 +216,24 @@ app.get('/employees', requireAuth, (req, res) => {
   });
 });
 
-app.get('/employees/:id', requireAuth, (req, res) => {
+app.get('/employees/:id', requireAuth, asyncRoute(async (req, res) => {
   const employee = q.employeeById.get(toId(req.params.id));
   if (!employee || (!employee.is_active && req.user.role !== 'admin')) {
     return res.status(404).render('error', { title: 'غير موجود', message: 'الموظف غير موجود.' });
   }
-  res.render('employee', { title: employee.full_name, employee });
-});
+  // A digital employee's live scenarios in Make, for the admin and the owner.
+  let scenarios = null;
+  let makeError = '';
+  if (employee.make_names && (req.user.role === 'admin' || req.user.workflow_role === 'owner')) {
+    try {
+      scenarios = await scenariosFor(employee.make_names);
+    } catch (err) {
+      makeError = 'تعذر الوصول إلى Make الآن.';
+      console.error(`Make scenarios: ${err.message}`);
+    }
+  }
+  res.render('employee', { title: employee.full_name, employee, scenarios, makeError });
+}));
 
 // ---------- my profile ----------
 app.get('/profile', requireAuth, (req, res) => {
@@ -325,19 +354,21 @@ admin.get('/employees', (req, res) => {
 const emptyEmployee = {
   full_name: '', username: '', email: '', phone: '', job_title: '', department_id: 0,
   is_manager: 0, role: 'employee', hire_date: '', bio: '', is_active: 1,
+  workflow_role: '', instagram_account: '', buffer_user: '', is_digital: 0,
 };
+const handle = (v) => clean(v).replace(/^@+/, '').toLowerCase();
 
 admin.get('/employees/new', (req, res) => {
   res.render('admin/employee-form', {
     title: 'موظف جديد', employee: { ...emptyEmployee, department_id: toId(req.query.department) },
-    departments: q.departments.all(),
+    departments: q.departments.all(), ROLES,
   });
 });
 
 admin.get('/employees/:id/edit', (req, res) => {
   const employee = q.employeeById.get(toId(req.params.id));
   if (!employee) return res.redirect('/admin/employees');
-  res.render('admin/employee-form', { title: 'تعديل موظف', employee, departments: q.departments.all() });
+  res.render('admin/employee-form', { title: 'تعديل موظف', employee, departments: q.departments.all(), ROLES });
 });
 
 async function saveEmployee(req, res) {
@@ -356,12 +387,16 @@ async function saveEmployee(req, res) {
     hire_date: clean(b.hire_date),
     bio: clean(b.bio).slice(0, 500),
     is_active: b.is_active ? 1 : 0,
+    workflow_role: ROLES[b.workflow_role] ? b.workflow_role : '',
+    is_digital: b.is_digital ? 1 : 0,
+    instagram_account: handle(b.instagram_account),
+    buffer_user: clean(b.buffer_user),
   };
   const password = typeof b.password === 'string' ? b.password : '';
   const render = (message) => {
     res.locals.flash = { type: 'error', message };
     res.status(400).render('admin/employee-form', {
-      title: id ? 'تعديل موظف' : 'موظف جديد', employee, departments: q.departments.all(),
+      title: id ? 'تعديل موظف' : 'موظف جديد', employee, departments: q.departments.all(), ROLES,
     });
   };
 
@@ -370,6 +405,12 @@ async function saveEmployee(req, res) {
     return render('اسم المستخدم يجب أن يكون 3-32 حرفاً إنجليزياً أو أرقام أو (. _ -).');
   }
   if (employee.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employee.email)) return render('البريد الإلكتروني غير صالح.');
+  if (employee.instagram_account && !/^[a-z0-9._]{1,30}$/.test(employee.instagram_account)) {
+    return render('حساب إنستقرام غير صالح (حروف إنجليزية وأرقام و . _ فقط).');
+  }
+  if (employee.workflow_role === 'publisher' && (!employee.instagram_account || !employee.buffer_user)) {
+    return render('موظف النشر يحتاج حساب إنستقرام ومستخدم Buffer خاصين به.');
+  }
   if (!id && password.length < 6) return render('كلمة المرور المبدئية يجب أن تكون 6 أحرف على الأقل.');
   if (id && password && password.length < 6) return render('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
   if (id === req.user.id && (employee.role !== 'admin' || !employee.is_active)) {
@@ -377,7 +418,7 @@ async function saveEmployee(req, res) {
   }
 
   const fields = ['full_name', 'username', 'email', 'phone', 'job_title', 'department_id',
-    'is_manager', 'role', 'hire_date', 'bio', 'is_active'];
+    'is_manager', 'role', 'hire_date', 'bio', 'is_active', 'workflow_role', 'instagram_account', 'buffer_user', 'is_digital'];
   const values = fields.map((f) => employee[f]);
 
   try {
@@ -393,6 +434,8 @@ async function saveEmployee(req, res) {
         .run(...values, await bcrypt.hash(password, 10));
     }
   } catch (err) {
+    if (/instagram/.test(err.message)) return render('حساب الإنستقرام هذا مربوط بموظف آخر.');
+    if (/buffer/.test(err.message)) return render('مستخدم Buffer هذا مربوط بموظف آخر.');
     if (/UNIQUE/.test(err.message)) return render('اسم المستخدم مستخدم من قبل موظف آخر.');
     throw err;
   }
@@ -417,6 +460,12 @@ admin.post('/employees/:id/delete', (req, res) => {
 
 app.use('/admin', admin);
 
+// ---------- publishing workflow ----------
+app.use(agents.createAgentRoutes({ toId, clean }));
+app.use(createConnectRoutes({ requireAuth, requireAdmin, flash, clean, toId }));
+app.use(createAppRoutes({ requireAuth }));
+app.use('/workflow', createWorkflowRouter({ requireAuth, flash, clean, toId }));
+
 // ---------- Atlas ----------
 const atlas = createAtlas({ requireAuth, requireAdmin });
 app.use('/atlas', atlas.atlas);
@@ -436,6 +485,8 @@ app.use((err, req, res, _next) => {
 });
 
 if (require.main === module) {
+  agents.start();
+  checkMake();
   app.listen(PORT, () => console.log(`${COMPANY_NAME}: http://localhost:${PORT}`));
 }
 

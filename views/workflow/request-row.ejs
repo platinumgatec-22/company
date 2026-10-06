@@ -1,0 +1,7 @@
+<tr>
+  <td><a href="/workflow/<%= r.id %>"><strong>#<%= r.id %> <%= r.title %></strong></a>
+    <br><span class="muted small"><%= r.created_by_name || '—' %> · <%= fmt(r.created_at) %></span></td>
+  <td><%- include('status-badge', { status: r.status }) %></td>
+  <td><%= r.assigned ? `${r.done} / ${r.assigned}` : '—' %></td>
+  <td><%= r.due_date || '—' %></td>
+</tr>

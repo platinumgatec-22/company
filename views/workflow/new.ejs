@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container narrow-lg">
+    <%- include('tabs') %>
+    <div class="card form-card">
+      <h1 class="h2">طلب نشر جديد</h1>
+      <p class="muted">يُرسل الطلب إلى <%= pipeline[1] %>، ثم إلى <%= pipeline[2] %> لتوزيعه على قروب النخبة للتصاميم وموظفي النشر.</p>
+      <form method="post" action="/workflow" class="form">
+        <label>عنوان الطلب *<input name="title" value="<%= form.title %>" required maxlength="200"></label>
+        <label>التفاصيل (الفكرة، النصوص، المقاسات…)<textarea name="brief" rows="6" maxlength="4000"><%= form.brief %></textarea></label>
+        <label>موعد النشر<input name="due_date" type="date" value="<%= form.due_date %>"></label>
+        <div class="card-actions">
+          <button class="btn btn-primary">إرسال إلى <%= pipeline[1] %></button>
+          <a class="btn btn-ghost" href="/workflow">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

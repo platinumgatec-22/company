@@ -1,0 +1,9 @@
+<div class="tabs tabs-scroll">
+  <a href="/workflow" class="<%= path === '/workflow' || /^\/workflow\/\d/.test(path) ? 'active' : '' %>">📋 الطلبات</a>
+  <% Object.values(GROUPS).forEach(g => { if (hasRole('owner') || g.roles.includes(user.workflow_role)) { %>
+    <a href="/workflow/groups/<%= g.key %>" class="<%= path === '/workflow/groups/' + g.key ? 'active' : '' %>"><%= g.icon %> <%= g.name %></a>
+  <% } }) %>
+  <% if (hasRole('owner', 'director', 'manager')) { %>
+    <a href="/workflow/reports" class="<%= path === '/workflow/reports' ? 'active' : '' %>">📊 تقارير النشر</a>
+  <% } %>
+</div>

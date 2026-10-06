@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="container narrow-lg">
+    <div class="card form-card">
+      <h1 class="h2">🔗 ربط حسابات <%= employee.full_name %></h1>
+      <p class="muted">اربط حساب إنستقرام هذا الموظف بحساب Buffer الخاص به، ليتمكن من النشر تلقائياً.</p>
+      <% if (employee.connected_at) { %>
+        <p class="alert alert-success">مربوط حالياً: <span dir="ltr">@<%= employee.instagram_account %></span> ← Buffer <span dir="ltr"><%= employee.buffer_user %></span> (<%= employee.connected_at.slice(0, 16) %>). يمكنك تعديله من النموذج بالأسفل.</p>
+      <% } %>
+
+      <ol class="connect-steps">
+        <li>
+          <strong>حساب Buffer خاص بهذا الموظف</strong>
+          <p class="muted">كل موظف له حساب Buffer مختلف. أنشئ حساباً جديداً (أو سجّل دخول إن كان موجوداً).</p>
+          <div class="actions">
+            <a class="btn btn-ghost btn-sm" href="https://login.buffer.com/signup" target="_blank" rel="noopener">إنشاء حساب Buffer</a>
+            <a class="btn btn-ghost btn-sm" href="https://publish.buffer.com" target="_blank" rel="noopener">تسجيل الدخول إلى Buffer</a>
+          </div>
+        </li>
+        <li>
+          <strong>اربط حساب الإنستقرام داخل Buffer</strong>
+          <p class="muted">من Buffer: <b>Channels</b> ← <b>Connect a channel</b> ← <b>Instagram</b>، ثم سجّل دخول بحساب إنستقرام هذا الموظف. يجب أن يكون الحساب احترافياً (Business أو Creator) ليُسمح بالنشر التلقائي.</p>
+        </li>
+        <li>
+          <strong>اكتب بيانات الحسابين هنا واحفظ</strong>
+          <form method="post" class="form">
+            <div class="form-grid">
+              <label>حساب الإنستقرام *<input name="instagram_account" value="<%= form.instagram_account %>" required dir="ltr" placeholder="@account" autocomplete="off"></label>
+              <label>بريد / اسم مستخدم Buffer *<input name="buffer_user" value="<%= form.buffer_user %>" required dir="ltr" autocomplete="off"></label>
+              <label class="span-2">رقم قناة الإنستقرام في Buffer (اختياري)
+                <input name="buffer_profile_id" value="<%= form.buffer_profile_id %>" dir="ltr" autocomplete="off">
+                <span class="muted small">يظهر في رابط صفحة القناة داخل Buffer، ويُستخدم في سيناريو النشر التلقائي.</span>
+              </label>
+            </div>
+            <label class="check"><input type="checkbox" name="confirmed" value="1" required> ربطت حساب الإنستقرام داخل Buffer</label>
+            <div class="card-actions"><button class="btn btn-primary">حفظ الربط</button></div>
+          </form>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>
