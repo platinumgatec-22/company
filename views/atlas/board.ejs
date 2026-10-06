@@ -1,0 +1,52 @@
+<%- include('partials/top') %>
+<div class="a-page wide">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">The Board</div>
+      <h1 class="a-h1">لوحة المهام</h1>
+      <p class="muted">كل مهام الشركة حسب الحالة. اسحب البطاقة لتغيير حالتها.</p>
+    </div>
+    <div class="a-actions">
+      <form class="a-search" action="/atlas/board">
+        <% if (mine) { %><input type="hidden" name="owner" value="me"><% } %>
+        <input name="q" value="<%= search %>" placeholder="ابحث في المهام…">
+        <select name="department" onchange="this.form.submit()">
+          <option value="">كل الأقسام</option>
+          <% departments.forEach(d => { %><option value="<%= d.id %>" <%= d.id === deptId ? 'selected' : '' %>><%= d.icon %> <%= d.name %></option><% }) %>
+        </select>
+      </form>
+      <div class="a-tabs">
+        <a href="/atlas/board" class="<%= mine ? '' : 'active' %>">الكل</a>
+        <a href="/atlas/board?owner=me" class="<%= mine ? 'active' : '' %>">مهامي</a>
+      </div>
+      <a href="/atlas/tasks/new" class="a-btn a-btn-solid">+ مهمة</a>
+    </div>
+  </div>
+
+  <div class="kanban" data-kanban data-url="/atlas/api/tasks/{id}" data-field="status">
+    <% columns.forEach(col => { const list = tasks.filter(t => t.status === col); %>
+      <section class="k-col" data-value="<%= col %>">
+        <div class="k-col-head"><span class="mono"><%= STATUS_LABEL[col] %></span><span class="n" data-count><%= list.length %></span></div>
+        <div class="k-list">
+          <% list.forEach(t => { const late = t.due_date && t.due_date < today && t.status !== 'done'; %>
+            <a class="k-card p-<%= t.priority %>" href="/atlas/tasks/<%= t.id %>" draggable="true" data-id="<%= t.id %>">
+              <div class="t"><%= t.title %></div>
+              <div class="m">
+                <% if (t.priority !== 'normal') { %><span class="chip <%= t.priority === 'urgent' ? 'red' : t.priority === 'high' ? 'gold' : '' %>"><%= PRIORITY_LABEL[t.priority] %></span><% } %>
+                <% if (t.due_date) { %><span class="chip <%= late ? 'overdue' : t.due_date === today ? 'gold' : '' %>"><%= t.due_date === today ? 'اليوم' : t.due_date %></span><% } %>
+                <% if (t.client_name) { %><span class="chip mauve"><%= t.client_name %></span><% } %>
+                <% if (t.department_name) { %><span class="chip"><%= t.department_name %></span><% } %>
+              </div>
+              <% if (t.owner_name) { %>
+                <div class="owner"><span class="a-avatar" style="background:<%= avatarColor(t.owner_id) %>"><%= initials(t.owner_name) %></span><%= t.owner_name %></div>
+              <% } %>
+            </a>
+          <% }) %>
+        </div>
+        <a class="k-add" href="/atlas/tasks/new?status=<%= col %>">+ إضافة</a>
+      </section>
+    <% }) %>
+  </div>
+</div>
+<script src="/js/kanban.js" defer></script>
+<%- include('partials/bottom') %>

@@ -1,0 +1,88 @@
+<%- include('partials/top') %>
+<% const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+   const KIND = { note: 'ملاحظة', call: 'مكالمة', meeting: 'اجتماع', whatsapp: 'واتساب', email: 'بريد' }; %>
+<div class="a-page">
+  <a href="/atlas/clients" class="small muted">→ العملاء</a>
+  <div class="a-head" style="margin-top:.5rem">
+    <div>
+      <div class="a-eyebrow mono">Client #<%= client.id %></div>
+      <h1 class="a-h1"><%= client.name %></h1>
+      <div class="a-actions">
+        <span class="chip s-<%= client.stage %>" style="color:var(--c);border-color:var(--c)"><%= STAGE_LABEL[client.stage] %></span>
+        <% if (client.value) { %><span class="chip teal"><%= fmt(client.value) %> د.ك</span><% } %>
+        <% if (client.source) { %><span class="chip">المصدر: <%= client.source %></span><% } %>
+      </div>
+    </div>
+    <div class="a-actions">
+      <a href="/atlas/tasks/new?client=<%= client.id %>" class="a-btn">+ مهمة</a>
+      <a href="/atlas/clients/<%= client.id %>/edit" class="a-btn a-btn-ghost">تعديل</a>
+    </div>
+  </div>
+
+  <div class="a-split">
+    <div class="a-grid">
+      <div class="a-card">
+        <div class="a-card-head"><h2>سجل التواصل</h2></div>
+        <form method="post" action="/atlas/clients/<%= client.id %>/interactions" class="a-form" style="margin-bottom:1rem">
+          <textarea name="body" required placeholder="ماذا حدث؟ مكالمة، اجتماع، اتفاق…" style="min-height:70px"></textarea>
+          <div class="a-actions">
+            <select name="kind" style="width:auto"><% kinds.forEach(k => { %><option value="<%= k %>"><%= KIND[k] %></option><% }) %></select>
+            <button class="a-btn a-btn-sm">تسجيل</button>
+          </div>
+        </form>
+        <% if (interactions.length) { %>
+          <ul class="timeline">
+            <% interactions.forEach(i => { %>
+              <li><div class="h"><span class="chip"><%= KIND[i.kind] || i.kind %></span><%= i.employee_name || 'Atlas' %> · <%= i.created_at.slice(0, 16) %></div><div class="b"><%= i.body %></div></li>
+            <% }) %>
+          </ul>
+        <% } else { %><div class="a-empty">لا يوجد تواصل مسجّل بعد.</div><% } %>
+      </div>
+
+      <div class="a-card">
+        <div class="a-card-head"><h2>المهام</h2><a href="/atlas/tasks/new?client=<%= client.id %>" class="small">+ إضافة</a></div>
+        <% if (tasks.length) { %>
+          <ul class="a-list">
+            <% tasks.forEach(t => { %>
+              <li><span class="chip"><%= STATUS_LABEL[t.status] %></span><a href="/atlas/tasks/<%= t.id %>"><%= t.title %></a><time><%= t.due_date %></time></li>
+            <% }) %>
+          </ul>
+        <% } else { %><p class="dim">لا توجد مهام مرتبطة.</p><% } %>
+      </div>
+    </div>
+
+    <div class="a-grid">
+      <div class="a-card">
+        <h2>البيانات</h2>
+        <dl class="kv">
+          <dt>الشركة</dt><dd><%= client.company || '—' %></dd>
+          <dt>الهاتف</dt><dd class="ltr"><%= client.phone || '—' %></dd>
+          <dt>البريد</dt><dd class="ltr"><% if (client.email) { %><a href="mailto:<%= client.email %>"><%= client.email %></a><% } else { %>—<% } %></dd>
+          <dt>المسؤول</dt><dd><%= client.owner_name || '—' %></dd>
+          <dt>أُضيف</dt><dd class="small"><%= client.created_at.slice(0, 10) %></dd>
+        </dl>
+        <% if (client.notes) { %><p class="muted" style="margin-top:.8rem;white-space:pre-wrap"><%= client.notes %></p><% } %>
+      </div>
+
+      <div class="a-card">
+        <div class="a-card-head"><h2>واتساب</h2><% if (conversation) { %><a href="/atlas/inbox/<%= conversation.id %>" class="small">فتح المحادثة</a><% } %></div>
+        <% if (messages.length) { %>
+          <div class="a-grid" style="gap:.4rem">
+            <% messages.forEach(m => { %><div class="bubble <%= m.direction %>" style="max-width:100%"><%= m.body %><span class="meta"><%= m.created_at.slice(5, 16) %></span></div><% }) %>
+          </div>
+        <% } else if (client.phone) { %>
+          <form method="post" action="/atlas/inbox/new" class="a-form">
+            <input type="hidden" name="to" value="<%= client.phone %>">
+            <textarea name="text" required placeholder="أول رسالة إلى <%= client.name %>…" style="min-height:70px"></textarea>
+            <button class="a-btn a-btn-sm">إرسال واتساب</button>
+          </form>
+        <% } else { %><p class="dim">أضف رقم هاتف للعميل لتراسله على واتساب.</p><% } %>
+      </div>
+
+      <form method="post" action="/atlas/clients/<%= client.id %>/delete" onsubmit="return confirm('حذف العميل وسجل تواصله نهائياً؟')">
+        <button class="a-btn a-btn-danger a-btn-sm">حذف العميل</button>
+      </form>
+    </div>
+  </div>
+</div>
+<%- include('partials/bottom') %>

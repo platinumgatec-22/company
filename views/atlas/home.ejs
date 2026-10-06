@@ -1,0 +1,88 @@
+<%- include('partials/top', { bodyClass: 'atlas-home' }) %>
+<%
+  const openTasks = ov.tasks.todo + ov.tasks.doing + ov.tasks.review;
+  const activeClients = ov.clients.lead + ov.clients.contacted + ov.clients.proposal;
+  const first = user.full_name.split(/\s+/)[0];
+  const nodes = [
+    { href: '/atlas/board?owner=me', icon: 'i-orbit', name: 'Today', label: 'اليوم', c: 'var(--mauve)', count: waiting.length, s: 58 },
+    { href: '/atlas/board', icon: 'i-board', name: 'The Board', label: 'المهام', c: 'var(--teal)', count: openTasks, s: 66 },
+    { href: '/atlas/calendar', icon: 'i-cal', name: 'Calendar', label: 'التقويم', c: 'var(--teal)', count: ov.dueToday, s: 56 },
+    { href: '/atlas/canvas', icon: 'i-canvas', name: 'The Workspace', label: 'اللوحات', c: 'var(--mint)', count: ov.notes, s: 62 },
+    { href: '/atlas/clients', icon: 'i-clients', name: 'Client Records', label: 'العملاء', c: 'var(--mauve)', count: activeClients, s: 66 },
+    { href: '/atlas/inbox', icon: 'i-chat', name: 'WhatsApp', label: 'واتساب', c: 'var(--green)', count: ov.unreadWhatsapp, s: 58, off: !connected.whatsapp },
+    { href: '/atlas/strategist', icon: 'i-spark', name: 'The Strategist', label: 'المستشار', c: 'var(--mauve)', count: badges.proposals, s: 64, off: !connected.strategist },
+    { href: '/departments', icon: 'i-team', name: 'Team Orbit', label: 'الفريق', c: 'var(--sky)', count: ov.employees, s: 60 },
+    { href: '/atlas/activity', icon: 'i-pulse', name: 'Pulse', label: 'النشاط', c: 'var(--slate)', count: 0, s: 52 },
+  ];
+  if (user.role === 'admin') nodes.push({ href: '/atlas/automations', icon: 'i-bolt', name: 'Make', label: 'الأتمتة', c: 'var(--gold)', count: 0, s: 56, off: !connected.make });
+  const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+%>
+<section class="atlas-hello">
+  <div class="wordmark">CLOUD ATLAS <span class="dim mono">— private company overview —</span></div>
+  <h1><%= greeting %>، <span class="name"><%= first %>.</span></h1>
+  <div class="sub">
+    <span class="a-eyebrow mono" style="margin:0">Atlas</span>
+    <% if (waiting.length) { %>
+      <a href="#waiting"><%= waiting.length %> <%= waiting.length === 1 ? 'شيء ينتظرك' : 'أشياء تنتظرك' %> في الشركة.</a>
+    <% } else { %>
+      <span>لا شيء ينتظرك الآن ✨</span>
+    <% } %>
+    <% if (notConnected) { %>
+      <span><%= notConnected %> <%= notConnected === 1 ? 'ربط غير متصل' : 'روابط غير متصلة' %> بعد.</span>
+    <% } %>
+  </div>
+</section>
+
+<section class="orbit" id="orbit" aria-label="مدار الشركة">
+  <canvas id="orbit-canvas" aria-hidden="true"></canvas>
+  <svg class="orbit-ring" id="orbit-ring" aria-hidden="true"></svg>
+  <button class="orbit-core" id="orbit-core" type="button" onclick="location.href='/atlas/strategist'" aria-label="ادخل إلى المستشار">
+    <span class="orbit-core-label mono">The Company · <%= ov.departments %> departments</span>
+  </button>
+  <div class="orbit-nodes">
+    <% nodes.forEach((n, i) => { %>
+      <a class="orbit-node <%= n.off ? 'off' : '' %>" href="<%= n.href %>" style="--c:<%= n.c %>;--s:<%= n.s %>px;--d:-<%= i * 0.7 %>s">
+        <span class="orbit-planet <%= n.off ? 'dashed' : '' %>">
+          <svg class="a-ico"><use href="#<%= n.icon %>"/></svg>
+          <% if (n.count) { %><span class="count"><%= n.count %></span><% } %>
+        </span>
+        <span class="orbit-name"><%= n.name %></span>
+        <span class="orbit-label"><%= n.label %></span>
+      </a>
+    <% }) %>
+  </div>
+</section>
+<div class="orbit-hint mono">Tap a module for its branches · tap Atlas to talk to the Strategist</div>
+
+<section class="home-panels">
+  <div class="stat-row">
+    <div class="a-card stat"><div class="k mono">Open tasks</div><div class="v"><%= openTasks %> <small><%= ov.overdue ? `· ${ov.overdue} متأخرة` : '' %></small></div></div>
+    <div class="a-card stat"><div class="k mono">Pipeline</div><div class="v"><%= fmt(ov.pipelineValue) %> <small>د.ك</small></div></div>
+    <div class="a-card stat"><div class="k mono">Won</div><div class="v"><%= fmt(ov.wonValue) %> <small>د.ك</small></div></div>
+    <div class="a-card stat"><div class="k mono">Team</div><div class="v"><%= ov.employees %> <small>في <%= ov.departments %> أقسام</small></div></div>
+  </div>
+
+  <div class="a-grid a-grid-2" style="margin-top:1rem">
+    <div class="a-card" id="waiting">
+      <div class="a-card-head"><h2>ينتظرك</h2><a class="a-btn a-btn-sm" href="/atlas/tasks/new">+ مهمة</a></div>
+      <% if (waiting.length) { %>
+        <ul class="a-list wait-list">
+          <% waiting.forEach(w => { %><li><span class="k k-<%= w.kind %>"></span><a href="<%= w.link %>"><%= w.text %></a></li><% }) %>
+        </ul>
+      <% } else { %>
+        <div class="a-empty">صفحتك نظيفة. اسأل المستشار عن الخطوة التالية.</div>
+      <% } %>
+    </div>
+    <div class="a-card">
+      <div class="a-card-head"><h2>آخر ما حدث</h2><a href="/atlas/activity" class="small">الكل</a></div>
+      <ul class="a-list">
+        <% activity.forEach(a => { %>
+          <li><span><b><%= a.actor %></b> <span class="muted"><%= a.message %></span></span><time><%= a.created_at.slice(5, 16) %></time></li>
+        <% }) %>
+        <% if (!activity.length) { %><li class="dim">لا يوجد نشاط بعد.</li><% } %>
+      </ul>
+    </div>
+  </div>
+</section>
+<script src="/js/orbit.js" defer></script>
+<%- include('partials/bottom') %>

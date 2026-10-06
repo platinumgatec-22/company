@@ -1,0 +1,81 @@
+<%- include('partials/top') %>
+<div class="a-page wide">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">WhatsApp</div>
+      <h1 class="a-h1">واتساب</h1>
+      <p class="muted">
+        <% if (connected) { %><span class="dot on"></span> متصل بـ WhatsApp Cloud API — كل رقم جديد يصير عميلاً محتملاً في الـ CRM.
+        <% } else { %><span class="dot off"></span> غير متصل بعد. <% if (user.role === 'admin') { %><a href="/atlas/automations#whatsapp">اربط واتساب</a><% } else { %>اطلب من مدير النظام ربطه.<% } %> الرسائل تُحفظ هنا لكن لا تُرسل.<% } %>
+      </p>
+    </div>
+    <details class="a-card" style="padding:.7rem 1rem">
+      <summary>+ رسالة جديدة</summary>
+      <form method="post" action="/atlas/inbox/new" class="a-form">
+        <input name="to" required placeholder="+965 5xxx xxxx" dir="ltr">
+        <textarea name="text" required placeholder="نص الرسالة" style="min-height:70px"></textarea>
+        <button class="a-btn a-btn-sm">إرسال</button>
+      </form>
+    </details>
+  </div>
+
+  <div class="inbox <%= conversation ? 'has-thread' : '' %>">
+    <div class="a-card inbox-list">
+      <form class="a-search" action="/atlas/inbox"><input name="q" value="<%= search %>" placeholder="ابحث بالاسم أو الرقم"></form>
+      <div class="mono dim" style="padding:.6rem .9rem 0">All conversations · <%= conversations.length %></div>
+      <div class="conv-scroll">
+        <% conversations.forEach(c => { %>
+          <a class="conv <%= conversation && conversation.id === c.id ? 'active' : '' %>" href="/atlas/inbox/<%= c.id %>">
+            <span class="a-avatar" style="background:<%= avatarColor(c.id + 3) %>"><%= initials(c.client_name || c.name || '#') %></span>
+            <span class="who">
+              <b><%= c.client_name || c.name || `+${c.phone}` %></b>
+              <span><%= c.last_direction === 'out' ? 'أنت: ' : '' %><%= c.last_body || '' %></span>
+            </span>
+            <% if (c.unread) { %><span class="unread"><%= c.unread %></span><% } %>
+          </a>
+        <% }) %>
+        <% if (!conversations.length) { %><div class="a-empty" style="margin:1rem">لا توجد محادثات.</div><% } %>
+      </div>
+    </div>
+
+    <div class="a-card thread">
+      <% if (conversation) { %>
+        <div class="thread-head">
+          <div>
+            <a href="/atlas/inbox" class="small muted" style="margin-inline-end:.5rem">→</a>
+            <b><%= conversation.client_name || conversation.name || 'بدون اسم' %></b>
+            <span class="muted ltr small">+<%= conversation.phone %></span>
+          </div>
+          <div class="a-actions">
+            <% if (conversation.client_id) { %>
+              <a class="chip mauve" href="/atlas/clients/<%= conversation.client_id %>"><%= STAGE_LABEL[conversation.client_stage] || 'عميل' %> · فتح الملف</a>
+            <% } else { %>
+              <form method="post" action="/atlas/inbox/<%= conversation.id %>/link" class="a-actions">
+                <select name="client_id" class="a-input" style="width:auto;padding:.25rem .5rem">
+                  <% clients.forEach(c => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+                </select>
+                <button class="a-btn a-btn-sm a-btn-ghost">ربط بعميل</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+        <div class="thread-body" id="thread-body">
+          <% messages.forEach(m => { %>
+            <div class="bubble <%= m.direction %> <%= m.status === 'failed' || m.status === 'not_sent' ? 'failed' : '' %>">
+              <%= m.body %>
+              <span class="meta"><%= m.created_at.slice(5, 16) %><%= m.direction === 'out' ? ` · ${m.sender_name || 'Atlas'} · ${m.status || ''}` : '' %></span>
+            </div>
+          <% }) %>
+        </div>
+        <form method="post" action="/atlas/inbox/<%= conversation.id %>/send" class="thread-send">
+          <textarea name="text" class="a-input" required placeholder="اكتب رسالة…" rows="1"></textarea>
+          <button class="a-btn a-btn-solid">إرسال</button>
+        </form>
+        <script>document.getElementById('thread-body').scrollTop = 1e9;</script>
+      <% } else { %>
+        <div class="a-empty" style="margin:auto;border:0">اختر محادثة من القائمة.</div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('partials/bottom') %>

@@ -1,0 +1,28 @@
+<%- include('partials/top') %>
+<div class="a-page">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">Calendar</div>
+      <h1 class="a-h1"><%= monthName %></h1>
+      <p class="muted">المهام حسب تاريخ الاستحقاق.</p>
+    </div>
+    <div class="a-actions">
+      <a class="a-btn a-btn-ghost" href="/atlas/calendar?m=<%= next %>" aria-label="الشهر التالي">→</a>
+      <a class="a-btn a-btn-ghost" href="/atlas/calendar">اليوم</a>
+      <a class="a-btn a-btn-ghost" href="/atlas/calendar?m=<%= prev %>" aria-label="الشهر السابق">←</a>
+    </div>
+  </div>
+  <div class="cal">
+    <% ['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'].forEach(d => { %><div class="cal-h small"><%= d %></div><% }) %>
+    <% for (let i = 0; i < offset; i++) { %><div class="cal-d cal-blank"></div><% } %>
+    <% for (let d = 1; d <= days; d++) { const date = `${prefix}-${String(d).padStart(2, '0')}`; %>
+      <div class="cal-d <%= date === today ? 'today' : '' %>">
+        <div class="n"><span><%= d %></span><a href="/atlas/tasks/new?due=<%= date %>" title="مهمة في هذا اليوم">+</a></div>
+        <% (byDay[d] || []).forEach(t => { %>
+          <a class="cal-t p-<%= t.priority %> <%= t.status === 'done' ? 'done' : '' %>" href="/atlas/tasks/<%= t.id %>" title="<%= t.title %><%= t.owner_name ? ` — ${t.owner_name}` : '' %>"><%= t.title %></a>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/bottom') %>

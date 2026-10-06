@@ -1,0 +1,74 @@
+<%- include('partials/top') %>
+<% const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n); %>
+<div class="a-page wide">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">Client Records</div>
+      <h1 class="a-h1">العملاء</h1>
+      <p class="muted">خط المبيعات: <b><%= fmt(ov.pipelineValue) %></b> د.ك مفتوح · <b><%= fmt(ov.wonValue) %></b> د.ك مكسوب. كل رقم جديد يراسلك على واتساب يدخل هنا تلقائياً.</p>
+    </div>
+    <div class="a-actions">
+      <form class="a-search" action="/atlas/clients">
+        <input type="hidden" name="view" value="<%= view %>">
+        <input name="q" value="<%= search %>" placeholder="اسم، شركة، رقم، بريد…">
+        <% if (view === 'list') { %>
+          <select name="stage" onchange="this.form.submit()">
+            <option value="">كل المراحل</option>
+            <% stages.forEach(s => { %><option value="<%= s %>" <%= stage === s ? 'selected' : '' %>><%= STAGE_LABEL[s] %></option><% }) %>
+          </select>
+        <% } %>
+      </form>
+      <div class="a-tabs">
+        <a href="/atlas/clients?q=<%= encodeURIComponent(search) %>" class="<%= view === 'pipeline' ? 'active' : '' %>">المراحل</a>
+        <a href="/atlas/clients?view=list&q=<%= encodeURIComponent(search) %>" class="<%= view === 'list' ? 'active' : '' %>">قائمة</a>
+      </div>
+      <a href="/atlas/clients/new" class="a-btn a-btn-solid">+ عميل</a>
+    </div>
+  </div>
+
+  <% if (view === 'pipeline') { %>
+    <div class="kanban" data-kanban data-url="/atlas/api/clients/{id}" data-field="stage">
+      <% stages.forEach(s => { const list = clients.filter(c => c.stage === s); const total = list.reduce((a, c) => a + c.value, 0); %>
+        <section class="k-col" data-value="<%= s %>">
+          <div class="k-col-head"><span class="mono"><%= STAGE_LABEL[s] %> <span class="n" data-count><%= list.length %></span></span><span class="pipe-total"><%= fmt(total) %></span></div>
+          <div class="k-list">
+            <% list.forEach(c => { %>
+              <a class="k-card s-<%= c.stage %>" href="/atlas/clients/<%= c.id %>" draggable="true" data-id="<%= c.id %>">
+                <div class="t"><%= c.name %></div>
+                <% if (c.company && c.company !== c.name) { %><div class="small muted"><%= c.company %></div><% } %>
+                <div class="m">
+                  <% if (c.value) { %><span class="chip teal"><%= fmt(c.value) %> د.ك</span><% } %>
+                  <% if (c.source) { %><span class="chip"><%= c.source %></span><% } %>
+                  <% if (c.open_tasks) { %><span class="chip gold"><%= c.open_tasks %> مهام</span><% } %>
+                </div>
+                <% if (c.owner_name) { %><div class="owner"><span class="a-avatar" style="background:<%= avatarColor(c.owner_id) %>"><%= initials(c.owner_name) %></span><%= c.owner_name %></div><% } %>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% }) %>
+    </div>
+    <script src="/js/kanban.js" defer></script>
+  <% } else { %>
+    <div class="a-card a-table-wrap">
+      <% if (clients.length) { %>
+      <table class="a-table">
+        <thead><tr><th>العميل</th><th>المرحلة</th><th>القيمة</th><th>الهاتف</th><th>المسؤول</th><th>آخر تحديث</th></tr></thead>
+        <tbody>
+          <% clients.forEach(c => { %>
+            <tr>
+              <td><a href="/atlas/clients/<%= c.id %>"><b><%= c.name %></b></a><% if (c.company) { %><div class="small muted"><%= c.company %></div><% } %></td>
+              <td><span class="chip s-<%= c.stage %>" style="color:var(--c);border-color:var(--c)"><%= STAGE_LABEL[c.stage] %></span></td>
+              <td><%= fmt(c.value) %></td>
+              <td class="ltr"><%= c.phone %></td>
+              <td><%= c.owner_name || '—' %></td>
+              <td class="small dim"><%= c.updated_at.slice(0, 16) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %><div class="a-empty">لا يوجد عملاء مطابقون.</div><% } %>
+    </div>
+  <% } %>
+</div>
+<%- include('partials/bottom') %>

@@ -1,0 +1,24 @@
+<%- include('partials/top') %>
+<div class="a-page narrow">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">Pulse</div>
+      <h1 class="a-h1">سجل النشاط</h1>
+      <p class="muted">كل ما يحدث في الشركة — من الفريق، من واتساب، ومن Make.</p>
+    </div>
+  </div>
+  <div class="a-card">
+    <ul class="a-list">
+      <% activity.forEach(a => { %>
+        <li>
+          <span class="chip mono"><%= a.event %></span>
+          <span><b><%= a.actor %></b> <span class="muted"><%= a.message %></span>
+            <% if (a.link) { %><a href="<%= a.link %>" class="small">فتح</a><% } %></span>
+          <time><%= a.created_at %></time>
+        </li>
+      <% }) %>
+      <% if (!activity.length) { %><li class="dim">لا يوجد نشاط بعد.</li><% } %>
+    </ul>
+  </div>
+</div>
+<%- include('partials/bottom') %>

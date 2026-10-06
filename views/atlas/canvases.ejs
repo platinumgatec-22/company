@@ -1,0 +1,25 @@
+<%- include('partials/top') %>
+<div class="a-page">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">The Workspace</div>
+      <h1 class="a-h1">اللوحات</h1>
+      <p class="muted">مساحات حرة للأفكار والملاحظات والمهام. اللوحة المشتركة يراها الجميع، والخاصة لك وحدك.</p>
+    </div>
+    <form method="post" action="/atlas/canvas" class="a-search">
+      <input name="name" placeholder="اسم اللوحة" required maxlength="100">
+      <label class="a-check small muted"><input type="checkbox" name="private" value="1" checked> خاصة</label>
+      <button class="a-btn a-btn-solid">+ لوحة</button>
+    </form>
+  </div>
+  <div class="a-grid a-grid-3">
+    <% canvases.forEach(c => { %>
+      <a class="a-card" href="/atlas/canvas/<%= c.id %>" style="color:var(--text);display:grid;gap:.4rem">
+        <span class="chip <%= c.owner_id ? 'mauve' : 'teal' %>" style="justify-self:start"><%= c.owner_id ? 'your private canvas' : 'shared · everyone' %></span>
+        <b style="font-size:1.1rem"><%= c.name %></b>
+        <span class="small muted"><%= c.items %> عنصر</span>
+      </a>
+    <% }) %>
+  </div>
+</div>
+<%- include('partials/bottom') %>

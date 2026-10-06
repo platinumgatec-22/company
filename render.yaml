@@ -19,6 +19,19 @@ services:
         value: /var/data/company.db
       - key: COMPANY_NAME
         sync: false
+      # Optional: integrations can also be set from Atlas → الأتمتة (admin).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: MAKE_WEBHOOK_URL
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: TZ
+        value: Asia/Kuwait
     disk:
       name: data
       mountPath: /var/data

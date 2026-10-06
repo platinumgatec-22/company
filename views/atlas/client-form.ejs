@@ -1,0 +1,32 @@
+<%- include('partials/top') %>
+<div class="a-page narrow">
+  <a href="<%= client.id ? `/atlas/clients/${client.id}` : '/atlas/clients' %>" class="small muted">→ رجوع</a>
+  <div class="a-card" style="margin-top:.6rem">
+    <div class="a-eyebrow mono"><%= client.id ? `Client #${client.id}` : 'New client' %></div>
+    <h1 class="a-h1"><%= client.id ? 'تعديل العميل' : 'عميل جديد' %></h1>
+    <form method="post" action="/atlas/clients<%= client.id ? `/${client.id}` : '' %>" class="a-form">
+      <div class="a-form-grid">
+        <label>الاسم <input name="name" value="<%= client.name %>" required maxlength="200" autofocus></label>
+        <label>الشركة <input name="company" value="<%= client.company %>"></label>
+        <label>الهاتف (مع رمز الدولة) <input name="phone" value="<%= client.phone %>" dir="ltr" placeholder="+965 5xxx xxxx"></label>
+        <label>البريد <input name="email" type="email" value="<%= client.email %>" dir="ltr"></label>
+        <label>المرحلة
+          <select name="stage"><% stages.forEach(s => { %><option value="<%= s %>" <%= client.stage === s ? 'selected' : '' %>><%= STAGE_LABEL[s] %></option><% }) %></select>
+        </label>
+        <label>القيمة المتوقعة (د.ك) <input name="value" type="number" min="0" step="any" value="<%= client.value %>" dir="ltr"></label>
+        <label>المصدر <input name="source" value="<%= client.source %>" placeholder="واتساب، موقع، توصية…"></label>
+        <label>المسؤول
+          <select name="owner_id">
+            <option value="">— بدون —</option>
+            <% employees.forEach(e => { %><option value="<%= e.id %>" <%= Number(client.owner_id) === e.id ? 'selected' : '' %>><%= e.full_name %></option><% }) %>
+          </select>
+        </label>
+        <label class="span-2">ملاحظات <textarea name="notes"><%= client.notes %></textarea></label>
+      </div>
+      <div class="a-actions">
+        <button class="a-btn a-btn-solid">حفظ</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('partials/bottom') %>

@@ -1,0 +1,220 @@
+<%- include('partials/top') %>
+<% const field = (k, type = 'text', extra = '') => { const f = fields[k]; const v = values[k]; %>
+  <label><%= f.label %>
+    <% if (v.env) { %>
+      <input value="<%= v.value || '(set)' %>" disabled dir="ltr"><span class="small dim">مضبوط من متغيرات البيئة (<%= f.env %>)</span>
+    <% } else if (f.secret) { %>
+      <input name="<%= k %>" type="password" autocomplete="off" dir="ltr" placeholder="<%= v.set ? `${v.value} — اتركه فارغاً للإبقاء، - للمسح` : '' %>">
+    <% } else { %>
+      <input name="<%= k %>" type="<%= type %>" value="<%= v.value %>" dir="ltr" <%- extra %>>
+    <% } %>
+  </label>
+<% } %>
+<div class="a-page">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">Automations · Make · WhatsApp · Claude</div>
+      <h1 class="a-h1">الأتمتة والربط</h1>
+      <p class="muted">Atlas يرسل كل حدث إلى Make، وMake يقدر يكتب في Atlas عبر الـ API. وواتساب والمستشار يتصلون من هنا.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="a-card">
+      <h3><span class="dot <%= connected.make ? 'on' : 'off' %>"></span> Make</h3>
+      <p class="small muted">أحداث Atlas ← Webhook في Make · سيناريوهات Make ← Atlas API.</p>
+      <a href="#make" class="small">الإعداد ↓</a>
+    </div>
+    <div class="a-card">
+      <h3><span class="dot <%= connected.whatsapp ? 'on' : 'off' %>"></span> WhatsApp Cloud API</h3>
+      <p class="small muted">صندوق محادثات مشترك، كل رقم جديد يصير عميلاً، وتنبيه المسؤول بمهمته.</p>
+      <a href="#whatsapp" class="small">الإعداد ↓</a>
+    </div>
+    <div class="a-card">
+      <h3><span class="dot <%= connected.strategist ? 'on' : 'off' %>"></span> The Strategist (Claude)</h3>
+      <p class="small muted">مستشار يقرأ الشركة ويقترح مهام ورسائل — ينفّذ فقط بموافقتك.</p>
+      <a href="#claude" class="small">الإعداد ↓</a>
+    </div>
+  </div>
+
+  <!-- ============ MAKE ============ -->
+  <h2 id="make" style="margin-top:2rem">Make</h2>
+  <div class="a-grid a-grid-2">
+    <div class="a-card">
+      <div class="a-card-head"><h2>1 · من Atlas إلى Make (Webhooks)</h2></div>
+      <p class="small muted">في Make: أنشئ سيناريو يبدأ بـ <b>Webhooks → Custom webhook</b>، انسخ الرابط والصقه هنا. Atlas سيرسل JSON بهذا الشكل:</p>
+      <code class="code">{ "event": "task.created", "at": "2026-…", "actor": { "id": 1, "name": "…" }, "data": { "task": { … } } }</code>
+      <form method="post" action="/atlas/automations/webhooks" class="a-form" style="margin-top:1rem">
+        <div class="a-form-grid">
+          <label>الاسم <input name="name" placeholder="مثال: إشعار مهام Slack"></label>
+          <label>رابط الـ Webhook <input name="url" required dir="ltr" placeholder="https://hook.eu1.make.com/…"></label>
+        </div>
+        <label>سر التوقيع (اختياري — يُرسل HMAC في X-Atlas-Signature) <input name="secret" dir="ltr" autocomplete="off"></label>
+        <div>
+          <div class="small muted" style="margin-bottom:.3rem">الأحداث (بدون اختيار = كل الأحداث)</div>
+          <div class="events-pick"><% events.forEach(ev => { %><label><input type="checkbox" name="events" value="<%= ev %>"> <%= ev %></label><% }) %></div>
+        </div>
+        <div><button class="a-btn a-btn-solid a-btn-sm">+ إضافة Webhook</button></div>
+      </form>
+
+      <% if (webhooks.length) { %>
+        <div class="a-table-wrap" style="margin-top:1rem">
+          <table class="a-table">
+            <thead><tr><th>الاسم</th><th>الأحداث</th><th></th></tr></thead>
+            <tbody>
+              <% webhooks.forEach(w => { %>
+                <tr style="<%= w.is_active ? '' : 'opacity:.5' %>">
+                  <td><b><%= w.name %></b><div class="small dim ltr" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= w.url %></div></td>
+                  <td class="small mono"><%= w.events === '*' ? 'all' : w.events.split(',').length + ' events' %></td>
+                  <td class="a-actions" style="justify-content:flex-end">
+                    <form method="post" action="/atlas/automations/webhooks/<%= w.id %>/test"><button class="a-btn a-btn-sm">اختبار</button></form>
+                    <form method="post" action="/atlas/automations/webhooks/<%= w.id %>/toggle"><button class="a-btn a-btn-sm a-btn-ghost"><%= w.is_active ? 'إيقاف' : 'تشغيل' %></button></form>
+                    <form method="post" action="/atlas/automations/webhooks/<%= w.id %>/delete" onsubmit="return confirm('حذف؟')"><button class="a-btn a-btn-sm a-btn-danger">✕</button></form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="a-card" id="keys">
+      <div class="a-card-head"><h2>2 · من Make إلى Atlas (API)</h2></div>
+      <p class="small muted">في Make استخدم وحدة <b>HTTP → Make a request</b> مع الهيدر <span class="ltr mono">Authorization: Bearer &lt;key&gt;</span> و Body نوعه JSON.</p>
+      <% if (newKey) { %>
+        <div class="key-reveal">
+          <b>مفتاحك الجديد — انسخه الآن، لن يظهر مرة أخرى:</b>
+          <div class="copy-row" style="margin-top:.4rem"><code class="code" id="new-key"><%= newKey %></code>
+            <button type="button" class="a-btn a-btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('new-key').textContent);this.textContent='✓'">نسخ</button></div>
+        </div>
+      <% } %>
+      <form method="post" action="/atlas/automations/keys" class="a-search" style="margin:.8rem 0">
+        <input name="name" placeholder="اسم المفتاح (مثال: Make)">
+        <button class="a-btn a-btn-sm a-btn-solid">+ مفتاح API</button>
+      </form>
+      <% if (keys.length) { %>
+        <ul class="a-list">
+          <% keys.forEach(k => { %>
+            <li>
+              <span><b><%= k.name %></b> <span class="mono dim"><%= k.prefix %>…</span></span>
+              <span class="small dim"><%= k.last_used_at ? `آخر استخدام ${k.last_used_at}` : 'لم يُستخدم' %></span>
+              <form method="post" action="/atlas/automations/keys/<%= k.id %>/delete" onsubmit="return confirm('إلغاء المفتاح؟ أي سيناريو يستخدمه سيتوقف.')" style="margin-inline-start:auto"><button class="a-btn a-btn-sm a-btn-danger">إلغاء</button></form>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+      <details style="margin-top:.8rem" open>
+        <summary class="small"><b>نقاط الـ API</b></summary>
+<code class="code" style="margin-top:.5rem">BASE  <%= base %>/api/v1
+
+GET    /overview
+GET    /employees              GET /departments
+GET    /tasks?status=&owner_id=&client_id=&q=
+POST   /tasks                  {"title","description","status","priority",
+                                "due_date":"YYYY-MM-DD","owner_id","client_id"}
+PATCH  /tasks/:id              {"status":"done"}
+GET    /clients?stage=&q=      GET /clients/by-phone/:phone
+POST   /clients                {"name","phone","email","stage","value","source"}
+PATCH  /clients/:id            {"stage":"won","value":5000}
+POST   /clients/:id/interactions {"kind":"call","body":"..."}
+POST   /notes                  {"text":"...","color":"gold"}
+POST   /activity               {"message":"...","link":"/atlas/..."}
+POST   /whatsapp/send          {"to":"+965...","text":"..."}</code>
+      </details>
+    </div>
+  </div>
+
+  <div class="a-grid a-grid-2" style="margin-top:1rem">
+    <div class="a-card" id="scenarios">
+      <div class="a-card-head"><h2>3 · سيناريوهات Make</h2></div>
+      <% if (!makeReady) { %>
+        <p class="small muted">أضف <b>Make API token</b> و <b>Team ID</b> بالأسفل لعرض سيناريوهاتك وتشغيلها من هنا. (Make → Profile → API access)</p>
+      <% } else if (scenariosError) { %>
+        <div class="a-flash a-flash-error" style="margin:0">Make: <%= scenariosError %></div>
+      <% } else if (scenarios && scenarios.length) { %>
+        <ul class="a-list">
+          <% scenarios.forEach(s => { %>
+            <li>
+              <span class="dot <%= s.active ? 'on' : '' %>"></span>
+              <span><b><%= s.name %></b> <span class="small dim mono"><%= s.scheduling %></span></span>
+              <form method="post" action="/atlas/automations/scenarios/<%= s.id %>/run" style="margin-inline-start:auto"><button class="a-btn a-btn-sm">تشغيل ▶</button></form>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %><div class="a-empty">لا توجد سيناريوهات في هذا الفريق.</div><% } %>
+    </div>
+
+    <div class="a-card">
+      <div class="a-card-head"><h2>آخر الإرسالات</h2></div>
+      <% if (deliveries.length) { %>
+        <ul class="a-list">
+          <% deliveries.forEach(d => { %>
+            <li>
+              <span class="chip <%= d.status >= 200 && d.status < 300 ? 'green' : 'red' %> mono"><%= d.status || 'ERR' %></span>
+              <span class="mono small"><%= d.event %></span>
+              <span class="small dim" title="<%= d.error %>"><%= d.webhook_name || 'default' %><%= d.error ? ` · ${d.error.slice(0, 60)}` : '' %></span>
+              <time><%= d.created_at.slice(5, 16) %></time>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %><div class="a-empty">لم يُرسل شيء بعد.</div><% } %>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <form method="post" action="/atlas/automations/settings" class="a-form" style="margin-top:2rem">
+    <div class="a-grid a-grid-3">
+      <div class="a-card a-form" id="make-settings">
+        <h2>Make</h2>
+        <% field('make_webhook_url') %>
+        <% field('make_api_token') %>
+        <% field('make_zone') %>
+        <% field('make_team_id') %>
+      </div>
+      <div class="a-card a-form" id="whatsapp">
+        <h2>WhatsApp</h2>
+        <% field('whatsapp_token') %>
+        <% field('whatsapp_phone_id') %>
+        <% field('whatsapp_verify_token') %>
+        <% field('whatsapp_app_secret') %>
+        <% field('whatsapp_notify') %>
+        <div class="small muted">رابط الـ Webhook في Meta (Callback URL):</div>
+        <code class="code"><%= base %>/webhooks/whatsapp</code>
+        <span class="small dim">اشترك في حقل <span class="mono">messages</span>. رسائل النص الحر تُرسل فقط خلال 24 ساعة من آخر رسالة للعميل.</span>
+      </div>
+      <div class="a-card a-form" id="claude">
+        <h2>The Strategist</h2>
+        <% field('anthropic_api_key') %>
+        <label><%= fields.atlas_model.label %>
+          <% if (values.atlas_model.env) { %><input value="<%= values.atlas_model.value %>" disabled dir="ltr">
+          <% } else { %><input name="atlas_model" value="<%= values.atlas_model.value %>" dir="ltr" placeholder="<%= defaultModel %>"><% } %>
+        </label>
+        <span class="small dim">المفتاح من console.anthropic.com. المستشار لا ينفّذ أي تغيير بدون موافقة الموظف.</span>
+      </div>
+    </div>
+    <div><button class="a-btn a-btn-solid">حفظ الإعدادات</button></div>
+  </form>
+
+  <div class="a-grid a-grid-2" style="margin-top:1rem">
+    <form method="post" action="/atlas/automations/whatsapp-test" class="a-card a-form">
+      <h2>اختبار واتساب</h2>
+      <div class="a-form-grid">
+        <label>إلى <input name="to" required dir="ltr" placeholder="+965…"></label>
+        <label>النص <input name="text" placeholder="Atlas is connected ✓"></label>
+      </div>
+      <div><button class="a-btn a-btn-sm">إرسال رسالة اختبار</button></div>
+    </form>
+    <div class="a-card">
+      <h2>أفكار سيناريوهات جاهزة</h2>
+      <ul class="a-list small">
+        <li><span class="chip mono">task.created</span> → Make → Google Calendar: حدث في تقويم المسؤول.</li>
+        <li><span class="chip mono">client.stage_changed</span> (won) → Make → Google Sheets + فاتورة.</li>
+        <li><span class="chip mono">whatsapp.received</span> → Make → AI تصنيف → <span class="ltr mono">PATCH /clients/:id</span>.</li>
+        <li>Google Forms / حجز موعد → Make → <span class="ltr mono">POST /clients</span> + <span class="ltr mono">/whatsapp/send</span> للترحيب.</li>
+        <li>كل صباح (Schedule) → Make → <span class="ltr mono">GET /overview</span> → رسالة ملخص على واتساب.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<%- include('partials/bottom') %>

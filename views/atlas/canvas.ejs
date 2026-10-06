@@ -1,0 +1,54 @@
+<%- include('partials/top', { bodyClass: 'atlas-canvas' }) %>
+<div class="cv-wrap" id="cv" data-id="<%= canvas.id %>">
+  <div class="cv-viewport" id="cv-viewport">
+    <div class="cv-world" id="cv-world">
+      <svg class="cv-links" id="cv-links" width="1" height="1"></svg>
+    </div>
+  </div>
+
+  <div class="cv-tools" role="toolbar" aria-label="أدوات اللوحة">
+    <button data-tool="select" class="on"><span>تحديد</span><kbd>V</kbd></button>
+    <button data-tool="note"><span>ملاحظة</span><kbd>N</kbd></button>
+    <button data-tool="text"><span>نص</span><kbd>T</kbd></button>
+    <button data-tool="task"><span>مهمة</span><kbd>K</kbd></button>
+    <button data-tool="section"><span>قسم</span><kbd>F</kbd></button>
+    <hr>
+    <button data-tool="connect"><span>ربط</span><kbd>C</kbd></button>
+    <button data-tool="erase"><span>مسح</span><kbd>E</kbd></button>
+  </div>
+
+  <div class="cv-title">
+    <a href="/atlas/canvas" class="muted">→</a>
+    <h1><%= canvas.name %></h1>
+    <span class="chip <%= canvas.owner_id ? 'mauve' : 'teal' %>"><%= canvas.owner_id ? 'private' : 'shared' %></span>
+    <% if (canvas.owner_id === user.id || user.role === 'admin') { %>
+      <form method="post" action="/atlas/canvas/<%= canvas.id %>/delete" onsubmit="return confirm('حذف اللوحة وكل ما فيها؟')" class="inline">
+        <button class="a-btn a-btn-ghost a-btn-sm" title="حذف اللوحة">✕</button>
+      </form>
+    <% } %>
+  </div>
+
+  <div class="cv-panel hidden" id="cv-panel">
+    <h3>Colour</h3>
+    <div class="cv-swatches" id="cv-swatches">
+      <% colors.forEach(c => { %><button class="c-<%= c %>" data-color="<%= c %>" title="<%= c %>"></button><% }) %>
+    </div>
+    <h3>Task</h3>
+    <div id="cv-task"></div>
+    <h3>Written by</h3>
+    <div class="small muted" id="cv-author"></div>
+    <div class="a-actions" style="margin-top:.7rem">
+      <button class="a-btn a-btn-sm" id="cv-edit">تعديل النص</button>
+      <button class="a-btn a-btn-sm a-btn-danger" id="cv-delete">حذف</button>
+    </div>
+  </div>
+
+  <div class="cv-help">نقرتان على اللوحة لإضافة ملاحظة · اسحب الخلفية للتحريك · عجلة الفأرة للتكبير</div>
+  <div class="cv-zoom">
+    <button id="cv-zout" aria-label="تصغير">−</button><span id="cv-zl">100%</span><button id="cv-zin" aria-label="تكبير">+</button>
+    <button id="cv-fit" aria-label="ملاءمة" title="ملاءمة">⤢</button>
+  </div>
+</div>
+<script>window.ATLAS_STATUS = <%- JSON.stringify(STATUS_LABEL) %>;</script>
+<script src="/js/canvas.js" defer></script>
+<%- include('partials/bottom') %>

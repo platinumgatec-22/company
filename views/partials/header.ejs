@@ -18,6 +18,7 @@
     <nav class="nav">
       <a href="/" class="<%= path === '/' ? 'active' : '' %>">الرئيسية</a>
       <% if (user) { %>
+        <a href="/atlas" class="<%= path.startsWith('/atlas') ? 'active' : '' %>">◉ Atlas</a>
         <a href="/departments" class="<%= path.startsWith('/departments') ? 'active' : '' %>">الأقسام</a>
         <a href="/employees" class="<%= path.startsWith('/employees') ? 'active' : '' %>">دليل الموظفين</a>
         <% if (user.role === 'admin') { %>

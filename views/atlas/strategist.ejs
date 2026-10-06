@@ -1,0 +1,56 @@
+<%- include('partials/top') %>
+<div class="a-page wide">
+  <div class="strat">
+    <section class="a-card strat-chat">
+      <div class="strat-head">
+        <div>
+          <span class="a-eyebrow mono" style="margin:0">The Strategist · Chief</span>
+          <span class="small muted">نائب الرئيس التنفيذي — يقرأ الشركة ويقترح، ولا ينفّذ إلا بموافقتك.</span>
+        </div>
+        <form method="post" action="/atlas/strategist/new"><button class="a-btn a-btn-ghost a-btn-sm">محادثة جديدة</button></form>
+      </div>
+      <div class="strat-body" id="strat-body">
+        <div class="msg agent">
+          <div class="who">The Strategist</div>
+          <div class="body">أهلاً <%= user.full_name.split(/\s+/)[0] %>. أنا المستشار — أتولى الاستراتيجية، العروض، السوق، وترتيب القرارات.
+قل لي ما في بالك اليوم: سعر لست متأكداً منه، عرض تريد اختباره من جهة المشتري، أو قرار تريده مرتباً كخطة. سأقرأ بيانات الشركة وأرجع لك بتوصية واحدة وتكلفتها. وإذا احتاج الأمر مهمة أو رسالة، سأقترحها وأنتظر موافقتك.</div>
+        </div>
+        <% transcript.forEach(m => { %>
+          <div class="msg <%= m.role === 'user' ? 'user' : 'agent' %>">
+            <div class="who"><%= m.role === 'user' ? user.full_name : 'The Strategist' %></div>
+            <div class="body"><%= m.role === 'user' ? m.text.replace(/^\[[^\]]*\]\n/, '') : m.text %></div>
+          </div>
+        <% }) %>
+      </div>
+      <% if (connected) { %>
+        <div class="strat-seats">
+          <button type="button" data-q="وش أهم ٣ أشياء لازم أركز عليها هالأسبوع؟">أولويات الأسبوع</button>
+          <button type="button" data-q="راجع خط المبيعات وقول لي وين الفرصة الأكبر ووش الخطوة الجاية.">خط المبيعات</button>
+          <button type="button" data-q="مين في الفريق عليه ضغط مهام زيادة ومين فاضي؟ اقترح إعادة توزيع.">ضغط الفريق</button>
+          <button type="button" data-q="المهام المتأخرة: وش نسوي فيها؟">المتأخرات</button>
+        </div>
+        <form class="strat-send" id="strat-form">
+          <textarea class="a-input" name="text" id="strat-text" required placeholder="اسأل المستشار…  (Enter للإرسال، Shift+Enter لسطر جديد)" rows="2"></textarea>
+          <button class="a-btn a-btn-solid" id="strat-btn">إرسال</button>
+        </form>
+      <% } else { %>
+        <div class="a-empty" style="margin:1rem">
+          المستشار غير متصل بعد. <% if (user.role === 'admin') { %><a href="/atlas/automations#claude">أضف مفتاح Anthropic API</a><% } else { %>اطلب من مدير النظام إضافة مفتاح Anthropic API.<% } %>
+        </div>
+      <% } %>
+    </section>
+
+    <aside class="a-card" style="display:flex;flex-direction:column;gap:.8rem;overflow:hidden">
+      <div>
+        <div class="a-eyebrow mono">Waiting for your yes</div>
+        <h2 style="margin:0">الاقتراحات</h2>
+        <p class="small muted" style="margin:0">المستشار يقترح وأنت تقرر. لا يتغيّر شيء قبل موافقتك.</p>
+      </div>
+      <div class="proposals" id="proposals">
+        <%- include('partials/proposals', { proposals }) %>
+      </div>
+    </aside>
+  </div>
+</div>
+<script src="/js/strategist.js" defer></script>
+<%- include('partials/bottom') %>

@@ -1,0 +1,53 @@
+<%- include('partials/top') %>
+<div class="a-page narrow">
+  <a href="/atlas/board" class="small muted">→ لوحة المهام</a>
+  <div class="a-card" style="margin-top:.6rem">
+    <div class="a-eyebrow mono"><%= task.id ? `Task #${task.id}` : 'New task' %></div>
+    <h1 class="a-h1"><%= task.id ? 'تفاصيل المهمة' : 'مهمة جديدة' %></h1>
+    <form method="post" action="/atlas/tasks<%= task.id ? `/${task.id}` : '' %>" class="a-form">
+      <label>العنوان <input name="title" value="<%= task.title %>" required maxlength="200" autofocus></label>
+      <label>التفاصيل <textarea name="description"><%= task.description %></textarea></label>
+      <div class="a-form-grid">
+        <label>الحالة
+          <select name="status"><% statuses.forEach(s => { %><option value="<%= s %>" <%= task.status === s ? 'selected' : '' %>><%= STATUS_LABEL[s] %></option><% }) %></select>
+        </label>
+        <label>الأولوية
+          <select name="priority"><% priorities.forEach(p => { %><option value="<%= p %>" <%= task.priority === p ? 'selected' : '' %>><%= PRIORITY_LABEL[p] %></option><% }) %></select>
+        </label>
+        <label>المسؤول
+          <select name="owner_id">
+            <option value="">— بدون —</option>
+            <% employees.forEach(e => { %><option value="<%= e.id %>" <%= Number(task.owner_id) === e.id ? 'selected' : '' %>><%= e.full_name %></option><% }) %>
+          </select>
+        </label>
+        <label>تاريخ الاستحقاق <input type="date" name="due_date" value="<%= task.due_date %>"></label>
+        <label>القسم
+          <select name="department_id">
+            <option value="">— بدون —</option>
+            <% departments.forEach(d => { %><option value="<%= d.id %>" <%= Number(task.department_id) === d.id ? 'selected' : '' %>><%= d.icon %> <%= d.name %></option><% }) %>
+          </select>
+        </label>
+        <label>العميل
+          <select name="client_id">
+            <option value="">— بدون —</option>
+            <% clients.forEach(c => { %><option value="<%= c.id %>" <%= Number(task.client_id) === c.id ? 'selected' : '' %>><%= c.name %></option><% }) %>
+          </select>
+        </label>
+      </div>
+      <div class="a-actions">
+        <button class="a-btn a-btn-solid">حفظ</button>
+        <a href="/atlas/board" class="a-btn a-btn-ghost">إلغاء</a>
+      </div>
+    </form>
+    <% if (task.id) { %>
+      <hr style="border:0;border-top:1px solid var(--line);margin:1.25rem 0">
+      <div class="a-actions" style="justify-content:space-between">
+        <span class="small dim">أُنشئت <%= task.created_at %> · آخر تعديل <%= task.updated_at %></span>
+        <form method="post" action="/atlas/tasks/<%= task.id %>/delete" onsubmit="return confirm('حذف المهمة نهائياً؟')">
+          <button class="a-btn a-btn-danger a-btn-sm">حذف</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/bottom') %>

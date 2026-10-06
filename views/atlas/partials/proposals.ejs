@@ -1,0 +1,22 @@
+<% const LABEL = { pending: 'بانتظارك', approved: 'نُفّذ', declined: 'مرفوض', failed: 'فشل' };
+   const CLS = { pending: 'mauve', approved: 'green', declined: '', failed: 'red' }; %>
+<% if (!proposals.length) { %><div class="a-empty small">لا توجد اقتراحات بعد.</div><% } %>
+<% proposals.forEach(p => { %>
+  <div class="proposal <%= p.status %>">
+    <div class="a-actions" style="justify-content:space-between">
+      <span class="chip <%= CLS[p.status] %>"><%= LABEL[p.status] %></span>
+      <span class="small dim mono"><%= p.created_at.slice(5, 16) %></span>
+    </div>
+    <div class="s"><%= p.summary %></div>
+    <% if (p.status === 'pending') { %>
+      <form method="post" action="/atlas/strategist/proposals/<%= p.id %>" class="a-actions">
+        <button class="a-btn a-btn-sm a-btn-solid" name="decision" value="approve">موافق</button>
+        <button class="a-btn a-btn-sm a-btn-ghost" name="decision" value="decline">لا</button>
+      </form>
+    <% } else if (p.status === 'approved' && p.result) { %>
+      <a href="<%= p.result %>" class="small">فتح ←</a>
+    <% } else if (p.status === 'failed') { %>
+      <span class="small" style="color:var(--red)"><%= p.result %></span>
+    <% } %>
+  </div>
+<% }) %>

@@ -4,7 +4,9 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
-const { seed } = require('./seed');
+const { seed, seedAtlas } = require('./seed');
+const createAtlas = require('./atlas/routes');
+const { emit } = require('./atlas/events');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -14,6 +16,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 if (seed()) console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
+if (seedAtlas()) console.log('تم إنشاء بيانات Atlas التجريبية (مهام، عملاء، لوحة).');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -22,6 +25,8 @@ app.set('trust proxy', 1);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.urlencoded({ extended: false }));
+// Keep the raw body so webhook signatures (Meta) can be verified.
+app.use(express.json({ limit: '1mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(cookieSession({
   name: 'session',
   secret: SESSION_SECRET,
@@ -141,7 +146,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  if (req.user) return res.redirect('/departments');
+  if (req.user) return res.redirect('/atlas');
   res.render('login', { title: 'تسجيل الدخول', next: clean(req.query.next), username: '' });
 });
 
@@ -160,7 +165,7 @@ app.post('/login', asyncRoute(async (req, res) => {
   req.session.userId = user.id;
   flash(req, 'success', `أهلاً ${user.full_name} 👋`);
   // Only allow local redirects.
-  res.redirect(next.startsWith('/') && !next.startsWith('//') ? next : '/departments');
+  res.redirect(next.startsWith('/') && !next.startsWith('//') ? next : '/atlas');
 }));
 
 app.post('/logout', (req, res) => {
@@ -233,7 +238,7 @@ app.post('/profile/password', requireAuth, asyncRoute(async (req, res) => {
     const hash = await bcrypt.hash(String(next), 10);
     db.prepare('UPDATE employees SET password_hash = ?, must_change_password = 0 WHERE id = ?').run(hash, req.user.id);
     flash(req, 'success', 'تم تغيير كلمة المرور بنجاح.');
-    return res.redirect('/departments');
+    return res.redirect('/atlas');
   }
   res.redirect('/profile');
 }));
@@ -391,6 +396,7 @@ async function saveEmployee(req, res) {
     if (/UNIQUE/.test(err.message)) return render('اسم المستخدم مستخدم من قبل موظف آخر.');
     throw err;
   }
+  if (!id) emit('employee.created', { message: `أضاف الموظف «${employee.full_name}»`, actor: req.user, data: { username: employee.username } });
   flash(req, 'success', id ? 'تم تحديث بيانات الموظف.' : `تم إنشاء حساب ${employee.full_name} (اسم المستخدم: ${employee.username}).`);
   res.redirect('/admin/employees');
 }
@@ -411,13 +417,21 @@ admin.post('/employees/:id/delete', (req, res) => {
 
 app.use('/admin', admin);
 
+// ---------- Atlas ----------
+const atlas = createAtlas({ requireAuth, requireAdmin });
+app.use('/atlas', atlas.atlas);
+app.use('/webhooks', atlas.hooks);
+app.use('/api/v1', atlas.api);
+
 // ---------- errors ----------
 app.use((req, res) => {
   res.status(404).render('error', { title: 'غير موجود', message: 'الصفحة المطلوبة غير موجودة.' });
 });
 
 app.use((err, req, res, _next) => {
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON body' });
   console.error(err);
+  if (req.path.startsWith('/api/') || req.path.startsWith('/atlas/api/')) return res.status(500).json({ error: 'Internal error' });
   res.status(500).render('error', { title: 'خطأ', message: 'حدث خطأ غير متوقع، حاول مرة أخرى.' });
 });
 
