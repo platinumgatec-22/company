@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kie-ai": {
+      "command": "npx",
+      "args": ["-y", "@felores/kie-ai-mcp-server"],
+      "env": {
+        "KIE_AI_ALLOW_DIRECT_GENERATION": "true"
+      }
+    }
+  }
+}
