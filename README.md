@@ -98,6 +98,7 @@ npm start
 | `SESSION_SECRET` | مفتاح تشفير جلسات الدخول (ضعه في الإنتاج) | عشوائي عند كل تشغيل |
 | `DB_PATH` | مسار ملف قاعدة البيانات | `data/company.db` |
 | `NODE_ENV` | ضعه `production` لتفعيل الكوكيز الآمنة (HTTPS) | — |
+| `ADMIN_PASSWORD`, `DEMO_PASSWORD` | كلمتا مرور المدير والموظفين التجريبيين عند إنشاء القاعدة | `admin123` / `123456` |
 | `TZ` | المنطقة الزمنية للشركة (التحية، «اليوم») | `Asia/Kuwait` |
 | `ANTHROPIC_API_KEY`, `ATLAS_MODEL` | المستشار (Claude) | — / `claude-opus-5-5` |
 | `MAKE_WEBHOOK_URL` | Webhook افتراضي يستقبل كل الأحداث | — |

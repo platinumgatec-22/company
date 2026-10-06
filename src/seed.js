@@ -3,7 +3,9 @@
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 
-const DEFAULT_PASSWORD = '123456';
+// Set these on a public server: without a persistent disk the database (and these passwords) reset on restart.
+const DEFAULT_PASSWORD = process.env.DEMO_PASSWORD || '123456';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const departments = [
   { name: 'الإدارة العليا', icon: '🏛️', description: 'رسم الاستراتيجية العامة للشركة واتخاذ القرارات الرئيسية.' },
@@ -52,7 +54,7 @@ function seed() {
   try {
     const deptIds = departments.map((d) => Number(insertDept.run(d.name, d.icon, d.description).lastInsertRowid));
 
-    insertEmp.run('مدير النظام', 'admin', bcrypt.hashSync('admin123', 10), 'admin@company.com', '',
+    insertEmp.run('مدير النظام', 'admin', bcrypt.hashSync(ADMIN_PASSWORD, 10), 'admin@company.com', '',
       'مسؤول النظام', deptIds[3], 0, 'admin', '2020-01-01', 1);
 
     employees.forEach(([name, username, title, deptIdx, isManager], i) => {

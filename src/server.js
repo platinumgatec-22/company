@@ -15,7 +15,7 @@ if (!process.env.SESSION_SECRET) {
   console.warn('تنبيه: لم يتم ضبط SESSION_SECRET، سيتم تسجيل خروج الجميع عند إعادة تشغيل الخادم.');
 }
 
-if (seed()) console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
+if (seed()) console.log(`تم إنشاء بيانات تجريبية (admin / ${process.env.ADMIN_PASSWORD ? 'ADMIN_PASSWORD' : 'admin123'}).`);
 if (seedAtlas()) console.log('تم إنشاء بيانات Atlas التجريبية (مهام، عملاء، لوحة).');
 
 const app = express();
