@@ -8,6 +8,8 @@ const { seed } = require('./seed');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
+// Serve the site under a sub-path (e.g. /portal-company) when it sits behind another site's domain.
+const BASE_PATH = `/${(process.env.BASE_PATH || '').trim()}`.replace(/\/+/g, '/').replace(/\/$/, '');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 if (!process.env.SESSION_SECRET) {
   console.warn('تنبيه: لم يتم ضبط SESSION_SECRET، سيتم تسجيل خروج الجميع عند إعادة تشغيل الخادم.');
@@ -20,6 +22,13 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.set('trust proxy', 1);
 
+// Every local redirect in this file is written relative to the site root; prefix it with the base path.
+app.use((req, res, next) => {
+  const redirect = res.redirect.bind(res);
+  res.redirect = (url) => redirect(url.startsWith('/') && !url.startsWith('//') ? BASE_PATH + url : url);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieSession({
@@ -28,6 +37,7 @@ app.use(cookieSession({
   httpOnly: true,
   sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production',
+  path: BASE_PATH || '/',
   maxAge: 8 * 60 * 60 * 1000,
 }));
 
@@ -94,6 +104,7 @@ const asyncRoute = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next
 // ---------- per-request locals ----------
 app.use((req, res, next) => {
   res.locals.company = COMPANY_NAME;
+  res.locals.base = BASE_PATH;
   res.locals.year = new Date().getFullYear();
   res.locals.path = req.path;
   res.locals.initials = initials;
@@ -118,7 +129,8 @@ app.use((req, res, next) => {
 function requireAuth(req, res, next) {
   if (!req.user) {
     flash(req, 'info', 'الرجاء تسجيل الدخول أولاً.');
-    return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+    const next = req.originalUrl.slice(BASE_PATH.length) || '/';
+    return res.redirect(`/login?next=${encodeURIComponent(next)}`);
   }
   // Force a password change before using the portal with a default/reset password.
   if (req.user.must_change_password && !req.path.startsWith('/profile') && req.path !== '/logout') {
@@ -421,8 +433,17 @@ app.use((err, req, res, _next) => {
   res.status(500).render('error', { title: 'خطأ', message: 'حدث خطأ غير متوقع، حاول مرة أخرى.' });
 });
 
-if (require.main === module) {
-  app.listen(PORT, () => console.log(`${COMPANY_NAME}: http://localhost:${PORT}`));
+const server = express();
+server.set('trust proxy', 1);
+if (BASE_PATH) {
+  server.use(BASE_PATH, app);
+  server.get('/', (req, res) => res.redirect(`${BASE_PATH}/`));
+} else {
+  server.use(app);
 }
 
-module.exports = app;
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`${COMPANY_NAME}: http://localhost:${PORT}${BASE_PATH}/`));
+}
+
+module.exports = server;

@@ -19,6 +19,9 @@ services:
         value: /var/data/company.db
       - key: COMPANY_NAME
         sync: false
+      # Served at platinumgatekw.com/portal-company; set to "" to serve at the domain root.
+      - key: BASE_PATH
+        value: /portal-company
     disk:
       name: data
       mountPath: /var/data

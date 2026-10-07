@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 <section class="section">
   <div class="container">
-    <a href="/departments" class="back">→ كل الأقسام</a>
+    <a href="<%= base %>/departments" class="back">→ كل الأقسام</a>
     <div class="page-head">
       <div class="dept-title">
         <span class="dept-icon lg"><%= department.icon %></span>
@@ -16,7 +16,7 @@
           <button class="btn btn-primary">بحث</button>
         </form>
         <% if (user.role === 'admin') { %>
-          <a class="btn btn-ghost" href="/admin/employees/new?department=<%= department.id %>">+ إضافة موظف</a>
+          <a class="btn btn-ghost" href="<%= base %>/admin/employees/new?department=<%= department.id %>">+ إضافة موظف</a>
         <% } %>
       </div>
     </div>

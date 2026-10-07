@@ -6,14 +6,14 @@
         <h1 class="h2">أقسام الشركة</h1>
         <p class="muted">اختر قسماً لعرض موظفيه.</p>
       </div>
-      <form action="/employees" class="search">
+      <form action="<%= base %>/employees" class="search">
         <input name="q" placeholder="ابحث عن موظف في جميع الأقسام…">
         <button class="btn btn-primary">بحث</button>
       </form>
     </div>
     <div class="grid grid-3">
       <% departments.forEach(d => { %>
-        <a class="card dept-card" href="/departments/<%= d.id %>">
+        <a class="card dept-card" href="<%= base %>/departments/<%= d.id %>">
           <span class="dept-icon"><%= d.icon %></span>
           <h3><%= d.name %></h3>
           <p class="muted"><%= d.description %></p>

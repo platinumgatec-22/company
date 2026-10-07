@@ -7,32 +7,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="<%= base %>/css/style.css">
 </head>
 <body>
 <header class="topbar">
   <div class="container topbar-inner">
-    <a href="/" class="brand"><span class="brand-mark">◆</span> <%= company %></a>
+    <a href="<%= base %>/" class="brand"><span class="brand-mark">◆</span> <%= company %></a>
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="القائمة">
     <label for="nav-toggle" class="nav-burger" aria-hidden="true">☰</label>
     <nav class="nav">
-      <a href="/" class="<%= path === '/' ? 'active' : '' %>">الرئيسية</a>
+      <a href="<%= base %>/" class="<%= path === '/' ? 'active' : '' %>">الرئيسية</a>
       <% if (user) { %>
-        <a href="/departments" class="<%= path.startsWith('/departments') ? 'active' : '' %>">الأقسام</a>
-        <a href="/employees" class="<%= path.startsWith('/employees') ? 'active' : '' %>">دليل الموظفين</a>
+        <a href="<%= base %>/departments" class="<%= path.startsWith('/departments') ? 'active' : '' %>">الأقسام</a>
+        <a href="<%= base %>/employees" class="<%= path.startsWith('/employees') ? 'active' : '' %>">دليل الموظفين</a>
         <% if (user.role === 'admin') { %>
-          <a href="/admin/employees" class="<%= path.startsWith('/admin') ? 'active' : '' %>">لوحة الإدارة</a>
+          <a href="<%= base %>/admin/employees" class="<%= path.startsWith('/admin') ? 'active' : '' %>">لوحة الإدارة</a>
         <% } %>
-        <a href="/profile" class="nav-user <%= path.startsWith('/profile') ? 'active' : '' %>">
+        <a href="<%= base %>/profile" class="nav-user <%= path.startsWith('/profile') ? 'active' : '' %>">
           <span class="avatar avatar-xs" style="background:<%= avatarColor(user.id) %>"><%= initials(user.full_name) %></span>
           <%= user.full_name %>
         </a>
-        <form method="post" action="/logout" class="inline"><button class="btn btn-ghost btn-sm">خروج</button></form>
+        <form method="post" action="<%= base %>/logout" class="inline"><button class="btn btn-ghost btn-sm">خروج</button></form>
       <% } else { %>
-        <a href="/#about">من نحن</a>
-        <a href="/#services">خدماتنا</a>
-        <a href="/#contact">تواصل معنا</a>
-        <a href="/login" class="btn btn-primary btn-sm">دخول الموظفين</a>
+        <a href="<%= base %>/#about">من نحن</a>
+        <a href="<%= base %>/#services">خدماتنا</a>
+        <a href="<%= base %>/#contact">تواصل معنا</a>
+        <a href="<%= base %>/login" class="btn btn-primary btn-sm">دخول الموظفين</a>
       <% } %>
     </nav>
   </div>
