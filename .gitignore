@@ -1,3 +1,7 @@
 node_modules/
 data/
 .env
+
+# LLM council skill outputs
+council-report-*.html
+council-transcript-*.md
