@@ -6,9 +6,9 @@
       <p class="lead"><%= company %> — شركة تجمع الخبرة والابتكار لتقديم حلول متكاملة لعملائنا، بفريق عمل متميز موزع على <%= stats.departments %> أقسام متخصصة.</p>
       <div class="hero-actions">
         <% if (user) { %>
-          <a href="/departments" class="btn btn-primary">الدخول إلى الأقسام</a>
+          <a href="<%= base %>/departments" class="btn btn-primary">الدخول إلى الأقسام</a>
         <% } else { %>
-          <a href="/login" class="btn btn-primary">دخول الموظفين</a>
+          <a href="<%= base %>/login" class="btn btn-primary">دخول الموظفين</a>
         <% } %>
         <a href="#contact" class="btn btn-ghost-light">تواصل معنا</a>
       </div>
@@ -42,7 +42,7 @@
     <p class="muted">كل قسم يضم فريقاً متخصصاً. سجّل دخولك كموظف لعرض أعضاء كل قسم.</p>
     <div class="grid grid-3">
       <% departments.forEach(d => { %>
-        <a class="card dept-card" href="/departments/<%= d.id %>">
+        <a class="card dept-card" href="<%= base %>/departments/<%= d.id %>">
           <span class="dept-icon"><%= d.icon %></span>
           <h3><%= d.name %></h3>
           <p class="muted"><%= d.description %></p>
@@ -68,7 +68,7 @@
     <div class="card cta-card">
       <h3>بوابة الموظفين</h3>
       <p class="muted">لكل موظف حساب خاص للدخول إلى البوابة، واستعراض الأقسام وزملاء العمل وتحديث بياناته.</p>
-      <a href="<%= user ? '/departments' : '/login' %>" class="btn btn-primary">الدخول إلى البوابة</a>
+      <a href="<%= base %><%= user ? '/departments' : '/login' %>" class="btn btn-primary">الدخول إلى البوابة</a>
     </div>
   </div>
 </section>

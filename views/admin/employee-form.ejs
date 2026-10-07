@@ -4,7 +4,7 @@
     <%- include('tabs') %>
     <div class="card form-card">
       <h1 class="h2"><%= title %></h1>
-      <form method="post" action="/admin/employees<%= employee.id ? '/' + employee.id : '' %>" class="form">
+      <form method="post" action="<%= base %>/admin/employees<%= employee.id ? '/' + employee.id : '' %>" class="form">
         <div class="form-grid">
           <label>الاسم الكامل *<input name="full_name" value="<%= employee.full_name %>" required></label>
           <label>اسم المستخدم (للدخول) *<input name="username" value="<%= employee.username %>" required dir="ltr" pattern="[a-zA-Z0-9._\-]{3,32}"></label>
@@ -38,7 +38,7 @@
         </div>
         <div class="card-actions">
           <button class="btn btn-primary">حفظ</button>
-          <a class="btn btn-ghost" href="/admin/employees">إلغاء</a>
+          <a class="btn btn-ghost" href="<%= base %>/admin/employees">إلغاء</a>
         </div>
       </form>
     </div>

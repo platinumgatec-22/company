@@ -4,7 +4,7 @@
     <div class="card form-card">
       <h1 class="h2">دخول الموظفين</h1>
       <p class="muted">استخدم اسم المستخدم وكلمة المرور الخاصة بك.</p>
-      <form method="post" action="/login" class="form">
+      <form method="post" action="<%= base %>/login" class="form">
         <input type="hidden" name="next" value="<%= next %>">
         <label>اسم المستخدم
           <input name="username" value="<%= username %>" required autofocus autocomplete="username" dir="ltr">

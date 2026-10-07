@@ -4,13 +4,13 @@
     <%- include('tabs') %>
     <div class="card form-card">
       <h1 class="h2"><%= title %></h1>
-      <form method="post" action="/admin/departments<%= department.id ? '/' + department.id : '' %>" class="form">
+      <form method="post" action="<%= base %>/admin/departments<%= department.id ? '/' + department.id : '' %>" class="form">
         <label>اسم القسم *<input name="name" value="<%= department.name %>" required></label>
         <label>الأيقونة (رمز تعبيري)<input name="icon" value="<%= department.icon %>" maxlength="8"></label>
         <label>الوصف<textarea name="description" rows="3"><%= department.description %></textarea></label>
         <div class="card-actions">
           <button class="btn btn-primary">حفظ</button>
-          <a class="btn btn-ghost" href="/admin/departments">إلغاء</a>
+          <a class="btn btn-ghost" href="<%= base %>/admin/departments">إلغاء</a>
         </div>
       </form>
     </div>

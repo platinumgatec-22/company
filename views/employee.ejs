@@ -2,7 +2,7 @@
 <section class="section">
   <div class="container narrow-lg">
     <% if (employee.department_id) { %>
-      <a href="/departments/<%= employee.department_id %>" class="back">→ <%= employee.department_name %></a>
+      <a href="<%= base %>/departments/<%= employee.department_id %>" class="back">→ <%= employee.department_name %></a>
     <% } %>
     <div class="card profile-card">
       <div class="profile-head">
@@ -26,7 +26,7 @@
       </dl>
       <% if (employee.bio) { %><div class="bio"><h3>نبذة</h3><p><%= employee.bio %></p></div><% } %>
       <% if (user.role === 'admin') { %>
-        <div class="card-actions"><a class="btn btn-ghost" href="/admin/employees/<%= employee.id %>/edit">تعديل</a></div>
+        <div class="card-actions"><a class="btn btn-ghost" href="<%= base %>/admin/employees/<%= employee.id %>/edit">تعديل</a></div>
       <% } %>
     </div>
   </div>

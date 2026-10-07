@@ -1,4 +1,4 @@
-<a class="card emp-card" href="/employees/<%= e.id %>">
+<a class="card emp-card" href="<%= base %>/employees/<%= e.id %>">
   <span class="avatar" style="background:<%= avatarColor(e.id) %>"><%= initials(e.full_name) %></span>
   <div class="emp-info">
     <strong><%= e.full_name %></strong>

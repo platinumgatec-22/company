@@ -45,6 +45,7 @@ npm start
 | `SESSION_SECRET` | مفتاح تشفير جلسات الدخول (ضعه في الإنتاج) | عشوائي عند كل تشغيل |
 | `DB_PATH` | مسار ملف قاعدة البيانات | `data/company.db` |
 | `NODE_ENV` | ضعه `production` لتفعيل الكوكيز الآمنة (HTTPS) | — |
+| `BASE_PATH` | تشغيل الموقع تحت مسار فرعي، مثل `/portal-company` | — (جذر النطاق) |
 
 مثال:
 
@@ -67,6 +68,19 @@ COMPANY_NAME="اسم شركتك" SESSION_SECRET="نص-طويل-عشوائي" npm
 الخطة المستخدمة `starter` مدفوعة (حوالي 7$ شهرياً + القرص)، لأن قاعدة البيانات تحتاج قرصاً دائماً (`/var/data`). الخطة المجانية تحذف البيانات عند كل إعادة تشغيل.
 
 `SESSION_SECRET` يُنشأ تلقائياً. ويمكن ربط نطاق خاص من إعدادات الخدمة في Render (Custom Domains).
+
+### التشغيل تحت مسار فرعي (platinumgatekw.com/portal-company)
+
+ضع `BASE_PATH=/portal-company` (موجود مسبقاً في `render.yaml`) فتصبح كل الروابط والكوكيز تحت هذا المسار.
+ثم يجب أن يمرّر خادم النطاق الرئيسي كل الطلبات تحت `/portal-company/` إلى خدمة البوابة **مع إبقاء المسار كما هو**، مثال Nginx:
+
+```nginx
+location /portal-company/ {
+    proxy_pass https://company-portal.onrender.com;
+    proxy_set_header Host company-portal.onrender.com;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
 
 ### Docker (أي خادم)
 
