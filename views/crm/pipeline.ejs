@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+<section class="section crm-section">
+  <div class="container container-wide">
+    <%- include('_tabs') %>
+
+    <div class="page-head">
+      <div>
+        <h1 class="h2">خط المبيعات</h1>
+        <p class="muted">اسحب الصفقة إلى مرحلة أخرى، وتتحدّث كل الأرقام مباشرة.</p>
+      </div>
+      <div class="pipeline-total">
+        <span class="muted small">مفتوح</span>
+        <strong class="num" data-open-total><%= crm.moneyFull(openValue) %></strong>
+        <span class="muted small">د.ك · <span data-open-count><%= openCount %></span> صفقة</span>
+      </div>
+    </div>
+
+    <form class="filters" method="get">
+      <a class="chip-link <%= !filter.owner && !filter.closing && !filter.type ? 'active' : '' %>" href="<%= base %>/crm/pipeline">كل الصفقات</a>
+      <a class="chip-link <%= filter.owner === 'mine' ? 'active' : '' %>" href="?owner=mine">صفقاتي</a>
+      <a class="chip-link <%= filter.closing ? 'active' : '' %>" href="?closing=30">تُغلق خلال 30 يوماً</a>
+      <select name="type" onchange="this.form.submit()" aria-label="نوع الصفقة">
+        <option value="">كل الأنواع</option>
+        <% crm.TYPES.forEach(t => { %><option value="<%= t.key %>" <%= filter.type === t.key ? 'selected' : '' %>><%= t.icon %> <%= t.label %></option><% }) %>
+      </select>
+      <% if (filter.owner) { %><input type="hidden" name="owner" value="<%= filter.owner %>"><% } %>
+      <% if (filter.closing) { %><input type="hidden" name="closing" value="<%= filter.closing %>"><% } %>
+      <noscript><button class="btn btn-ghost btn-sm">تصفية</button></noscript>
+    </form>
+
+    <div class="board" data-board data-base="<%= base %>">
+      <% columns.forEach(col => { const closed = col.key === 'won' || col.key === 'lost'; %>
+        <section class="column <%= closed ? 'column-closed' : '' %>" data-stage="<%= col.key %>" data-probability="<%= col.probability %>" style="--c:<%= col.color %>">
+          <header class="column-head">
+            <div class="column-title">
+              <span class="dot" aria-hidden="true"></span>
+              <h2><%= col.label %></h2>
+              <span class="count" data-count-col><%= col.deals.length %></span>
+            </div>
+            <div class="column-sub">
+              <strong class="num" data-sum-col><%= crm.money(col.value) %></strong>
+              <span class="muted small"><%= closed ? 'هذا الربع' : `${col.probability}%` %></span>
+            </div>
+            <div class="column-bar"><span></span></div>
+          </header>
+          <div class="column-body" data-dropzone>
+            <% col.deals.forEach(d => { const late = d.close_date && !closed && crm.daysBetween(crm.today(), d.close_date) < 0; %>
+              <article class="deal-card <%= riskIds.has(d.id) ? 'at-risk' : '' %>" draggable="<%= canEdit(d) ? 'true' : 'false' %>"
+                       data-id="<%= d.id %>" data-value="<%= d.value %>" tabindex="0">
+                <div class="deal-card-top">
+                  <span class="deal-avatar" aria-hidden="true"><%= crm.typeMap[d.type].icon %></span>
+                  <div class="deal-card-title">
+                    <span class="muted small"><%= d.company || d.contact_name || '—' %></span>
+                    <a href="<%= base %>/crm/deals/<%= d.id %>"><%= d.title %></a>
+                  </div>
+                </div>
+                <div class="deal-card-mid">
+                  <strong class="num"><%= crm.moneyFull(d.value) %> <span class="small muted">د.ك</span></strong>
+                  <span class="muted small" data-prob><%= d.probability %>% احتمال</span>
+                </div>
+                <div class="prob"><span style="--w:<%= d.probability %>%"></span></div>
+                <div class="deal-card-foot">
+                  <span class="small <%= late ? 'late' : 'muted' %>">📅 <%= d.close_date || '—' %><% if (late) { %> · متأخرة<% } %></span>
+                  <span class="avatar avatar-xs" title="<%= d.owner_name || '' %>" style="background:<%= avatarColor(d.owner_id || 0) %>"><%= initials(d.owner_name || '?') %></span>
+                </div>
+              </article>
+            <% }) %>
+            <% if (!closed) { %>
+              <a class="column-add" href="<%= base %>/crm/deals/new?stage=<%= col.key %>">+ إضافة</a>
+            <% } else { %>
+              <p class="drop-hint">اسحب صفقة إلى هنا</p>
+            <% } %>
+          </div>
+        </section>
+      <% }) %>
+    </div>
+    <div class="toast" role="status" aria-live="polite" data-toast></div>
+  </div>
+</section>
+<script src="<%= base %>/js/crm.js" defer></script>
+<%- include('../partials/footer') %>

@@ -1,0 +1,11 @@
+<a class="deal-row" href="<%= base %>/crm/deals/<%= d.id %>">
+  <span class="deal-avatar" style="--c:<%= crm.stageMap[d.stage].color %>"><%= crm.typeMap[d.type].icon %></span>
+  <span class="deal-row-main">
+    <strong><%= d.title %></strong>
+    <span class="muted small"><%= d.company || d.contact_name || '—' %><% if (typeof note !== 'undefined') { %> · <%= note %><% } %></span>
+  </span>
+  <span class="deal-row-value">
+    <strong class="num"><%= crm.money(d.value) %></strong>
+    <span class="muted small"><%= crm.stageMap[d.stage].label %></span>
+  </span>
+</a>

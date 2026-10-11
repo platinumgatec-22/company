@@ -1,0 +1,18 @@
+<% if (activities.length === 0) { %>
+  <p class="muted small">لا يوجد نشاط بعد.</p>
+<% } else { %>
+  <ol class="timeline">
+    <% activities.forEach(a => { const k = crm.kindMap[a.kind] || crm.kindMap.note; %>
+      <li class="timeline-item kind-<%= a.kind %>">
+        <span class="timeline-dot" aria-hidden="true"><%= k.icon %></span>
+        <div>
+          <p class="timeline-body"><%= a.body %></p>
+          <span class="muted small">
+            <%= k.label %> · <%= a.author_name || '—' %> · <time datetime="<%= a.created_at %>"><%= a.created_at.slice(0, 10) %></time>
+            <% if (typeof showDeal !== 'undefined' && a.deal_title) { %> · <a href="<%= base %>/crm/deals/<%= a.deal_id %>"><%= a.deal_title %></a><% } %>
+          </span>
+        </div>
+      </li>
+    <% }) %>
+  </ol>
+<% } %>
