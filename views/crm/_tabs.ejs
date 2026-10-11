@@ -1,0 +1,9 @@
+<div class="crm-head">
+  <nav class="crm-tabs" aria-label="أقسام المبيعات">
+    <a href="<%= base %>/crm" class="<%= path === '/crm' || path === '/crm/' ? 'active' : '' %>">لوحة التحكم</a>
+    <a href="<%= base %>/crm/pipeline" class="<%= path.startsWith('/crm/pipeline') || path.startsWith('/crm/deals') ? 'active' : '' %>">خط المبيعات</a>
+    <a href="<%= base %>/crm/contacts" class="<%= path.startsWith('/crm/contacts') ? 'active' : '' %>">جهات الاتصال</a>
+    <a href="<%= base %>/crm/reports" class="<%= path.startsWith('/crm/reports') ? 'active' : '' %>">التقارير</a>
+  </nav>
+  <a class="btn btn-primary btn-sm" href="<%= base %>/crm/deals/new">+ صفقة جديدة</a>
+</div>
