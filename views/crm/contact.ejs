@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+<section class="section crm-section">
+  <div class="container">
+    <%- include('_tabs') %>
+    <a class="back" href="<%= base %>/crm/contacts">→ جهات الاتصال</a>
+    <div class="card panel">
+      <div class="profile-head">
+        <span class="avatar avatar-lg" style="background:<%= avatarColor(contact.id) %>"><%= initials(contact.full_name) %></span>
+        <div class="grow">
+          <h1 class="h2"><%= contact.full_name %></h1>
+          <p class="muted"><%= [contact.job_title, contact.company].filter(Boolean).join(' · ') || '—' %></p>
+          <div class="chips"><span class="chip"><%= crm.sourceMap[contact.source].label %></span><% if (contact.owner_name) { %><span class="chip">المسؤول: <%= contact.owner_name %></span><% } %></div>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="<%= base %>/crm/deals/new?contact=<%= contact.id %>">+ صفقة</a>
+          <a class="btn btn-ghost btn-sm" href="<%= base %>/crm/contacts/<%= contact.id %>/edit">تعديل</a>
+        </div>
+      </div>
+      <dl class="details">
+        <div><dt>الهاتف</dt><dd dir="ltr" class="ltr-cell"><% if (contact.phone) { %><a href="tel:<%= contact.phone.replace(/\s/g, '') %>"><%= contact.phone %></a><% } else { %>—<% } %></dd></div>
+        <div><dt>البريد</dt><dd><% if (contact.email) { %><a href="mailto:<%= contact.email %>"><%= contact.email %></a><% } else { %>—<% } %></dd></div>
+      </dl>
+      <% if (contact.notes) { %><p class="bio"><%= contact.notes %></p><% } %>
+    </div>
+
+    <div class="crm-grid crm-grid-2">
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">الصفقات</h2><span class="muted small"><%= deals.length %></span></div>
+        <% if (deals.length === 0) { %><p class="muted small">لا توجد صفقات بعد.</p><% } %>
+        <div class="deal-list">
+          <% deals.forEach(d => { %><%- include('_deal-row', { d: { ...d, company: '' }, note: crm.typeMap[d.type].label }) %><% }) %>
+        </div>
+      </div>
+      <div class="card panel" id="activity">
+        <div class="panel-head"><h2 class="h3">الملاحظات والنشاط</h2></div>
+        <%- include('_activity-form', { action: `${base}/crm/contacts/${contact.id}/activities` }) %>
+        <%- include('_timeline', { activities, showDeal: true }) %>
+      </div>
+    </div>
+
+    <% if (user.role === 'admin' || user.is_manager || contact.owner_id === user.id) { %>
+      <form method="post" action="<%= base %>/crm/contacts/<%= contact.id %>/delete" class="card-actions"
+            data-confirm="حذف جهة الاتصال «<%= contact.full_name %>»؟ ستبقى صفقاتها بدون جهة اتصال." onsubmit="return confirm(this.dataset.confirm)">
+        <button class="btn btn-danger btn-sm">حذف جهة الاتصال</button>
+      </form>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

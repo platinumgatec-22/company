@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+<section class="section crm-section">
+  <div class="container narrow-lg">
+    <%- include('_tabs') %>
+    <a class="back" href="<%= base %>/crm/<%= deal.id ? `deals/${deal.id}` : 'pipeline' %>">→ رجوع</a>
+    <div class="card form-card">
+      <h1 class="h2"><%= title %></h1>
+      <form method="post" action="<%= base %>/crm/deals<%= deal.id ? `/${deal.id}` : '' %>" class="form" data-deal-form>
+        <label>اسم الصفقة
+          <input name="title" value="<%= deal.title %>" required maxlength="120" placeholder="مثال: رعاية الدوري الرمضاني">
+        </label>
+        <div class="form-grid">
+          <label>جهة الاتصال
+            <select name="contact_id" data-contact-select>
+              <option value="">+ جهة اتصال جديدة</option>
+              <% contacts.forEach(c => { %>
+                <option value="<%= c.id %>" <%= c.id === deal.contact_id ? 'selected' : '' %>><%= c.full_name %><%= c.company ? ` — ${c.company}` : '' %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>النوع
+            <select name="type">
+              <% crm.TYPES.forEach(t => { %><option value="<%= t.key %>" <%= t.key === deal.type ? 'selected' : '' %>><%= t.icon %> <%= t.label %></option><% }) %>
+            </select>
+          </label>
+          <label data-new-contact>اسم جهة الاتصال الجديدة
+            <input name="new_contact_name" value="<%= newContact.full_name %>" placeholder="الاسم الكامل">
+          </label>
+          <label data-new-contact>الشركة
+            <input name="new_contact_company" value="<%= newContact.company %>" placeholder="اسم الشركة أو الجهة">
+          </label>
+          <label>القيمة (د.ك)
+            <input name="value" type="number" min="0" step="0.001" inputmode="decimal" value="<%= deal.value %>" required>
+          </label>
+          <label>تاريخ الإغلاق المتوقع
+            <input name="close_date" type="date" value="<%= deal.close_date %>">
+          </label>
+          <label>المرحلة
+            <select name="stage" data-stage-select>
+              <% crm.STAGES.forEach(st => { %><option value="<%= st.key %>" data-probability="<%= st.probability %>" <%= st.key === deal.stage ? 'selected' : '' %>><%= st.label %></option><% }) %>
+            </select>
+          </label>
+          <label>نسبة الاحتمال (%)
+            <input name="probability" type="number" min="0" max="100" value="<%= deal.probability %>" data-probability>
+          </label>
+          <label>المسؤول
+            <select name="owner_id">
+              <% people.forEach(p => { %><option value="<%= p.id %>" <%= p.id === deal.owner_id ? 'selected' : '' %>><%= p.full_name %></option><% }) %>
+            </select>
+          </label>
+          <label>المصدر
+            <select name="source">
+              <% crm.SOURCES.forEach(s => { %><option value="<%= s.key %>" <%= s.key === deal.source ? 'selected' : '' %>><%= s.label %></option><% }) %>
+            </select>
+          </label>
+          <label class="span-2" data-lost-reason>سبب الخسارة
+            <input name="lost_reason" value="<%= deal.lost_reason %>" maxlength="300" placeholder="مثال: اختاروا منصة أخرى">
+          </label>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary">حفظ</button>
+          <a class="btn btn-ghost" href="<%= base %>/crm/<%= deal.id ? `deals/${deal.id}` : 'pipeline' %>">إلغاء</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+<script src="<%= base %>/js/crm.js" defer></script>
+<%- include('../partials/footer') %>

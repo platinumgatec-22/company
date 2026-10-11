@@ -5,6 +5,8 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { seed } = require('./seed');
+const { seedCrm } = require('./crm/seed');
+const crmRouter = require('./crm/routes');
 
 const PORT = Number(process.env.PORT) || 3000;
 const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
@@ -15,7 +17,10 @@ if (!process.env.SESSION_SECRET) {
   console.warn('تنبيه: لم يتم ضبط SESSION_SECRET، سيتم تسجيل خروج الجميع عند إعادة تشغيل الخادم.');
 }
 
-if (seed()) console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
+if (seed()) {
+  console.log('تم إنشاء بيانات تجريبية (admin / admin123).');
+  seedCrm();
+}
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -422,6 +427,7 @@ admin.post('/employees/:id/delete', (req, res) => {
 });
 
 app.use('/admin', admin);
+app.use('/crm', crmRouter({ requireAuth, flash, clean, toId }));
 
 // ---------- errors ----------
 app.use((req, res) => {

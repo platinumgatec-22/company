@@ -1,0 +1,112 @@
+<%- include('../partials/header') %>
+<section class="section crm-section">
+  <div class="container">
+    <%- include('_tabs') %>
+
+    <div class="page-head">
+      <div>
+        <p class="muted small">الربع الحالي منذ <%= s.start %></p>
+        <h1 class="h2"><%= greeting %>، <%= user.full_name.split(' ')[0] %></h1>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi kpi-hero">
+        <span class="kpi-label">إيرادات الربع (تم الفوز)</span>
+        <strong class="kpi-value num" data-count="<%= s.wonValue %>"><%= crm.moneyFull(s.wonValue) %></strong>
+        <span class="kpi-unit">د.ك</span>
+        <span class="kpi-sub"><%= s.won.length %> صفقة · متوسط <%= crm.money(s.avgDeal) %> د.ك</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">خط المبيعات المفتوح</span>
+        <strong class="kpi-value num" data-count="<%= s.openValue %>"><%= crm.moneyFull(s.openValue) %></strong>
+        <span class="kpi-sub"><%= s.open.length %> صفقة مفتوحة</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">التوقع المرجّح</span>
+        <strong class="kpi-value num" data-count="<%= Math.round(s.weighted) %>"><%= crm.moneyFull(Math.round(s.weighted)) %></strong>
+        <span class="kpi-sub">القيمة × نسبة الاحتمال</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">نسبة الفوز</span>
+        <strong class="kpi-value num"><span data-count="<%= s.winRate %>"><%= s.winRate %></span>%</strong>
+        <span class="kpi-sub">دورة البيع: <%= s.avgCycle %> يوم</span>
+      </div>
+    </div>
+
+    <div class="crm-grid">
+      <div class="card panel span-wide">
+        <div class="panel-head">
+          <h2 class="h3">الإيرادات الشهرية</h2>
+          <span class="muted small">آخر 6 أشهر · د.ك</span>
+        </div>
+        <% const maxMonth = Math.max(1, ...months.map(x => x.value)); %>
+        <div class="bars" role="img" aria-label="الإيرادات الشهرية">
+          <% months.forEach((mo, i) => { %>
+            <div class="bar-col">
+              <span class="bar-val num"><%= crm.money(mo.value) %></span>
+              <div class="bar <%= i === months.length - 1 ? 'bar-current' : '' %>" style="--h:<%= Math.round(mo.value / maxMonth * 100) %>%"></div>
+              <span class="bar-label"><%= mo.label %></span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="card panel assist">
+        <div class="panel-head">
+          <h2 class="h3"><span class="assist-icon" aria-hidden="true">✦</span> المساعد</h2>
+          <% if (risks.length) { %><span class="badge badge-gold"><%= risks.length %> معرّضة للخطر</span><% } %>
+        </div>
+        <% if (risks.length === 0) { %>
+          <p class="muted">كل الصفقات على المسار الصحيح 👌</p>
+        <% } else { %>
+          <p class="muted"><strong class="num"><%= crm.moneyFull(crm.sum(risks.map(r => r.deal))) %> د.ك</strong> قد تتأخر</p>
+          <div class="deal-list">
+            <% risks.slice(0, 4).forEach(r => { %>
+              <%- include('_deal-row', { d: r.deal, note: r.reason }) %>
+            <% }) %>
+          </div>
+          <a class="btn btn-ghost btn-sm" href="<%= base %>/crm/pipeline">راجع في خط المبيعات ↗</a>
+        <% } %>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">المراحل</h2><span class="muted small">صفقات مفتوحة</span></div>
+        <% const maxStage = Math.max(1, ...byStage.map(x => x.value)); %>
+        <ul class="hbars">
+          <% byStage.forEach(st => { %>
+            <li>
+              <div class="hbar-top"><span><%= st.label %> <span class="muted small">(<%= st.count %>)</span></span><strong class="num"><%= crm.money(st.value) %></strong></div>
+              <div class="hbar"><span style="--w:<%= Math.round(st.value / maxStage * 100) %>%; --c:<%= st.color %>"></span></div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">تُغلق خلال 30 يوماً</h2><a class="small" href="<%= base %>/crm/pipeline?closing=30">الكل</a></div>
+        <% if (s.closingSoon.length === 0) { %><p class="muted small">لا توجد صفقات.</p><% } %>
+        <div class="deal-list">
+          <% s.closingSoon.slice(0, 5).forEach(d => { %>
+            <%- include('_deal-row', { d, note: `تُغلق ${d.close_date}` }) %>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">صفقاتي</h2><a class="small" href="<%= base %>/crm/pipeline?owner=mine">الكل</a></div>
+        <% if (mine.length === 0) { %><p class="muted small">لا توجد صفقات مفتوحة باسمك. <a href="<%= base %>/crm/deals/new">أضف صفقة</a></p><% } %>
+        <div class="deal-list">
+          <% mine.forEach(d => { %><%- include('_deal-row', { d }) %><% }) %>
+        </div>
+      </div>
+
+      <div class="card panel span-wide">
+        <div class="panel-head"><h2 class="h3">آخر النشاطات</h2></div>
+        <%- include('_timeline', { activities, showDeal: true }) %>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="<%= base %>/js/crm.js" defer></script>
+<%- include('../partials/footer') %>
