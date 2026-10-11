@@ -1,0 +1,7 @@
+<form method="post" action="<%= action %>" class="activity-form">
+  <select name="kind" aria-label="نوع النشاط">
+    <% crm.ACTIVITY_KINDS.forEach(k => { %><option value="<%= k.key %>"><%= k.icon %> <%= k.label %></option><% }) %>
+  </select>
+  <input name="body" required maxlength="1000" placeholder="مثال: تم التوقيع، الانطلاق يوم الأحد" aria-label="تفاصيل النشاط">
+  <button class="btn btn-primary">إضافة</button>
+</form>

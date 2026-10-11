@@ -9,6 +9,7 @@ const agents = require('./agents');
 const { createConnectRoutes } = require('./connect');
 const { createAppRoutes, checkMake, scenariosFor } = require('./apps');
 const createAtlas = require('./atlas/routes');
+const crmRouter = require('./crm/routes');
 const { emit } = require('./atlas/events');
 const { ensureCompany, seedAtlas } = require('./seed');
 
@@ -471,6 +472,9 @@ const atlas = createAtlas({ requireAuth, requireAdmin });
 app.use('/atlas', atlas.atlas);
 app.use('/webhooks', atlas.hooks);
 app.use('/api/v1', atlas.api);
+
+// ---------- sales CRM ----------
+app.use('/crm', crmRouter({ requireAuth, flash, clean, toId }));
 
 // ---------- errors ----------
 app.use((req, res) => {

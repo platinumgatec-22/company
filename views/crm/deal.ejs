@@ -1,0 +1,70 @@
+<%- include('../partials/header') %>
+<section class="section crm-section">
+  <div class="container">
+    <%- include('_tabs') %>
+    <a class="back" href="<%= base %>/crm/pipeline">→ خط المبيعات</a>
+
+    <div class="card panel deal-hero">
+      <div class="deal-hero-top">
+        <span class="deal-avatar lg" style="--c:<%= crm.stageMap[deal.stage].color %>" aria-hidden="true"><%= crm.typeMap[deal.type].icon %></span>
+        <div class="grow">
+          <p class="muted small"><%= crm.typeMap[deal.type].label %><% if (deal.company) { %> · <%= deal.company %><% } %></p>
+          <h1 class="h2"><%= deal.title %></h1>
+        </div>
+        <div class="deal-hero-value">
+          <strong class="num"><%= crm.moneyFull(deal.value) %></strong>
+          <span class="muted">د.ك · <%= deal.probability %>% احتمال</span>
+        </div>
+      </div>
+
+      <% if (risk) { %><div class="alert alert-warning">✦ <%= risk.reason %></div><% } %>
+      <% if (deal.stage === 'lost' && deal.lost_reason) { %><div class="alert alert-error">سبب الخسارة: <%= deal.lost_reason %></div><% } %>
+
+      <div class="stepper" role="group" aria-label="مرحلة الصفقة">
+        <% crm.STAGES.forEach(st => { %>
+          <% if (canEdit(deal)) { %>
+            <form method="post" action="<%= base %>/crm/deals/<%= deal.id %>/stage" class="inline">
+              <input type="hidden" name="stage" value="<%= st.key %>">
+              <button class="step <%= st.key === deal.stage ? 'current' : '' %>" style="--c:<%= st.color %>" <%= st.key === deal.stage ? 'aria-current=step disabled' : '' %>><%= st.label %></button>
+            </form>
+          <% } else { %>
+            <span class="step <%= st.key === deal.stage ? 'current' : '' %>" style="--c:<%= st.color %>"><%= st.label %></span>
+          <% } %>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="crm-grid crm-grid-2">
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">التفاصيل</h2>
+          <% if (canEdit(deal)) { %><a class="btn btn-ghost btn-sm" href="<%= base %>/crm/deals/<%= deal.id %>/edit">تعديل</a><% } %>
+        </div>
+        <dl class="details">
+          <div><dt>جهة الاتصال</dt><dd><% if (deal.contact_id) { %><a href="<%= base %>/crm/contacts/<%= deal.contact_id %>"><%= deal.contact_name %></a><% } else { %>—<% } %></dd></div>
+          <div><dt>الشركة</dt><dd><%= deal.company || '—' %></dd></div>
+          <div><dt>تاريخ الإغلاق المتوقع</dt><dd><%= deal.close_date || '—' %></dd></div>
+          <div><dt>المسؤول</dt><dd><%= deal.owner_name || '—' %></dd></div>
+          <div><dt>المصدر</dt><dd><%= crm.sourceMap[deal.source].label %></dd></div>
+          <div><dt>القيمة المرجّحة</dt><dd class="num"><%= crm.moneyFull(deal.value * deal.probability / 100) %> د.ك</dd></div>
+          <% if (deal.contact_phone) { %><div><dt>الهاتف</dt><dd dir="ltr" class="ltr-cell"><a href="tel:<%= deal.contact_phone.replace(/\s/g, '') %>"><%= deal.contact_phone %></a></dd></div><% } %>
+          <% if (deal.contact_email) { %><div><dt>البريد</dt><dd><a href="mailto:<%= deal.contact_email %>"><%= deal.contact_email %></a></dd></div><% } %>
+          <div><dt>أُنشئت</dt><dd><%= deal.created_at.slice(0, 10) %></dd></div>
+          <% if (deal.closed_at) { %><div><dt>أُغلقت</dt><dd><%= deal.closed_at.slice(0, 10) %></dd></div><% } %>
+        </dl>
+        <% if (canEdit(deal)) { %>
+          <form method="post" action="<%= base %>/crm/deals/<%= deal.id %>/delete" class="card-actions"
+                data-confirm="حذف الصفقة «<%= deal.title %>» نهائياً؟" onsubmit="return confirm(this.dataset.confirm)">
+            <button class="btn btn-danger btn-sm">حذف الصفقة</button>
+          </form>
+        <% } %>
+      </div>
+
+      <div class="card panel" id="activity">
+        <div class="panel-head"><h2 class="h3">النشاط</h2></div>
+        <%- include('_activity-form', { action: `${base}/crm/deals/${deal.id}/activities` }) %>
+        <%- include('_timeline', { activities }) %>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>
