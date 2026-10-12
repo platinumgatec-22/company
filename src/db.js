@@ -395,4 +395,14 @@ if (hasTable('crm_contacts') && !db.prepare("SELECT 1 FROM meta WHERE key = 'crm
   }
 }
 
+// The digital customer-service employee's place in each WhatsApp conversation (src/digital/platin.js).
+db.exec(`
+  CREATE TABLE IF NOT EXISTS wa_bot_state (
+    conversation_id INTEGER PRIMARY KEY REFERENCES wa_conversations(id) ON DELETE CASCADE,
+    state           TEXT NOT NULL DEFAULT 'start',
+    data            TEXT NOT NULL DEFAULT '{}',
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 module.exports = db;

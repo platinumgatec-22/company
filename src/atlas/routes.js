@@ -9,6 +9,7 @@ const make = require('./make');
 const strategist = require('./strategist');
 const { emit, deliver, EVENTS } = require('./events');
 const crmModel = require('../crm/model');
+const platin = require('../digital/platin');
 
 const toId = (v) => {
   const n = Number(v);
@@ -574,6 +575,7 @@ function createRouters({ requireAuth, requireAdmin }) {
   }));
 
   atlas.use('/automations', automations);
+  atlas.use(require('../digital/routes')({ requireAdmin, jsonGuard, asyncRoute }));
 
   // ---------- public webhooks ----------
   const hooks = express.Router();
@@ -586,25 +588,17 @@ function createRouters({ requireAuth, requireAdmin }) {
     res.sendStatus(403);
   });
 
-  hooks.post('/whatsapp', (req, res) => {
+  hooks.post('/whatsapp', asyncRoute(async (req, res) => {
     if (!whatsapp.validSignature(req.rawBody, req.get('x-hub-signature-256'))) return res.sendStatus(401);
-    for (const m of whatsapp.parseInbound(req.body)) {
-      let conv = whatsapp.conversationFor(m.from, m.name);
-      if (db.prepare('SELECT 1 FROM wa_messages WHERE wa_id = ? AND wa_id != ?').get(m.id, '')) continue; // Meta retries
-      whatsapp.storeMessage(conv, 'in', m.text, { waId: m.id, status: 'received' });
-      // A new number becomes a lead in the CRM automatically.
-      if (!conv.client_id) {
-        const client = svc.createClient({ name: m.name || `+${m.from}`, phone: `+${m.from}`, source: 'whatsapp', stage: 'lead' }, null);
-        db.prepare('UPDATE wa_conversations SET client_id = ? WHERE id = ?').run(client.id, conv.id);
-        conv = { ...conv, client_id: client.id };
-      }
-      emit('whatsapp.received', {
-        message: `رسالة واتساب من ${m.name || m.from}`, link: `/atlas/inbox/${conv.id}`,
-        data: { from: m.from, name: m.name, text: m.text, conversation_id: conv.id, client_id: conv.client_id },
-      });
-    }
+    const inbound = whatsapp.parseInbound(req.body)
+      .filter((m) => !db.prepare('SELECT 1 FROM wa_messages WHERE wa_id = ? AND wa_id != ?').get(m.id, '')); // Meta retries
+    // Answer Meta right away; the digital employee (بلاتين) replies in the background when auto-reply is on.
     res.sendStatus(200);
-  });
+    for (const m of inbound) {
+      await platin.receive({ from: m.from, name: m.name, text: m.text, waId: m.id }, { reply: platin.autoReplyOn() })
+        .catch((err) => console.error('WhatsApp inbound', err));
+    }
+  }));
 
   // ---------- REST API v1 (for Make HTTP modules) ----------
   const api = express.Router();

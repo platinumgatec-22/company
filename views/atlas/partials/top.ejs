@@ -51,9 +51,10 @@
   ['/crm', 'i-deal', 'المبيعات'],
   ['/atlas/inbox', 'i-chat', 'واتساب', badges.inbox],
   ['/atlas/strategist', 'i-spark', 'المستشار', badges.proposals],
+  ['/atlas/team', 'i-team', 'الفريق الرقمي'],
   ['/atlas/activity', 'i-pulse', 'النشاط'],
 ];
-if (user.role === 'admin') nav.push(['/atlas/automations', 'i-bolt', 'الأتمتة']);
+if (user.role === 'admin') nav.push(['/atlas/simulator', 'i-chat', 'محاكي واتساب'], ['/atlas/automations', 'i-bolt', 'الأتمتة']);
 const full = path.replace(/\/$/, '') || '/'; %>
 <nav class="a-side" aria-label="Atlas">
   <% nav.forEach(([href, icon, label, extra]) => {

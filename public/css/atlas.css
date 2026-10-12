@@ -497,3 +497,43 @@ details.a-card[open] summary { margin-bottom: .8rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- digital team ---------- */
+.team-group { margin-bottom: 2rem; }
+.team-group-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: .8rem; }
+.team-group-head h2 { margin: 0; font-size: 1.15rem; }
+.team-sections { display: flex; gap: .35rem; flex-wrap: wrap; }
+.team-sections .chip:hover { color: var(--teal); border-color: var(--teal); }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .8rem; }
+.team-card { display: grid; gap: .7rem; color: inherit; transition: border-color .15s, transform .15s; }
+.team-card:hover { border-color: var(--teal); transform: translateY(-2px); }
+.team-who { display: flex; gap: .7rem; align-items: center; }
+.team-stats { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .88rem; color: var(--muted); }
+.team-stats b { color: var(--text, #e6edf5); }
+
+/* ---------- WhatsApp simulator ---------- */
+.sim { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.sim-phone { padding: 0; overflow: hidden; display: flex; flex-direction: column; height: min(78vh, 760px); }
+.sim-bar { display: flex; align-items: center; gap: .6rem; padding: .7rem .9rem; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.sim-bar .grow { flex: 1; min-width: 0; line-height: 1.3; }
+.sim-chat { flex: 1; overflow-y: auto; padding: 1rem .8rem; display: flex; flex-direction: column; gap: .45rem;
+  background: radial-gradient(circle at 20% 10%, rgba(94, 234, 212, .05), transparent 50%), var(--bg-2); }
+.sim-chat .bubble { max-width: 85%; white-space: pre-wrap; }
+.sim-chat .bubble.in { align-self: flex-start; }
+.sim-chat .bubble.out { align-self: flex-end; }
+.sim-typing { align-self: flex-end; color: var(--muted); font-size: .85rem; }
+.sim-form { display: flex; gap: .4rem; padding: .6rem; border-top: 1px solid var(--line); background: var(--panel-2); }
+.sim-form input { flex: 1; min-width: 0; }
+.sim-quick { display: flex; gap: .35rem; flex-wrap: wrap; padding: .5rem .6rem 0; background: var(--panel-2); }
+.sim-quick button { font: inherit; font-size: .8rem; background: transparent; color: var(--muted); border: 1px solid var(--line-2); border-radius: 99px; padding: .15rem .6rem; cursor: pointer; }
+.sim-quick button:hover { color: var(--teal); border-color: var(--teal); }
+.sim-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.sim-step { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: .7rem; align-items: start; padding: .7rem .8rem;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); animation: sim-in .4s ease both; }
+.sim-step .ic { width: 2.2rem; height: 2.2rem; border-radius: 10px; display: grid; place-items: center; background: rgba(94, 234, 212, .1); font-size: 1.1rem; }
+.sim-step .meta { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; font-size: .8rem; color: var(--muted); }
+.sim-step a.go { font-size: .82rem; }
+.sim-done { border-color: rgba(94, 234, 212, .5); }
+@keyframes sim-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .sim-step { animation: none; } }
+@media (max-width: 900px) { .sim { grid-template-columns: 1fr; } .sim-phone { height: 70vh; } }
