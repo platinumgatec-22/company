@@ -101,8 +101,19 @@
         </div>
       </div>
 
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">مهامي</h2><a class="small" href="<%= base %>/atlas/board">لوحة المهام ↗</a></div>
+        <% if (myTasks.length === 0) { %><p class="muted small">لا توجد مهام مفتوحة باسمك.</p><% } %>
+        <ul class="link-list">
+          <% myTasks.forEach(t => { %>
+            <li><a href="<%= base %>/atlas/tasks/<%= t.id %>"><%= t.title %></a>
+              <span class="muted small"><%= t.client_name || '' %><%= t.due_date ? ` · ${t.due_date}` : '' %></span></li>
+          <% }) %>
+        </ul>
+      </div>
+
       <div class="card panel span-wide">
-        <div class="panel-head"><h2 class="h3">آخر النشاطات</h2></div>
+        <div class="panel-head"><h2 class="h3">آخر تواصل مع العملاء</h2><a class="small" href="<%= base %>/atlas/activity">كل النشاط ↗</a></div>
         <%- include('_timeline', { activities, showDeal: true }) %>
       </div>
     </div>

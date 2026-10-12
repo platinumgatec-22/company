@@ -2,7 +2,7 @@
 // so the dashboard always looks current. Run it with `npm run seed:crm`; it only adds
 // data when the CRM has no deals yet.
 const db = require('../db');
-const { stageMap, addDays, today } = require('./model');
+const { stageMap, sourceMap, addDays, today } = require('./model');
 
 // [full_name, company, job_title, source]
 const contacts = [
@@ -55,20 +55,25 @@ function seedCrm() {
 
   const now = today();
   const stamp = (daysAgo) => `${addDays(now, -daysAgo)} 09:00:00`;
-  const insertContact = db.prepare(`INSERT INTO crm_contacts (full_name, company, job_title, email, phone, source, owner_id, created_at)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+  // Customers go into the shared Atlas client list; deal notes into their interactions.
+  const insertClient = db.prepare(`INSERT INTO clients (name, company, email, phone, source, notes, owner_id, created_at)
+                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
   const insertDeal = db.prepare(`
-    INSERT INTO crm_deals (title, contact_id, type, stage, value, probability, close_date, owner_id, source,
+    INSERT INTO crm_deals (title, client_id, type, stage, value, probability, close_date, owner_id, source,
                            lost_reason, stage_changed_at, closed_at, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-  const insertActivity = db.prepare(`INSERT INTO crm_activities (deal_id, contact_id, author_id, kind, body, created_at)
+  const insertActivity = db.prepare(`INSERT INTO interactions (client_id, deal_id, employee_id, kind, body, created_at)
                                      VALUES (?, ?, ?, ?, ?, ?)`);
+  // Each client's Atlas stage follows its most advanced deal.
+  const CLIENT_STAGE = { lead: 0, contacted: 1, proposal: 2, negotiation: 2, won: 3 };
+  const CLIENT_STAGES = ['lead', 'contacted', 'proposal', 'won'];
+  const best = new Map();
 
   db.exec('BEGIN');
   try {
-    const contactIds = contacts.map(([name, company, title, source], i) => Number(insertContact.run(
-      name, company, title, `contact${i + 1}@example.com`, `+965 6${String(5000000 + i * 91237).slice(-7)}`,
-      source, owners[i % owners.length], stamp(160 - i * 5),
+    const contactIds = contacts.map(([name, company, title, source], i) => Number(insertClient.run(
+      name, company, `contact${i + 1}@example.com`, `+965 6${String(5000000 + i * 91237).slice(-7)}`,
+      sourceMap[source].label, title, owners[i % owners.length], stamp(160 - i * 5),
     ).lastInsertRowid));
 
     deals.forEach(([title, ci, type, stage, value, closeIn, createdAgo, lastAgo], i) => {
@@ -80,8 +85,12 @@ function seedCrm() {
         stamp(Math.min(createdAgo, lastAgo + 3)), closed ? stamp(-closeIn > 0 ? -closeIn : 0) : '', stamp(createdAgo),
       ).lastInsertRowid);
       const [kind, body] = notes[i % notes.length];
-      insertActivity.run(dealId, null, owner, kind, body, stamp(lastAgo));
+      insertActivity.run(contactIds[ci], dealId, owner, kind, body, stamp(lastAgo));
+      if (stage in CLIENT_STAGE) best.set(contactIds[ci], Math.max(best.get(contactIds[ci]) ?? 0, CLIENT_STAGE[stage]));
     });
+    for (const [clientId, rank] of best) {
+      db.prepare('UPDATE clients SET stage = ? WHERE id = ?').run(CLIENT_STAGES[rank], clientId);
+    }
     db.exec('COMMIT');
   } catch (err) {
     db.exec('ROLLBACK');

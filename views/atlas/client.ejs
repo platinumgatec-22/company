@@ -1,6 +1,6 @@
 <%- include('partials/top') %>
 <% const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
-   const KIND = { note: 'ملاحظة', call: 'مكالمة', meeting: 'اجتماع', whatsapp: 'واتساب', email: 'بريد' }; %>
+   const KIND = { note: 'ملاحظة', call: 'مكالمة', meeting: 'اجتماع', whatsapp: 'واتساب', email: 'بريد', stage: 'صفقة' }; %>
 <div class="a-page">
   <a href="/atlas/clients" class="small muted">→ العملاء</a>
   <div class="a-head" style="margin-top:.5rem">
@@ -14,7 +14,8 @@
       </div>
     </div>
     <div class="a-actions">
-      <a href="/atlas/tasks/new?client=<%= client.id %>" class="a-btn">+ مهمة</a>
+      <a href="/crm/deals/new?client=<%= client.id %>" class="a-btn">+ صفقة</a>
+      <a href="/atlas/tasks/new?client=<%= client.id %>" class="a-btn a-btn-ghost">+ مهمة</a>
       <a href="/atlas/clients/<%= client.id %>/edit" class="a-btn a-btn-ghost">تعديل</a>
     </div>
   </div>
@@ -33,10 +34,21 @@
         <% if (interactions.length) { %>
           <ul class="timeline">
             <% interactions.forEach(i => { %>
-              <li><div class="h"><span class="chip"><%= KIND[i.kind] || i.kind %></span><%= i.employee_name || 'Atlas' %> · <%= i.created_at.slice(0, 16) %></div><div class="b"><%= i.body %></div></li>
+              <li><div class="h"><span class="chip"><%= KIND[i.kind] || i.kind %></span><%= i.employee_name || 'Atlas' %> · <%= i.created_at.slice(0, 16) %><% if (i.deal_title) { %> · <a href="/crm/deals/<%= i.deal_id %>"><%= i.deal_title %></a><% } %></div><div class="b"><%= i.body %></div></li>
             <% }) %>
           </ul>
         <% } else { %><div class="a-empty">لا يوجد تواصل مسجّل بعد.</div><% } %>
+      </div>
+
+      <div class="a-card">
+        <div class="a-card-head"><h2>الصفقات</h2><a href="/crm/deals/new?client=<%= client.id %>" class="small">+ إضافة</a></div>
+        <% if (deals.length) { %>
+          <ul class="a-list">
+            <% deals.forEach(d => { const st = dealStages[d.stage]; %>
+              <li><span class="chip" style="color:<%= st.color %>;border-color:<%= st.color %>"><%= st.label %></span><a href="/crm/deals/<%= d.id %>"><%= d.title %></a><time><%= fmt(d.value) %> د.ك</time></li>
+            <% }) %>
+          </ul>
+        <% } else { %><p class="dim">لا توجد صفقات بعد. <a href="/crm/deals/new?client=<%= client.id %>">أضف صفقة</a></p><% } %>
       </div>
 
       <div class="a-card">

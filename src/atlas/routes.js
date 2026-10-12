@@ -8,6 +8,7 @@ const whatsapp = require('./whatsapp');
 const make = require('./make');
 const strategist = require('./strategist');
 const { emit, deliver, EVENTS } = require('./events');
+const crmModel = require('../crm/model');
 
 const toId = (v) => {
   const n = Number(v);
@@ -304,14 +305,17 @@ function createRouters({ requireAuth, requireAdmin }) {
   atlas.get('/clients/:id', (req, res) => {
     const client = svc.getClient(toId(req.params.id));
     if (!client) return notFound(res, 'العميل غير موجود.');
-    const interactions = db.prepare(`SELECT i.*, e.full_name AS employee_name FROM interactions i
-      LEFT JOIN employees e ON e.id = i.employee_id WHERE i.client_id = ? ORDER BY i.id DESC`).all(client.id);
+    const interactions = db.prepare(`SELECT i.*, e.full_name AS employee_name, d.title AS deal_title FROM interactions i
+      LEFT JOIN employees e ON e.id = i.employee_id LEFT JOIN crm_deals d ON d.id = i.deal_id
+      WHERE i.client_id = ? ORDER BY i.id DESC`).all(client.id);
+    const deals = db.prepare(`SELECT d.*, e.full_name AS owner_name FROM crm_deals d
+      LEFT JOIN employees e ON e.id = d.owner_id WHERE d.client_id = ? ORDER BY d.created_at DESC`).all(client.id);
     const conversation = db.prepare('SELECT * FROM wa_conversations WHERE client_id = ? ORDER BY id LIMIT 1').get(client.id);
     const messages = conversation
       ? db.prepare('SELECT * FROM wa_messages WHERE conversation_id = ? ORDER BY id DESC LIMIT 5').all(conversation.id).reverse()
       : [];
     res.render('atlas/client', {
-      title: client.name, client, interactions, conversation, messages,
+      title: client.name, client, interactions, conversation, messages, deals, dealStages: crmModel.stageMap,
       tasks: svc.listTasks({ clientId: client.id }), kinds: svc.INTERACTION_KINDS,
     });
   });

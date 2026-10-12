@@ -10,6 +10,24 @@ const { createConnectRoutes } = require('./connect');
 const { createAppRoutes, checkMake, scenariosFor } = require('./apps');
 const createAtlas = require('./atlas/routes');
 const crmRouter = require('./crm/routes');
+const crmModel = require('./crm/model');
+const atlasService = require('./atlas/service');
+
+// Open deals and open tasks shown on employee and department pages.
+function workFor({ ownerIds = [], departmentId = null }) {
+  const owners = new Set(ownerIds);
+  const deals = crmModel.loadDeals().filter((d) => crmModel.OPEN_STAGES.includes(d.stage) && owners.has(d.owner_id));
+  const tasks = departmentId
+    ? atlasService.listTasks({ departmentId, limit: 200 })
+    : ownerIds.flatMap((ownerId) => atlasService.listTasks({ ownerId, limit: 200 }));
+  return {
+    deals,
+    dealsValue: crmModel.sum(deals),
+    tasks: tasks.filter((t) => t.status !== 'done'),
+    crm: crmModel,
+    statusLabel: atlasService.STATUS_LABEL,
+  };
+}
 const { emit } = require('./atlas/events');
 const { ensureCompany, seedAtlas } = require('./seed');
 
@@ -204,7 +222,11 @@ app.get('/departments/:id', requireAuth, (req, res) => {
   const search = clean(req.query.q);
   const s = like(search);
   const employees = q.employeesInDepartment.all(department.id, search, s, s, s);
-  res.render('department', { title: department.name, department, employees, search });
+  const members = q.employeesInDepartment.all(department.id, '', '%%', '%%', '%%').map((e) => e.id);
+  res.render('department', {
+    title: department.name, department, employees, search,
+    work: workFor({ ownerIds: members, departmentId: department.id }),
+  });
 });
 
 app.get('/employees', requireAuth, (req, res) => {
@@ -233,7 +255,7 @@ app.get('/employees/:id', requireAuth, asyncRoute(async (req, res) => {
       console.error(`Make scenarios: ${err.message}`);
     }
   }
-  res.render('employee', { title: employee.full_name, employee, scenarios, makeError });
+  res.render('employee', { title: employee.full_name, employee, scenarios, makeError, work: workFor({ ownerIds: [employee.id] }) });
 }));
 
 // ---------- my profile ----------

@@ -5,7 +5,7 @@
     <div>
       <div class="a-eyebrow mono">Client Records</div>
       <h1 class="a-h1">العملاء</h1>
-      <p class="muted">خط المبيعات: <b><%= fmt(ov.pipelineValue) %></b> د.ك مفتوح · <b><%= fmt(ov.wonValue) %></b> د.ك مكسوب. كل رقم جديد يراسلك على واتساب يدخل هنا تلقائياً.</p>
+      <p class="muted">خط المبيعات: <b><%= fmt(ov.pipelineValue) %></b> د.ك مفتوح · <b><%= fmt(ov.wonValue) %></b> د.ك مكسوب. كل رقم جديد يراسلك على واتساب يدخل هنا تلقائياً. صفقات كل عميل في <a href="/crm/pipeline">خط المبيعات</a>.</p>
     </div>
     <div class="a-actions">
       <form class="a-search" action="/atlas/clients">
@@ -40,6 +40,7 @@
                   <% if (c.value) { %><span class="chip teal"><%= fmt(c.value) %> د.ك</span><% } %>
                   <% if (c.source) { %><span class="chip"><%= c.source %></span><% } %>
                   <% if (c.open_tasks) { %><span class="chip gold"><%= c.open_tasks %> مهام</span><% } %>
+                  <% if (c.open_deals) { %><span class="chip mauve"><%= c.open_deals %> صفقات</span><% } %>
                 </div>
                 <% if (c.owner_name) { %><div class="owner"><span class="a-avatar" style="background:<%= avatarColor(c.owner_id) %>"><%= initials(c.owner_name) %></span><%= c.owner_name %></div><% } %>
               </a>

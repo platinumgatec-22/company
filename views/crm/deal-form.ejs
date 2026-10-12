@@ -10,11 +10,11 @@
           <input name="title" value="<%= deal.title %>" required maxlength="120" placeholder="مثال: رعاية الدوري الرمضاني">
         </label>
         <div class="form-grid">
-          <label>جهة الاتصال
-            <select name="contact_id" data-contact-select>
-              <option value="">+ جهة اتصال جديدة</option>
-              <% contacts.forEach(c => { %>
-                <option value="<%= c.id %>" <%= c.id === deal.contact_id ? 'selected' : '' %>><%= c.full_name %><%= c.company ? ` — ${c.company}` : '' %></option>
+          <label>العميل
+            <select name="client_id" data-contact-select>
+              <option value="">+ عميل جديد</option>
+              <% clients.forEach(c => { %>
+                <option value="<%= c.id %>" <%= c.id === deal.client_id ? 'selected' : '' %>><%= c.name %><%= c.company ? ` — ${c.company}` : '' %></option>
               <% }) %>
             </select>
           </label>
@@ -23,11 +23,14 @@
               <% crm.TYPES.forEach(t => { %><option value="<%= t.key %>" <%= t.key === deal.type ? 'selected' : '' %>><%= t.icon %> <%= t.label %></option><% }) %>
             </select>
           </label>
-          <label data-new-contact>اسم جهة الاتصال الجديدة
-            <input name="new_contact_name" value="<%= newContact.full_name %>" placeholder="الاسم الكامل">
+          <label data-new-contact>اسم العميل الجديد
+            <input name="new_client_name" value="<%= newClient.name %>" placeholder="الاسم الكامل">
           </label>
           <label data-new-contact>الشركة
-            <input name="new_contact_company" value="<%= newContact.company %>" placeholder="اسم الشركة أو الجهة">
+            <input name="new_client_company" value="<%= newClient.company %>" placeholder="اسم الشركة أو الجهة">
+          </label>
+          <label data-new-contact class="span-2">الهاتف (يربطه بمحادثة واتساب)
+            <input name="new_client_phone" type="tel" dir="ltr" value="<%= newClient.phone %>" placeholder="+965">
           </label>
           <label>القيمة (د.ك)
             <input name="value" type="number" min="0" step="0.001" inputmode="decimal" value="<%= deal.value %>" required>

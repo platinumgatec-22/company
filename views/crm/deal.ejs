@@ -40,7 +40,7 @@
           <% if (canEdit(deal)) { %><a class="btn btn-ghost btn-sm" href="<%= base %>/crm/deals/<%= deal.id %>/edit">تعديل</a><% } %>
         </div>
         <dl class="details">
-          <div><dt>جهة الاتصال</dt><dd><% if (deal.contact_id) { %><a href="<%= base %>/crm/contacts/<%= deal.contact_id %>"><%= deal.contact_name %></a><% } else { %>—<% } %></dd></div>
+          <div><dt>العميل</dt><dd><% if (deal.client_id) { %><a href="<%= base %>/atlas/clients/<%= deal.client_id %>"><%= deal.contact_name %></a><% } else { %>—<% } %></dd></div>
           <div><dt>الشركة</dt><dd><%= deal.company || '—' %></dd></div>
           <div><dt>تاريخ الإغلاق المتوقع</dt><dd><%= deal.close_date || '—' %></dd></div>
           <div><dt>المسؤول</dt><dd><%= deal.owner_name || '—' %></dd></div>
@@ -60,9 +60,42 @@
       </div>
 
       <div class="card panel" id="activity">
-        <div class="panel-head"><h2 class="h3">النشاط</h2></div>
-        <%- include('_activity-form', { action: `${base}/crm/deals/${deal.id}/activities` }) %>
+        <div class="panel-head"><h2 class="h3">النشاط</h2>
+          <% if (deal.client_id) { %><a class="small" href="<%= base %>/atlas/clients/<%= deal.client_id %>">كل تواصل العميل ↗</a><% } %>
+        </div>
+        <% if (deal.client_id) { %><%- include('_activity-form', { action: `${base}/crm/deals/${deal.id}/activities` }) %><% } %>
         <%- include('_timeline', { activities }) %>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">مهام العميل</h2>
+          <% if (deal.client_id) { %><a class="btn btn-ghost btn-sm" href="<%= base %>/atlas/tasks/new?client=<%= deal.client_id %>">+ مهمة</a><% } %>
+        </div>
+        <% if (tasks.length === 0) { %><p class="muted small">لا توجد مهام مرتبطة بهذا العميل.</p><% } %>
+        <ul class="link-list">
+          <% tasks.forEach(t => { %>
+            <li><span class="chip <%= t.status === 'done' ? 'badge-green' : '' %>"><%= statusLabel[t.status] %></span>
+              <a href="<%= base %>/atlas/tasks/<%= t.id %>"><%= t.title %></a>
+              <span class="muted small"><%= t.owner_name || '' %><%= t.due_date ? ` · ${t.due_date}` : '' %></span></li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2 class="h3">واتساب وصفقات أخرى</h2></div>
+        <% if (conversation) { %>
+          <a class="btn btn-ghost btn-sm" href="<%= base %>/atlas/inbox/<%= conversation.id %>">💬 فتح محادثة واتساب</a>
+        <% } else if (deal.contact_phone) { %>
+          <a class="btn btn-ghost btn-sm" href="<%= base %>/atlas/clients/<%= deal.client_id %>">💬 راسل العميل على واتساب</a>
+        <% } else { %>
+          <p class="muted small">لا يوجد رقم هاتف للعميل. أضفه من صفحة العميل لربطه بواتساب.</p>
+        <% } %>
+        <% if (otherDeals.length) { %>
+          <h3 class="h3 sub-head">صفقات أخرى لنفس العميل</h3>
+          <div class="deal-list">
+            <% otherDeals.forEach(d => { %><%- include('_deal-row', { d: { ...d, company: '' } }) %><% }) %>
+          </div>
+        <% } %>
       </div>
     </div>
   </div>

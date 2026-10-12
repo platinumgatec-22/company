@@ -31,10 +31,12 @@ const SOURCES = [
   { key: 'other', label: 'أخرى' },
 ];
 
+// Same kinds as Atlas interactions (a deal's notes live in its client's interactions).
 const ACTIVITY_KINDS = [
   { key: 'note', label: 'ملاحظة', icon: '📝' },
   { key: 'call', label: 'مكالمة', icon: '📞' },
   { key: 'meeting', label: 'اجتماع', icon: '👥' },
+  { key: 'whatsapp', label: 'واتساب', icon: '💬' },
   { key: 'email', label: 'بريد', icon: '✉️' },
 ];
 
@@ -63,11 +65,12 @@ const moneyFull = (n) => (Number(n) || 0).toLocaleString('en-US', { maximumFract
 // ---------- queries ----------
 const q = {
   deals: db.prepare(`
-    SELECT d.*, c.full_name AS contact_name, c.company AS company,
+    SELECT d.*, c.name AS contact_name, c.company AS company,
            e.full_name AS owner_name,
-           (SELECT MAX(a.created_at) FROM crm_activities a WHERE a.deal_id = d.id) AS last_activity_at
+           (SELECT MAX(i.created_at) FROM interactions i
+             WHERE i.deal_id = d.id OR (i.deal_id IS NULL AND i.client_id = d.client_id)) AS last_activity_at
     FROM crm_deals d
-    LEFT JOIN crm_contacts c ON c.id = d.contact_id
+    LEFT JOIN clients c ON c.id = d.client_id
     LEFT JOIN employees e ON e.id = d.owner_id
     ORDER BY d.close_date = '', d.close_date, d.id`),
 };
