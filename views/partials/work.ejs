@@ -1,0 +1,30 @@
+<%# Open deals (/crm) and open tasks (/atlas) for an employee or a department. %>
+<% if (work.deals.length || work.tasks.length) { %>
+  <div class="grid grid-2 work">
+    <div class="card work-card">
+      <div class="work-head">
+        <h3>💼 الصفقات المفتوحة</h3>
+        <span class="muted small"><%= work.deals.length %> · <span dir="ltr"><%= work.crm.moneyFull(work.dealsValue) %></span> د.ك</span>
+      </div>
+      <% if (!work.deals.length) { %><p class="muted small">لا توجد صفقات مفتوحة.</p><% } %>
+      <ul class="work-list">
+        <% work.deals.slice(0, 8).forEach(d => { %>
+          <li><a href="/crm/deals/<%= d.id %>"><%= d.title %></a>
+            <span class="muted small"><%= work.crm.stageMap[d.stage].label %> · <span dir="ltr"><%= work.crm.money(d.value) %></span><% if (d.company || d.contact_name) { %> · <%= d.company || d.contact_name %><% } %></span></li>
+        <% }) %>
+      </ul>
+      <a class="small" href="/crm/pipeline">خط المبيعات ↗</a>
+    </div>
+    <div class="card work-card">
+      <div class="work-head"><h3>✅ المهام المفتوحة</h3><span class="muted small"><%= work.tasks.length %></span></div>
+      <% if (!work.tasks.length) { %><p class="muted small">لا توجد مهام مفتوحة.</p><% } %>
+      <ul class="work-list">
+        <% work.tasks.slice(0, 8).forEach(t => { %>
+          <li><a href="/atlas/tasks/<%= t.id %>"><%= t.title %></a>
+            <span class="muted small"><%= work.statusLabel[t.status] %><%= t.due_date ? ` · ${t.due_date}` : '' %><% if (t.client_name) { %> · <a href="/atlas/clients/<%= t.client_id %>"><%= t.client_name %></a><% } %></span></li>
+        <% }) %>
+      </ul>
+      <a class="small" href="/atlas/board">لوحة المهام ↗</a>
+    </div>
+  </div>
+<% } %>

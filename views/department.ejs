@@ -20,6 +20,7 @@
         <% } %>
       </div>
     </div>
+    <%- include('partials/work', { work }) %>
     <p class="muted"><%= employees.length %> موظف<%= search ? ' مطابق للبحث' : '' %></p>
     <% if (employees.length === 0) { %>
       <div class="empty">لا يوجد موظفون <%= search ? 'مطابقون للبحث' : 'في هذا القسم بعد' %>.</div>

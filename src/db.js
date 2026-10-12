@@ -326,25 +326,13 @@ db.exec(`
 `);
 
 // ---------- sales CRM (/crm) ----------
+// Deals belong to Atlas clients (one customer list for the whole site); notes and stage
+// changes on a deal are kept in the client's interactions with the deal's id.
 db.exec(`
-  -- ---------- CRM ----------
-  CREATE TABLE IF NOT EXISTS crm_contacts (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name  TEXT NOT NULL,
-    company    TEXT NOT NULL DEFAULT '',
-    job_title  TEXT NOT NULL DEFAULT '',
-    email      TEXT NOT NULL DEFAULT '',
-    phone      TEXT NOT NULL DEFAULT '',
-    source     TEXT NOT NULL DEFAULT 'other',
-    owner_id   INTEGER REFERENCES employees(id) ON DELETE SET NULL,
-    notes      TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
   CREATE TABLE IF NOT EXISTS crm_deals (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
     title            TEXT NOT NULL,
-    contact_id       INTEGER REFERENCES crm_contacts(id) ON DELETE SET NULL,
+    client_id        INTEGER REFERENCES clients(id) ON DELETE SET NULL,
     type             TEXT NOT NULL DEFAULT 'sponsorship',
     stage            TEXT NOT NULL DEFAULT 'lead',
     value            REAL NOT NULL DEFAULT 0,
@@ -357,20 +345,54 @@ db.exec(`
     closed_at        TEXT NOT NULL DEFAULT '',
     created_at       TEXT NOT NULL DEFAULT (datetime('now'))
   );
-
-  CREATE TABLE IF NOT EXISTS crm_activities (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    deal_id    INTEGER REFERENCES crm_deals(id) ON DELETE CASCADE,
-    contact_id INTEGER REFERENCES crm_contacts(id) ON DELETE CASCADE,
-    author_id  INTEGER REFERENCES employees(id) ON DELETE SET NULL,
-    kind       TEXT NOT NULL DEFAULT 'note',
-    body       TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
   CREATE INDEX IF NOT EXISTS idx_crm_deals_stage ON crm_deals(stage);
-  CREATE INDEX IF NOT EXISTS idx_crm_activities_deal ON crm_activities(deal_id);
-  CREATE INDEX IF NOT EXISTS idx_crm_activities_contact ON crm_activities(contact_id);
 `);
+
+const hasColumn = (table, col) => db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === col);
+const hasTable = (name) => Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(name));
+if (!hasColumn('crm_deals', 'client_id')) {
+  db.exec('ALTER TABLE crm_deals ADD COLUMN client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL');
+}
+if (!hasColumn('interactions', 'deal_id')) {
+  db.exec('ALTER TABLE interactions ADD COLUMN deal_id INTEGER REFERENCES crm_deals(id) ON DELETE SET NULL');
+}
+db.exec(`CREATE INDEX IF NOT EXISTS idx_crm_deals_client ON crm_deals(client_id);
+         CREATE INDEX IF NOT EXISTS idx_interactions_deal ON interactions(deal_id);`);
+
+// One-time move of the first CRM version's separate contacts and activities into Atlas.
+if (hasTable('crm_contacts') && !db.prepare("SELECT 1 FROM meta WHERE key = 'crm_merged_into_atlas'").get()) {
+  const SOURCES = { instagram: 'إنستغرام', website: 'الموقع الإلكتروني', referral: 'توصية', event: 'فعالية / بطولة', outbound: 'تواصل مباشر', other: 'أخرى' };
+  db.exec('BEGIN');
+  try {
+    const clientFor = new Map();
+    for (const c of db.prepare('SELECT * FROM crm_contacts').all()) {
+      const notes = [c.job_title, c.notes].filter(Boolean).join('\n');
+      const r = db.prepare(`INSERT INTO clients (name, company, phone, email, source, notes, owner_id, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+        .run(c.full_name, c.company, c.phone, c.email, SOURCES[c.source] || '', notes, c.owner_id, c.created_at);
+      clientFor.set(c.id, Number(r.lastInsertRowid));
+    }
+    if (hasColumn('crm_deals', 'contact_id')) {
+      for (const d of db.prepare('SELECT id, contact_id FROM crm_deals WHERE contact_id IS NOT NULL').all()) {
+        db.prepare('UPDATE crm_deals SET client_id = ? WHERE id = ?').run(clientFor.get(d.contact_id) ?? null, d.id);
+      }
+    }
+    if (hasTable('crm_activities')) {
+      for (const a of db.prepare('SELECT * FROM crm_activities ORDER BY id').all()) {
+        const clientId = a.deal_id
+          ? db.prepare('SELECT client_id FROM crm_deals WHERE id = ?').get(a.deal_id)?.client_id
+          : clientFor.get(a.contact_id);
+        if (!clientId) continue;
+        db.prepare('INSERT INTO interactions (client_id, deal_id, kind, body, employee_id, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+          .run(clientId, a.deal_id, a.kind, a.body, a.author_id, a.created_at);
+      }
+    }
+    db.prepare("INSERT INTO meta (key, value) VALUES ('crm_merged_into_atlas', datetime('now'))").run();
+    db.exec('COMMIT');
+  } catch (err) {
+    db.exec('ROLLBACK');
+    throw err;
+  }
+}
 
 module.exports = db;

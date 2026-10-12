@@ -8,8 +8,9 @@
         <div>
           <p class="timeline-body"><%= a.body %></p>
           <span class="muted small">
-            <%= k.label %> · <%= a.author_name || '—' %> · <time datetime="<%= a.created_at %>"><%= a.created_at.slice(0, 10) %></time>
+            <%= k.label %> · <%= a.author_name || 'Atlas' %> · <time datetime="<%= a.created_at %>"><%= a.created_at.slice(0, 10) %></time>
             <% if (typeof showDeal !== 'undefined' && a.deal_title) { %> · <a href="<%= base %>/crm/deals/<%= a.deal_id %>"><%= a.deal_title %></a><% } %>
+            <% if (typeof showDeal !== 'undefined' && !a.deal_title && a.client_name) { %> · <a href="<%= base %>/atlas/clients/<%= a.client_id %>"><%= a.client_name %></a><% } %>
           </span>
         </div>
       </li>

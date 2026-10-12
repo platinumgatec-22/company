@@ -209,3 +209,10 @@ body.crm a.card:hover { border-color: var(--primary); }
   .crm-head .btn { width: 100%; }
 }
 body.crm [hidden] { display: none !important; }
+
+/* ---------- links into Atlas (tasks, WhatsApp) ---------- */
+.link-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.link-list li { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.link-list a { color: var(--text); font-weight: 700; }
+.link-list a:hover { color: var(--primary); }
+.sub-head { margin: 1.25rem 0 .6rem; font-size: .95rem; color: var(--muted); }

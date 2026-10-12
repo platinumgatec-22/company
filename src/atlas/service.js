@@ -74,7 +74,8 @@ function listClients({ stage = '', search = '', ownerId = null, limit = 500 } = 
   }
   return db.prepare(`
     SELECT c.*, e.full_name AS owner_name,
-      (SELECT COUNT(*) FROM tasks t WHERE t.client_id = c.id AND t.status != 'done') AS open_tasks
+      (SELECT COUNT(*) FROM tasks t WHERE t.client_id = c.id AND t.status != 'done') AS open_tasks,
+      (SELECT COUNT(*) FROM crm_deals d WHERE d.client_id = c.id AND d.stage NOT IN ('won', 'lost')) AS open_deals
     FROM clients c LEFT JOIN employees e ON e.id = c.owner_id
     ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
     ORDER BY c.updated_at DESC LIMIT ?`).all(...args, limit);
@@ -282,8 +283,15 @@ function overview() {
     overdue: one("SELECT COUNT(*) AS n FROM tasks WHERE status != 'done' AND due_date != '' AND due_date < ?", day),
     dueToday: one("SELECT COUNT(*) AS n FROM tasks WHERE status != 'done' AND due_date = ?", day),
     clients: Object.fromEntries(STAGES.map((s) => [s, one('SELECT COUNT(*) AS n FROM clients WHERE stage = ?', s)])),
-    pipelineValue: db.prepare("SELECT COALESCE(SUM(value), 0) AS n FROM clients WHERE stage NOT IN ('won', 'lost')").get().n,
-    wonValue: db.prepare("SELECT COALESCE(SUM(value), 0) AS n FROM clients WHERE stage = 'won'").get().n,
+    // Sales deals (/crm) carry the money; a client with no deals still counts its own value.
+    pipelineValue: db.prepare(`SELECT
+        (SELECT COALESCE(SUM(value), 0) FROM crm_deals WHERE stage NOT IN ('won', 'lost')) +
+        (SELECT COALESCE(SUM(value), 0) FROM clients c WHERE stage NOT IN ('won', 'lost')
+          AND NOT EXISTS (SELECT 1 FROM crm_deals d WHERE d.client_id = c.id)) AS n`).get().n,
+    wonValue: db.prepare(`SELECT
+        (SELECT COALESCE(SUM(value), 0) FROM crm_deals WHERE stage = 'won') +
+        (SELECT COALESCE(SUM(value), 0) FROM clients c WHERE stage = 'won'
+          AND NOT EXISTS (SELECT 1 FROM crm_deals d WHERE d.client_id = c.id)) AS n`).get().n,
     unreadWhatsapp: one('SELECT COALESCE(SUM(unread), 0) AS n FROM wa_conversations'),
     conversations: one('SELECT COUNT(*) AS n FROM wa_conversations'),
     notes: one('SELECT COUNT(*) AS n FROM canvas_items ci JOIN canvases c ON c.id = ci.canvas_id WHERE c.owner_id IS NULL'),
