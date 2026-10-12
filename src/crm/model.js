@@ -19,10 +19,12 @@ const TYPES = [
   { key: 'team_premium', label: 'اشتراكات Premium جماعية', icon: '⭐' },
   { key: 'api', label: 'تكامل API', icon: '🔌' },
   { key: 'event', label: 'تنظيم بطولة', icon: '🎮' },
+  { key: 'registration', label: 'تسجيل في بطولة', icon: '📝' },
   { key: 'partnership', label: 'شراكة', icon: '🤝' },
 ];
 
 const SOURCES = [
+  { key: 'whatsapp', label: 'واتساب' },
   { key: 'instagram', label: 'إنستغرام' },
   { key: 'website', label: 'الموقع الإلكتروني' },
   { key: 'referral', label: 'توصية' },

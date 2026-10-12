@@ -12,6 +12,7 @@ const createAtlas = require('./atlas/routes');
 const crmRouter = require('./crm/routes');
 const crmModel = require('./crm/model');
 const atlasService = require('./atlas/service');
+const digitalTeam = require('./digital/team');
 
 // Open deals and open tasks shown on employee and department pages.
 function workFor({ ownerIds = [], departmentId = null }) {
@@ -255,7 +256,7 @@ app.get('/employees/:id', requireAuth, asyncRoute(async (req, res) => {
       console.error(`Make scenarios: ${err.message}`);
     }
   }
-  res.render('employee', { title: employee.full_name, employee, scenarios, makeError, work: workFor({ ownerIds: [employee.id] }) });
+  res.render('employee', { title: employee.full_name, employee, scenarios, makeError, work: workFor({ ownerIds: [employee.id] }), digital: digitalTeam.workOf(employee) });
 }));
 
 // ---------- my profile ----------

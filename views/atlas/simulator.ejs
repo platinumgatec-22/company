@@ -1,0 +1,54 @@
+<%- include('partials/top') %>
+<div class="a-page wide">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">WhatsApp simulator</div>
+      <h1 class="a-h1">محاكي واتساب</h1>
+      <p class="muted">أنت العميل. تحدّث مع <b><%= agent ? agent.full_name : 'بلاتين' %></b> (خدمة العملاء الرقمية) وسجّل فريقاً في بطولة. على اليسار ترى كل ما يفعله في الموقع خطوة بخطوة حتى خروج الفاتورة. الرسائل لا تُرسل لواتساب حقيقي، لكن البيانات تُسجَّل فعلاً في الأقسام.</p>
+    </div>
+    <div class="a-actions">
+      <button class="a-btn" type="button" data-autoplay>▶ تشغيل المحاكاة كاملة</button>
+      <button class="a-btn a-btn-ghost" type="button" data-reset>محادثة جديدة</button>
+    </div>
+  </div>
+  <% if (!agent) { %><div class="a-flash a-flash-error">حساب «بلاتين» (platin) غير موجود أو غير نشط، فعّله من لوحة الإدارة أولاً.</div><% } %>
+
+  <div class="sim" data-sim data-name="<%= sample.name %>" data-team="<%= sample.team %>">
+    <div class="a-card sim-phone">
+      <div class="sim-bar">
+        <span class="a-avatar" style="background:<%= avatarColor(agent ? agent.id : 1) %>"><%= initials(agent ? agent.full_name : 'ب') %></span>
+        <div class="grow"><strong><%= company %></strong><div class="small muted">يرد عليك: <%= agent ? agent.full_name : '—' %> · موظف رقمي</div></div>
+        <span class="mono small dim" dir="ltr">+<%= phone %></span>
+      </div>
+      <div class="sim-chat" data-chat aria-live="polite">
+        <% if (!messages.length) { %><p class="dim small" data-empty>ابدأ برسالة، مثلاً: «أبي أسجل فريقي في بطولة»، أو اضغط «تشغيل المحاكاة كاملة».</p><% } %>
+        <% messages.forEach(m => { %>
+          <div class="bubble <%= m.direction === 'in' ? 'out' : 'in' %>"><%= m.body %><span class="meta"><%= m.direction === 'in' ? 'أنت' : (m.sender_name || 'بلاتين') %> · <%= m.created_at.slice(11, 16) %></span></div>
+        <% }) %>
+      </div>
+      <div class="sim-quick" data-quick>
+        <button type="button">أبي أسجل فريقي في بطولة</button><button type="button">1</button><button type="button">نعم</button><button type="button">2</button><button type="button">3</button>
+      </div>
+      <form class="sim-form" data-form>
+        <input name="name" type="hidden" value="<%= sample.name %>">
+        <input name="text" class="a-input" placeholder="اكتب رسالتك كعميل…" autocomplete="off" required aria-label="رسالة العميل">
+        <button class="a-btn a-btn-sm">إرسال</button>
+      </form>
+    </div>
+
+    <div class="a-card">
+      <div class="a-card-head"><h2>ماذا يحدث في الموقع</h2><% if (conv && conv.client_id) { %><a class="small" href="/atlas/clients/<%= conv.client_id %>">صفحة العميل ↗</a><% } %></div>
+      <p class="dim small" data-steps-empty <%= steps.length ? 'hidden' : '' %>>كل خطوة يقوم بها الموظفون الرقميون ستظهر هنا مع رابط للقسم.</p>
+      <ol class="sim-steps" data-steps>
+        <% steps.forEach(s => { %>
+          <li class="sim-step"><span class="ic" aria-hidden="true"><%= s.icon %></span><div><strong><%= s.title %></strong><div class="small muted"><%= s.detail %></div><div class="meta"><span class="chip"><%= s.section %></span><span><%= s.by %></span><% if (s.link) { %><a class="go" href="<%= s.link %>">فتح ↗</a><% } %></div></div></li>
+        <% }) %>
+      </ol>
+      <p class="small dim" style="margin-top:1rem">
+        الرد الآلي على واتساب الحقيقي: <b><%= autoReply ? 'مفعّل' : 'متوقف' %></b> — يُفعَّل من <a href="/atlas/automations#whatsapp">الأتمتة</a> (platin_autoreply = 1).
+      </p>
+    </div>
+  </div>
+</div>
+<script src="/js/simulator.js" defer></script>
+<%- include('partials/bottom') %>

@@ -8,6 +8,7 @@ const EVENTS = [
   'task.created', 'task.updated', 'task.status_changed', 'task.deleted',
   'client.created', 'client.updated', 'client.stage_changed', 'interaction.created',
   'deal.created', 'deal.updated', 'deal.stage_changed', 'deal.won', 'deal.lost', 'deal.deleted',
+  'tournament.registered', 'invoice.issued',
   'whatsapp.received', 'whatsapp.sent', 'note.created', 'proposal.approved', 'employee.created', 'atlas.test',
 ];
 

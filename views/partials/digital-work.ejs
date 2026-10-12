@@ -1,0 +1,46 @@
+<%# The sections this employee works in and what they did there (src/digital/team.js). %>
+<% const c = digital.counts; const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 }).format(n || 0); %>
+<div class="card work-card digital-work">
+  <div class="work-head">
+    <h3>🧭 أقسامه في الموقع</h3>
+    <% if (employee.is_digital) { %><a class="small" href="/atlas/team">الفريق الرقمي ↗</a><% } %>
+  </div>
+  <div class="chips">
+    <% digital.sections.forEach(s => { %><a class="chip" href="<%= s.href %>"><%= s.icon %> <%= s.label %></a><% }) %>
+  </div>
+  <div class="digital-stats">
+    <div><strong><%= c.whatsapp %></strong><span>رسالة واتساب</span></div>
+    <div><strong><%= c.openDeals %></strong><span>صفقة مفتوحة</span></div>
+    <div><strong dir="ltr"><%= fmt(c.wonValue) %></strong><span>د.ك مبيعات</span></div>
+    <div><strong><%= c.registrations %></strong><span>تسجيل بطولة</span></div>
+    <div><strong><%= c.invoices %></strong><span>فاتورة</span></div>
+    <div><strong><%= c.openTasks %></strong><span>مهمة مفتوحة</span></div>
+  </div>
+  <% if (digital.conversations.length) { %>
+    <h4>💬 محادثات واتساب</h4>
+    <ul class="work-list">
+      <% digital.conversations.forEach(w => { %>
+        <li><a href="/atlas/inbox/<%= w.id %>"><%= w.client_name || w.name || `+${w.phone}` %></a><span class="muted small"><%= (w.last_body || '').slice(0, 70) %></span></li>
+      <% }) %>
+    </ul>
+  <% } %>
+  <% if (digital.invoices.length || digital.registrations.length) { %>
+    <h4>🧾 الفواتير والتسجيلات</h4>
+    <ul class="work-list">
+      <% digital.invoices.slice(-5).reverse().forEach(i => { %>
+        <li><a href="/apps/invoices"><%= i.number %> · <%= i.client && i.client.name %></a><span class="muted small"><span dir="ltr"><%= fmt(i.total) %></span> د.ك · <%= Number(i.paid) >= Number(i.total) ? 'مدفوعة' : 'غير مدفوعة' %> · <%= i.date %></span></li>
+      <% }) %>
+      <% digital.registrations.slice(-5).reverse().forEach(t => { %>
+        <li><a href="/apps/tournaments">فريق <%= t.name %></a><span class="muted small">الكابتن <%= t.captain %> · <%= t.paid ? 'مدفوع' : 'بانتظار الدفع' %></span></li>
+      <% }) %>
+    </ul>
+  <% } %>
+  <% if (digital.activity.length) { %>
+    <h4>〰️ آخر نشاطه</h4>
+    <ul class="work-list">
+      <% digital.activity.forEach(a => { %>
+        <li><% if (a.link) { %><a href="<%= a.link %>"><%= a.message %></a><% } else { %><span><%= a.message %></span><% } %><span class="muted small" dir="ltr"><%= a.created_at.slice(0, 16) %></span></li>
+      <% }) %>
+    </ul>
+  <% } %>
+</div>

@@ -8,6 +8,7 @@ const FIELDS = {
   whatsapp_verify_token: { env: 'WHATSAPP_VERIFY_TOKEN', label: 'Webhook verify token' },
   whatsapp_app_secret: { env: 'WHATSAPP_APP_SECRET', secret: true, label: 'Meta app secret (signature check)' },
   whatsapp_notify: { env: 'WHATSAPP_NOTIFY', label: 'Notify task owners on WhatsApp (1 = yes)' },
+  platin_autoreply: { env: 'PLATIN_AUTOREPLY', label: 'بلاتين يرد آلياً على عملاء واتساب ويسجّلهم في البطولات (1 = نعم)' },
   make_webhook_url: { env: 'MAKE_WEBHOOK_URL', label: 'Default Make webhook URL (all events)' },
   make_api_token: { env: 'MAKE_API_TOKEN', secret: true, label: 'Make API token' },
   make_zone: { env: 'MAKE_ZONE', label: 'Make zone (e.g. eu1.make.com)' },

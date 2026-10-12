@@ -1,0 +1,47 @@
+<%- include('partials/top') %>
+<% const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n || 0); %>
+<div class="a-page wide">
+  <div class="a-head">
+    <div>
+      <div class="a-eyebrow mono">Digital team</div>
+      <h1 class="a-h1">الفريق الرقمي</h1>
+      <p class="muted">كل موظف رقمي مع الأقسام التي يعمل فيها، وما أنجزه في كل قسم: محادثات واتساب، الصفقات، المهام، التسجيلات والفواتير.</p>
+    </div>
+    <% if (user.role === 'admin') { %><div class="a-actions"><a class="a-btn" href="/atlas/simulator">💬 جرّب محاكي واتساب</a></div><% } %>
+  </div>
+
+  <% groups.forEach(g => { %>
+    <section class="team-group">
+      <div class="team-group-head">
+        <h2><span aria-hidden="true"><%= g.icon %></span> <%= g.name %></h2>
+        <div class="team-sections">
+          <% g.sections.forEach(s => { %><a class="chip" href="<%= s.href %>"><%= s.icon %> <%= s.label %></a><% }) %>
+        </div>
+      </div>
+      <div class="team-grid">
+        <% g.people.forEach(p => { const c = p.counts; %>
+          <a class="a-card team-card" href="/employees/<%= p.id %>">
+            <div class="team-who">
+              <span class="a-avatar" style="background:<%= avatarColor(p.id) %>"><%= initials(p.full_name) %></span>
+              <div>
+                <strong><%= p.full_name %></strong><% if (p.is_manager) { %> <span class="chip gold">مدير</span><% } %>
+                <div class="small muted"><%= p.job_title %></div>
+              </div>
+            </div>
+            <div class="team-stats">
+              <% if (c.whatsapp) { %><span title="رسائل واتساب أرسلها">💬 <b><%= c.whatsapp %></b></span><% } %>
+              <% if (c.openDeals) { %><span title="صفقات مفتوحة">💼 <b><%= c.openDeals %></b> · <%= fmt(c.openValue) %> د.ك</span><% } %>
+              <% if (c.wonValue) { %><span title="مبيعات تم الفوز بها">🏁 <b><%= fmt(c.wonValue) %></b> د.ك</span><% } %>
+              <% if (c.registrations) { %><span title="فرق سجّلها في البطولات">🏆 <b><%= c.registrations %></b></span><% } %>
+              <% if (c.invoices) { %><span title="فواتير أصدرها">🧾 <b><%= c.invoices %></b></span><% } %>
+              <% if (c.openTasks || c.doneTasks) { %><span title="مهام مفتوحة ومنجزة">✅ <b><%= c.openTasks %></b> مفتوحة<% if (c.doneTasks) { %> · <%= c.doneTasks %> منجزة<% } %></span><% } %>
+              <% if (!c.whatsapp && !c.openDeals && !c.wonValue && !c.registrations && !c.invoices && !c.openTasks && !c.doneTasks) { %><span class="dim">لا يوجد عمل مسجّل بعد في الموقع</span><% } %>
+            </div>
+            <div class="small dim mono"><%= c.lastActivity ? `آخر نشاط ${c.lastActivity.slice(0, 16)}` : 'يعمل حالياً عبر سيناريوهات Make' %></div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+  <% }) %>
+</div>
+<%- include('partials/bottom') %>
