@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
-# Prepares the reel-editor skill (.claude/skills/reel-editor) in Claude Code cloud sessions:
-# Python packages and an Arabic font with Latin glyphs (Cairo). Local machines: the skill's own
-# setup_check.py covers this, so the hook only runs in remote sessions.
+# Prepares this repo's skills in Claude Code cloud sessions:
+#  - reel-editor: Python packages and an Arabic font with Latin glyphs (Cairo).
+#  - ig-*: ~/.claude/instagram (voice.md, log.md, swipe.md, plan.md) points at .claude/instagram in the repo,
+#    so the voice profile and post history survive the container being reset.
+# Local machines: reel-editor's setup_check.py covers its needs, so the hook only runs in remote sessions.
 set -uo pipefail
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
+
+mkdir -p "$CLAUDE_PROJECT_DIR/.claude/instagram" "$HOME/.claude"
+[ -e "$HOME/.claude/instagram" ] || ln -s "$CLAUDE_PROJECT_DIR/.claude/instagram" "$HOME/.claude/instagram"
 
 python3 - <<'PY' 2>/dev/null || python3 -m pip install -q --break-system-packages \
   pillow numpy arabic-reshaper python-bidi faster-whisper onnxruntime fonttools >/dev/null 2>&1
