@@ -161,8 +161,12 @@ class Reel:
         n = int(self.total * SR)
         voice = np.zeros((n, 1), np.float32)
         v = load_mono(self.src, f"loudnorm=I={self.voice_lufs}:TP=-2:LRA=11")[:n]; voice[:len(v)] = v
-        r = st_rms(v); speech = r[r > r.max() * 0.1]
-        v90 = 20 * np.log10(np.percentile(speech, 90)); vmean = 20 * np.log10(np.sqrt((speech ** 2).mean()))
+        r = st_rms(v); no_voice = r.max() < 1e-3                  # graphics-only reel: nothing to measure against
+        if no_voice:
+            v90, vmean = -18.0, -21.0                               # nominal speech level for effects and music
+        else:
+            speech = r[r > r.max() * 0.1]
+            v90 = 20 * np.log10(np.percentile(speech, 90)); vmean = 20 * np.log10(np.sqrt((speech ** 2).mean()))
         music = np.zeros((n, 1), np.float32)
         beds = self.beds or ([(self.music, 0.0, self.total, self.music_db, 0.0)] if self.music else [])
         sw = self.end_swell_at or self.src_dur - 1.4
@@ -186,9 +190,12 @@ class Reel:
         er = subprocess.run(["ffmpeg", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", self.tmp, "-af", "ebur128", "-f", "null", "-"],
                             capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
         Is = re.findall(r"I:\s+(-?[\d.]+) LUFS", er)
-        if Is:
+        if Is and not (no_voice and not beds):                     # sparse effects alone are not pushed to -14 LUFS
             # -13.5 on the mono mix lands at about -14 LUFS after the stereo AAC encode
             k = 10 ** ((-13.5 - float(Is[-1])) / 20); voice *= k; music *= k; sfx *= k; mix *= k
+            clips = [(p, s * k, kd, nm) for p, s, kd, nm in clips]
+        elif no_voice and not beds and np.abs(mix).max() > 0:       # effects only: bring their peaks to about -3 dBFS
+            k = 0.7 / np.abs(mix).max(); voice *= k; music *= k; sfx *= k; mix *= k
             clips = [(p, s * k, kd, nm) for p, s, kd, nm in clips]
         # keep the mix at -14 LUFS (the final encode's limiter catches peaks); only the exported stems get headroom
         mix.astype(np.float32).tofile(self.tmp)
