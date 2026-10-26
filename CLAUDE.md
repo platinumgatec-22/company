@@ -14,3 +14,9 @@
   once per container before the first render.
 - Arabic text: use the Cairo font from `~/.local/share/fonts/Cairo-Bold.ttf` (built by
   `.claude/hooks/setup-skills.sh`) via `@font-face` from `assets/fonts/`.
+
+## ffmpeg-skill (`.claude/skills/ffmpeg-skill`, from npm `ffmpeg-skill`)
+
+- Arabic captions: pass `--font "Noto Naskh Arabic"`. The auto-picked Noto Sans Arabic drops the
+  لا (lam-alef) ligature to a missing-glyph box in libass; Noto Kufi Arabic renders nothing.
+- Refresh with `npx ffmpeg-skill --project` (copies are not updated automatically).
