@@ -10,6 +10,7 @@
           <label>الاسم<input value="<%= user.full_name %>" disabled></label>
           <label>البريد الإلكتروني<input name="email" type="email" value="<%= user.email %>" dir="ltr"></label>
           <label>الهاتف<input name="phone" value="<%= user.phone %>" dir="ltr"></label>
+          <label>رابط LinkedIn<input name="linkedin" inputmode="url" value="<%= user.linkedin %>" dir="ltr" placeholder="https://www.linkedin.com/in/username"></label>
           <label>نبذة عني<textarea name="bio" rows="3" maxlength="500"><%= user.bio %></textarea></label>
           <button class="btn btn-primary">حفظ</button>
         </form>

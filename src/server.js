@@ -82,6 +82,19 @@ const q = {
 // ---------- helpers ----------
 const like = (s) => `%${s}%`;
 const clean = (v) => (typeof v === 'string' ? v.trim() : '');
+// Accepts a LinkedIn profile/page URL (scheme optional) and returns it as https; '' when empty, null when invalid.
+const normalizeLinkedin = (v) => {
+  const value = clean(v);
+  if (!value) return '';
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    if (!/^([a-z0-9-]+\.)?linkedin\.com$/i.test(url.hostname) || url.pathname.length < 2) return null;
+    url.protocol = 'https:';
+    return url.href.slice(0, 300);
+  } catch {
+    return null;
+  }
+};
 const toId = (v) => {
   const n = Number(v);
   return Number.isInteger(n) && n > 0 ? n : 0;
@@ -227,11 +240,17 @@ app.post('/profile', requireAuth, (req, res) => {
   const email = clean(req.body.email);
   const phone = clean(req.body.phone);
   const bio = clean(req.body.bio).slice(0, 500);
+  const linkedin = normalizeLinkedin(req.body.linkedin);
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     flash(req, 'error', 'البريد الإلكتروني غير صالح.');
     return res.redirect('/profile');
   }
-  db.prepare('UPDATE employees SET email = ?, phone = ?, bio = ? WHERE id = ?').run(email, phone, bio, req.user.id);
+  if (linkedin === null) {
+    flash(req, 'error', 'رابط LinkedIn غير صالح (مثال: linkedin.com/in/username).');
+    return res.redirect('/profile');
+  }
+  db.prepare('UPDATE employees SET email = ?, phone = ?, bio = ?, linkedin = ? WHERE id = ?')
+    .run(email, phone, bio, linkedin, req.user.id);
   flash(req, 'success', 'تم حفظ بياناتك.');
   res.redirect('/profile');
 });
@@ -336,7 +355,7 @@ admin.get('/employees', (req, res) => {
 
 const emptyEmployee = {
   full_name: '', username: '', email: '', phone: '', job_title: '', department_id: 0,
-  is_manager: 0, role: 'employee', hire_date: '', bio: '', is_active: 1,
+  is_manager: 0, role: 'employee', hire_date: '', bio: '', linkedin: '', is_active: 1,
 };
 
 admin.get('/employees/new', (req, res) => {
@@ -367,6 +386,7 @@ async function saveEmployee(req, res) {
     role: b.role === 'admin' ? 'admin' : 'employee',
     hire_date: clean(b.hire_date),
     bio: clean(b.bio).slice(0, 500),
+    linkedin: normalizeLinkedin(b.linkedin),
     is_active: b.is_active ? 1 : 0,
   };
   const password = typeof b.password === 'string' ? b.password : '';
@@ -382,6 +402,10 @@ async function saveEmployee(req, res) {
     return render('اسم المستخدم يجب أن يكون 3-32 حرفاً إنجليزياً أو أرقام أو (. _ -).');
   }
   if (employee.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employee.email)) return render('البريد الإلكتروني غير صالح.');
+  if (employee.linkedin === null) {
+    employee.linkedin = clean(b.linkedin);
+    return render('رابط LinkedIn غير صالح (مثال: linkedin.com/in/username).');
+  }
   if (!id && password.length < 6) return render('كلمة المرور المبدئية يجب أن تكون 6 أحرف على الأقل.');
   if (id && password && password.length < 6) return render('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
   if (id === req.user.id && (employee.role !== 'admin' || !employee.is_active)) {
@@ -389,7 +413,7 @@ async function saveEmployee(req, res) {
   }
 
   const fields = ['full_name', 'username', 'email', 'phone', 'job_title', 'department_id',
-    'is_manager', 'role', 'hire_date', 'bio', 'is_active'];
+    'is_manager', 'role', 'hire_date', 'bio', 'linkedin', 'is_active'];
   const values = fields.map((f) => employee[f]);
 
   try {

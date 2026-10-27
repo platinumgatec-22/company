@@ -30,6 +30,7 @@ db.exec(`
     role                 TEXT NOT NULL DEFAULT 'employee' CHECK (role IN ('admin', 'employee')),
     hire_date            TEXT NOT NULL DEFAULT '',
     bio                  TEXT NOT NULL DEFAULT '',
+    linkedin             TEXT NOT NULL DEFAULT '',
     is_active            INTEGER NOT NULL DEFAULT 1,
     must_change_password INTEGER NOT NULL DEFAULT 1,
     created_at           TEXT NOT NULL DEFAULT (datetime('now'))
@@ -82,5 +83,11 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_crm_activities_deal ON crm_activities(deal_id);
   CREATE INDEX IF NOT EXISTS idx_crm_activities_contact ON crm_activities(contact_id);
 `);
+
+// Columns added after the first release: add them to databases created before they existed.
+const employeeColumns = db.prepare('PRAGMA table_info(employees)').all().map((c) => c.name);
+if (!employeeColumns.includes('linkedin')) {
+  db.exec("ALTER TABLE employees ADD COLUMN linkedin TEXT NOT NULL DEFAULT ''");
+}
 
 module.exports = db;
