@@ -2,14 +2,16 @@
 # Prepares this repo's skills in Claude Code cloud sessions:
 #  - reel-editor: Python packages and an Arabic font with Latin glyphs (Cairo).
 #  - ffmpeg-skill: Noto Arabic fonts (installed in the background).
-#  - ig-*: ~/.claude/instagram (voice.md, log.md, swipe.md, plan.md) points at .claude/instagram in the repo,
-#    so the voice profile and post history survive the container being reset.
+#  - ig-* / li-*: ~/.claude/instagram and ~/.claude/linkedin (voice.md, log.md, plan.md...) point at
+#    .claude/instagram and .claude/linkedin in the repo, so voice profiles and post history survive a reset.
 # Local machines: reel-editor's setup_check.py covers its needs, so the hook only runs in remote sessions.
 set -uo pipefail
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 
-mkdir -p "$CLAUDE_PROJECT_DIR/.claude/instagram" "$HOME/.claude"
-[ -e "$HOME/.claude/instagram" ] || ln -s "$CLAUDE_PROJECT_DIR/.claude/instagram" "$HOME/.claude/instagram"
+for d in instagram linkedin; do
+  mkdir -p "$CLAUDE_PROJECT_DIR/.claude/$d" "$HOME/.claude"
+  [ -e "$HOME/.claude/$d" ] || ln -s "$CLAUDE_PROJECT_DIR/.claude/$d" "$HOME/.claude/$d"
+done
 
 python3 - <<'PY' 2>/dev/null || python3 -m pip install -q --break-system-packages \
   pillow numpy arabic-reshaper python-bidi faster-whisper onnxruntime fonttools >/dev/null 2>&1

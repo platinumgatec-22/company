@@ -15,6 +15,12 @@
 - Arabic text: use the Cairo font from `~/.local/share/fonts/Cairo-Bold.ttf` (built by
   `.claude/hooks/setup-skills.sh`) via `@font-face` from `assets/fonts/`.
 
+## LinkedIn skills (`li-*`, from github.com/Jakeschincariol/linkedin-agent-skill)
+
+- Voice profile: `.claude/linkedin/voice.md` (linked to `~/.claude/linkedin` by the setup hook). Fill the
+  `[confirm]` lines before relying on it.
+- `li-human` uses the Arabic-aware scripts from `ig-human`; keep the two `detect.py`/`humanize.py` copies in sync.
+
 ## ffmpeg-skill (`.claude/skills/ffmpeg-skill`, from npm `ffmpeg-skill`)
 
 - Arabic captions: pass `--font "Noto Naskh Arabic"`. The auto-picked Noto Sans Arabic drops the

@@ -43,7 +43,8 @@ AR_PRONOUNS = re.compile(r"(?<![\u0621-\u064A])(?:انا|أنا|احنا|إحن�
                          r"عندنا|لي|لك|لنا|لكم)(?![\u0621-\u064A])|[\u0621-\u064A]{2,}(?:ك|كم|ني|نا|ت)(?![\u0621-\u064A])")
 CONTRACTIONS = re.compile(r"\b\w+'(?:s|t|re|ve|ll|d|m)\b", re.IGNORECASE)
 PRONOUNS = re.compile(r"\b(i|me|my|mine|we|us|our|you|your)\b", re.IGNORECASE)
-NUMBERS = re.compile(r"\b\d[\d,.]*%?\b|\$\d")
+# ARABIC SUPPORT: no \b around digits, so "و١٨" (and18) and Arabic-Indic numerals count.
+NUMBERS = re.compile(r"(?<!\d)\d[\d,.\u066B\u066C]*%?(?!\d)|\$\d")
 PROPER = re.compile(r"(?<![.!?]\s)(?<!^)\b[A-Z][a-z]{2,}\b", re.MULTILINE)
 
 
