@@ -57,7 +57,7 @@ Taken from what the published posts argue. Keep, sharpen or delete.
 
 Real facts already shared. The skills will never invent one, so anything missing comes back as `{{your number}}`.
 
-- **Bataolat al-Abtal (بطولة الأبطال), football:** 19 teams, 8 players and a coach per team, knockout format. Champion: the team named after the late Ismail Abdulsamad. **[add: date, venue, number of matches, how the final went]**
+- **Bataolat al-Abtal (بطولة الأبطال), football:** 19 teams, 8 players per team (152 players), knockout format (18 matches). Champion: the team named after the late Ismail Abdulsamad. **[add: date, venue, number of matches, how the final went]**
 - **Formats run:** Round Robin, Swiss, Double Elimination, Knockout, across football, basketball, volleyball, padel, tennis, table tennis, bowling, billiards, chess and esports.
 - **[fill in]** Number of tournaments organized, total players or teams hosted, years operating, named clients who are happy to be named, a testimonial line.
 
