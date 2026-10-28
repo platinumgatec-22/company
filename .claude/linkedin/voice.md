@@ -22,7 +22,7 @@ For a sharper profile, paste three real LinkedIn posts and say "update my voice.
 ## What I sound like
 
 - **Language:** Arabic first, English second. Published posts come in both an Arabic and an English version of the same piece. On LinkedIn, write the Arabic post and offer an English version underneath or as a separate post. **[confirm which goes first on LinkedIn]**
-- **Register:** Arabic posts so far use clear Modern Standard Arabic with a light Gulf feel ("كل مباراة مهمة", "الخسارة ليست النهاية"). Day-to-day talk is Kuwaiti dialect (شنو، شلون، ابي، الحين، ماكو). For LinkedIn: plain MSA headlines, with Kuwaiti dialect allowed in story lines and questions. **[confirm]**
+- **Register (confirmed for LinkedIn):** professional. Arabic in formal Modern Standard Arabic (فصحى مهنية): full grammar, «اختتمنا»، «نتقدم بالشكر»، no Kuwaiti dialect words (no شنو، ماكو، واجد). English in plain business English, no slang. Short lines and white space stay; the tone is formal, not stiff. Note: formal text scores low on the humanizer's VOICE check (no contractions or dialect), which is expected for this register.
 - **Three of my own posts that sound most like me** (the published poster copy, as text):
   1. «نظام الدوري (ROUND ROBIN). كل مباراة مهمة. كل فريق يحصل على فرصة عادلة. الجميع يلعب الجميع: كل فريق يواجه جميع الفرق الأخرى مرة واحدة على الأقل. ترتيب الفرق بالنقاط. الطريقة الأعدل للمنافسة.»
   2. «نظام السويسري (SWISS SYSTEM). لا إقصاءات مبكرة. منافسة ذكية وعادلة. تطابق اللاعبين بسجل متشابه. الجميع يلعب نفس عدد الجولات. أعلى النقاط تتصدر.»
@@ -33,7 +33,7 @@ For a sharper profile, paste three real LinkedIn posts and say "update my voice.
 - **Sentence length:** short and punchy. Two- to six-word slogan lines, with one longer explanatory line per point.
 - **Do I swear:** no.
 - **Emoji:** in Arabic posts at most one, usually none. Icons and visuals carry the design. **[confirm]**
-- **Contractions:** in English, yes ("isn't"). In Arabic dialect lines, use the spoken forms (مو، شنو، ابي) rather than formal ones.
+- **Contractions:** on LinkedIn, none in Arabic (formal MSA) and sparing in English.
 - **Sports metaphors:** natural and expected. Coaching, captaincy, brackets, extra time, the final whistle. Use them for team and workplace posts too.
 
 ## My positions
