@@ -39,6 +39,11 @@ rm -rf "$SKILLS/ffmpeg-skill"; mkdir -p "$SKILLS/ffmpeg-skill"
 mkdir -p "$SKILLS/video-toolkit"
 cp "$WORK/claude-code-video-toolkit/skills/video-toolkit/SKILL.md" "$SKILLS/video-toolkit/"
 
+# 6. Instagram agent skills (/ig-reel, /ig-caption, /ig-plan, ...): its README's manual install.
+#    Their helper scripts are standard-library Python with no network access.
+clone Jakeschincariol/instagram-agent-skill instagram-agent-skill
+cp -r "$WORK"/instagram-agent-skill/skills/ig-* "$SKILLS/"
+
 echo "Installed skills in $SKILLS:"; ls "$SKILLS"
 echo "Workspaces in $WORK:"; ls "$WORK"
 cat <<EOF
