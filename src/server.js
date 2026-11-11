@@ -9,7 +9,7 @@ const { seedCrm } = require('./crm/seed');
 const crmRouter = require('./crm/routes');
 
 const PORT = Number(process.env.PORT) || 3000;
-const COMPANY_NAME = process.env.COMPANY_NAME || 'شركتنا';
+const COMPANY_NAME = process.env.COMPANY_NAME || 'البوابة البلاتينية';
 // Serve the site under a sub-path (e.g. /portal-company) when it sits behind another site's domain.
 const BASE_PATH = `/${(process.env.BASE_PATH || '').trim()}`.replace(/\/+/g, '/').replace(/\/$/, '');
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
